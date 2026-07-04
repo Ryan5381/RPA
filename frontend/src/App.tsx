@@ -1,5 +1,11 @@
+import { PRA } from "@/components/PRA";
+
 function App() {
-  return <div>測試</div>;
+  return (
+    <div>
+      <PRA />
+    </div>
+  );
 }
 
 export default App;
