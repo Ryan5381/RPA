@@ -1,0 +1,116 @@
+[
+  {
+    "id": 1,
+    "title": "台大醫院掛號",
+    "iconType": "hospital",
+    "category": "醫療預約",
+    "account": "Ethan.Wu (A123***789)",
+    "status": "RUNNING",
+    "progress": 68,
+    "stepLabel": "步驟 3/4: 識別圖形驗證碼 (OCR)",
+    "details": [
+      { "label": "Target", "value": "NTUH_Internal_Med" },
+      { "label": "Uptime", "value": "00:42:15" },
+      { "label": "Speed", "value": "45 ms/req" }
+    ],
+    "footerLabel": "Current Step",
+    "footerValue": "Solving Captcha...",
+    "footerType": "running",
+    "logs": [
+      "[14:35:10] 啟動 Playwright 瀏覽器背景核心與指紋防偵測模組...",
+      "[14:35:12] 已成功載入台大醫院掛號首頁，定位目標科別與診號...",
+      "[14:35:15] 偵測到圖形驗證碼圖片，二值化處理後送至 CNN 模型辨識..."
+    ]
+  },
+  {
+    "id": 2,
+    "title": "拓元-周杰倫",
+    "iconType": "ticket",
+    "category": "演唱會搶票",
+    "account": "tix_jay_fans_99",
+    "status": "WAITING",
+    "progress": 15,
+    "stepLabel": "倒數計時: 待 12:00 準時啟動",
+    "details": [
+      { "label": "Target", "value": "TixCraft_Jay_Chou" },
+      { "label": "Scheduled", "value": "12:00:00" },
+      { "label": "Proxy Pool", "value": "25 Active IPs" }
+    ],
+    "footerLabel": "Status",
+    "footerValue": "Awaiting Drop",
+    "footerType": "waiting",
+    "logs": [
+      "[11:45:00] 啟動背景定時調度佇列，與目標時間源進行毫秒校時...",
+      "[11:45:05] 多機協同網路校正完成，NTP 時間偏差 -1.8 毫秒...",
+      "[11:45:10] 25 組優質 Proxy 節點連線就緒，HTTP 健康度測試 100%"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "島語預約",
+    "iconType": "utensils",
+    "category": "餐飲訂位",
+    "account": "dining_club_member",
+    "status": "SUCCESS",
+    "progress": 100,
+    "stepLabel": "已完成訂位: 訂單編號 #A9823",
+    "details": [
+      { "label": "Target", "value": "Island_Paradise" },
+      { "label": "Completed", "value": "2026/07/04 09:00:02" },
+      { "label": "Duration", "value": "1.2s" }
+    ],
+    "footerLabel": "Result",
+    "footerValue": "Booking Confirmed",
+    "footerType": "success",
+    "logs": [
+      "[09:00:00] 目標時間釋放！偵測到開放預約按鈕，執行全自動點擊...",
+      "[09:00:01] 快速代入聯絡人資料與 4 人餐期時段，防阻擋防護校對完成...",
+      "[09:00:02] 島語伺服器成功受理請求，取得訂單代碼 #A9823，任務完成。"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "台灣高鐵連假搶票",
+    "iconType": "train",
+    "category": "交通票務",
+    "account": "thsr_pass_user",
+    "status": "WAITING",
+    "progress": 0,
+    "stepLabel": "排程等待: 待開放訂票時間",
+    "details": [
+      { "label": "Target", "value": "THSR_Holiday_Express" },
+      { "label": "Scheduled", "value": "2026/07/20 00:00:00" },
+      { "label": "Passengers", "value": "2 Adults (Taipei -> Tainan)" }
+    ],
+    "footerLabel": "Status",
+    "footerValue": "Queued in Scheduler",
+    "footerType": "waiting",
+    "logs": [
+      "[14:20:00] 定時排程寫入核心，設定出發日期 2026/08/15 班次...",
+      "[14:20:01] 自動排程器排定於 2026/07/20 00:00:00 前 5 分鐘進行背景預熱。"
+    ]
+  },
+  {
+    "id": 5,
+    "title": "特價機票",
+    "iconType": "airplane",
+    "category": "旅遊預訂",
+    "account": "air_miles_collector",
+    "status": "SUCCESS",
+    "progress": 100,
+    "stepLabel": "已成功下訂京都來回機票",
+    "details": [
+      { "label": "Target", "value": "eTax_Portal_TW" },
+      { "label": "Completed", "value": "2026/07/06 17:30:12" },
+      { "label": "Receipts", "value": "142 files processed" }
+    ],
+    "footerLabel": "Result",
+    "footerValue": "Archived Successfully",
+    "footerType": "success",
+    "logs": [
+      "[17:30:00] 網頁後台偵測到京都特惠機票票價異動，進入訂票流程...",
+      "[17:30:08] 完成多名乘客護照號碼與信用卡資料填寫...",
+      "[17:30:12] 機票款項授權通過，出票確認信已派送至管理者信箱。"
+    ]
+  }
+]
