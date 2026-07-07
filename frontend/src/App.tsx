@@ -1,9 +1,9 @@
-import { PRA } from "@/components/PRA";
+import { RPA } from "@/components/RPA";
 
 function App() {
   return (
     <div>
-      <PRA />
+      <RPA />
     </div>
   );
 }
