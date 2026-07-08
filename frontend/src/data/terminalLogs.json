@@ -1,0 +1,33 @@
+{
+  "initialLogs": [
+    { "level": "INFO", "message": "Initializing automation engine v4.2.0..." },
+    { "level": "INFO", "message": "Loading target config: THSR_Taipei_Zuoying" },
+    { "level": "INFO", "message": "Navigating to booking portal..." },
+    { "level": "INFO", "message": "Page loaded successfully (200 OK)." },
+    { "level": "WARN", "message": "High traffic detected, slightly delaying requests." },
+    { "level": "INFO", "message": "Downloading captcha image..." },
+    { "level": "EXEC", "message": "Sending to ML recognition service..." },
+    { "level": "EXEC", "message": "Waiting for response..." }
+  ],
+  "simulationLogs": [
+    { "level": "EXEC", "message": "ML Recognition successful (result: '8Y3R')." },
+    { "level": "INFO", "message": "Inputting booking details and captcha code..." },
+    { "level": "INFO", "message": "Submitting booking request to server..." },
+    { "level": "SUCCESS", "message": "Booking confirmed! PNR code: THSR-A9283." },
+    { "level": "INFO", "message": "Idle. Awaiting next scheduled run..." },
+    { "level": "INFO", "message": "Starting periodic check for '島語預約'..." },
+    { "level": "INFO", "message": "Booking slot not yet open (Target date: 2026-08-15)." },
+    { "level": "INFO", "message": "Next schedule check in 60s." },
+    { "level": "INFO", "message": "Starting periodic check for '島語預約'..." },
+    { "level": "INFO", "message": "Booking slot OPEN! Initiating reservation process..." },
+    { "level": "EXEC", "message": "Logging in to booking portal..." },
+    { "level": "INFO", "message": "Selecting dining options: Lunch, 4 Adults..." },
+    { "level": "SUCCESS", "message": "Island Paradise reservation success! Order #B8273." },
+    { "level": "INFO", "message": "Backing up system database and syncing to cloud..." },
+    { "level": "INFO", "message": "Synchronization complete (100%)." },
+    { "level": "INFO", "message": "Preparing warm-up for scheduled '拓元-周杰倫' ticket grab..." },
+    { "level": "INFO", "message": "Checking network latency and proxy availability..." },
+    { "level": "WARN", "message": "Proxy node 'SG-02' timed out, removing from pool." },
+    { "level": "INFO", "message": "Proxy pool size: 24 active nodes." }
+  ]
+}
