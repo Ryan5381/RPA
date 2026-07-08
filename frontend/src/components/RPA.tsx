@@ -11,7 +11,7 @@ export const RPA = () => {
       <Navbar />
       <div className="flex flex-1">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="flex-1 p-6 md:p-8">
+        <main className="flex-1 self-start p-6 md:p-8">
           {activeTab === "dashboard" && <Dashboard />}
           {activeTab === "workflows" && (
             <div className="text-slate-400">工作流元件開發中...</div>
