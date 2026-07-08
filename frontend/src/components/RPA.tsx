@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/common/Navbar";
 import { Sidebar } from "@/components/common/Sidebar";
 import { Dashboard } from "@/components/dashboard/Dashboard";
+import { Workflows } from "@/components/workflows/Workflows";
 
 export const RPA = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -13,9 +14,7 @@ export const RPA = () => {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         <main className="flex-1 self-start p-6 md:p-8">
           {activeTab === "dashboard" && <Dashboard />}
-          {activeTab === "workflows" && (
-            <div className="text-slate-400">工作流元件開發中...</div>
-          )}
+          {activeTab === "workflows" && <Workflows />}
           {activeTab === "queue" && (
             <div className="text-slate-400">優先序列元件開發中...</div>
           )}
