@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Process } from "@/types/type";
 import {
   FileTerminal,
   Play,
@@ -16,22 +17,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ICON_MAP } from "@/lib/icons";
-
-interface Process {
-  id: number;
-  title: string;
-  iconType: string;
-  category: string;
-  account: string;
-  status: string;
-  progress: number;
-  stepLabel: string;
-  details: { label: string; value: string }[];
-  footerLabel: string;
-  footerValue: string;
-  footerType: string;
-  logs?: string[];
-}
 
 interface AllProcessesModalProps {
   isOpen: boolean;
