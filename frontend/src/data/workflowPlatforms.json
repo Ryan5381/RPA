@@ -1,0 +1,74 @@
+{
+  "hospital": {
+    "label": "醫療掛號平台",
+    "platforms": [
+      "台大醫院 (掛號平台)",
+      "台北榮總 (掛號系統)",
+      "長庚醫院 (線上掛號)",
+      "馬偕醫院 (預約系統)"
+    ]
+  },
+  "ticket": {
+    "label": "售票平台",
+    "platforms": [
+      "拓元售票 (TixCraft)",
+      "KKTIX 售票",
+      "ibon 售票系統",
+      "年代售票"
+    ]
+  },
+  "utensils": {
+    "label": "美食預約平台",
+    "platforms": [
+      "島語 (Island Paradise)",
+      "樂天 Ichiran",
+      "OpenTable 訂位",
+      "EZTABLE 訂位"
+    ]
+  },
+  "airplane": {
+    "label": "機票搜尋平台",
+    "platforms": [
+      "中華航空 (China Airlines)",
+      "長榮航空 (EVA Air)",
+      "台灣虎航 (Tigerair)",
+      "酷航 (Scoot)"
+    ]
+  },
+  "gym": {
+    "label": "場地預約平台",
+    "platforms": [
+      "運動i台灣 (運動場地)",
+      "台北市羽球場館",
+      "新北市運動設施網",
+      "全國運動場館管理系統"
+    ]
+  },
+  "train": {
+    "label": "高鐵訂票平台",
+    "platforms": [
+      "台灣高鐵 (THSR)",
+      "台鐵訂票 (TRA)",
+      "高鐵 App 訂票通道",
+      "定期票線上服務"
+    ]
+  },
+  "school": {
+    "label": "課程選修系統",
+    "platforms": [
+      "台大課程選修系統 (NTU)",
+      "成大選課系統 (NCKU)",
+      "政大選課平台 (NCCU)",
+      "交大課程系統 (NYCU)"
+    ]
+  },
+  "camping": {
+    "label": "場地/票務平台",
+    "platforms": [
+      "擎天崗 (線上預約)",
+      "七星山 (預約系統)",
+      "合歡山雪季管制系統",
+      "全國露營區預約"
+    ]
+  }
+}
