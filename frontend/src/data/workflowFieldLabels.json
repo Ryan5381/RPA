@@ -1,0 +1,10 @@
+{
+  "hospital": { "specialty": "科別代碼/科別", "slot": "門診日期/時段" },
+  "ticket":   { "specialty": "區域/座位區",   "slot": "場次日期/時間" },
+  "utensils": { "specialty": "人數/餐廳分店", "slot": "用餐日期/時段" },
+  "airplane": { "specialty": "出發/目的地",   "slot": "出發日期/艙等" },
+  "gym":      { "specialty": "場館/場地編號", "slot": "預約日期/時段" },
+  "train":    { "specialty": "起站/迄站",     "slot": "出發日期/車次" },
+  "school":   { "specialty": "學號/課程代碼", "slot": "加選學期/志願序" },
+  "camping":  { "specialty": "區域/營地名稱", "slot": "入場日期/時段" }
+}
