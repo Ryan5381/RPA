@@ -1,13 +1,18 @@
+import { useState } from "react";
 import { ListOrdered, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QueueTable } from "./QueueTable";
+import { QueueEditSheet } from "./QueueEditSheet";
 import { useQueueTasks } from "@/hooks/useQueueTasks";
 
 export const Queue = () => {
-  const { tasks, removeTask, retryTask, togglePriority } = useQueueTasks();
+  const { tasks, removeTask, retryTask, togglePriority, updateTask } = useQueueTasks();
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
   const runningCount = tasks.filter((t) => t.status === "RUNNING").length;
   const queuedCount = tasks.filter((t) => t.status === "QUEUED").length;
+
+  const editingTask = tasks.find((t) => t.id === editingTaskId) || null;
 
   return (
     <div className="space-y-8">
@@ -81,11 +86,19 @@ export const Queue = () => {
         <QueueTable
           tasks={tasks}
           onTogglePriority={togglePriority}
-          onEdit={(id) => alert(`編輯 ${id} (TODO)`)}
+          onEdit={(id) => setEditingTaskId(id)}
           onRetry={retryTask}
           onRemove={removeTask}
         />
       </div>
+
+      {/* ── 編輯面板 ── */}
+      <QueueEditSheet
+        isOpen={!!editingTaskId}
+        onClose={() => setEditingTaskId(null)}
+        task={editingTask}
+        onSave={updateTask}
+      />
     </div>
   );
 };

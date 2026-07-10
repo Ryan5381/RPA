@@ -39,5 +39,14 @@ export const useQueueTasks = () => {
     [update]
   );
 
-  return { tasks, removeTask, retryTask, togglePriority };
+  /** 更新任務（儲存編輯） */
+  const updateTask = useCallback(
+    (updatedTask: QueueTask) =>
+      update((prev) =>
+        prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+      ),
+    [update]
+  );
+
+  return { tasks, removeTask, retryTask, togglePriority, updateTask };
 };
