@@ -34,6 +34,11 @@ export interface QueueTask {
   scheduledAt: string; // 預約日期 YYYY-MM-DD
   priority: "HIGH" | "MED" | "LOW";
   status: "RUNNING" | "QUEUED" | "SUCCESS" | "FAILED";
+  config?: {
+    target?: string;
+    account?: string;
+    notify?: boolean;
+  };
 }
 
 // ─── 執行中任務 (Process) ────────────────────────────────────────────────────

@@ -5,7 +5,12 @@
     "iconType": "hospital",
     "scheduledAt": "2024-05-28",
     "priority": "HIGH",
-    "status": "RUNNING"
+    "status": "RUNNING",
+    "config": {
+      "target": "NTUH_Internal_Med",
+      "account": "Ethan.Wu (A123***789)",
+      "notify": true
+    }
   },
   {
     "id": "TSK-0088",
@@ -13,7 +18,12 @@
     "iconType": "ticket",
     "scheduledAt": "2024-06-01",
     "priority": "MED",
-    "status": "QUEUED"
+    "status": "QUEUED",
+    "config": {
+      "target": "KHH_Concert_Hall",
+      "account": "user_khh_99",
+      "notify": false
+    }
   },
   {
     "id": "TSK-0072",
@@ -21,7 +31,12 @@
     "iconType": "ticket",
     "scheduledAt": "2023-11-15",
     "priority": "LOW",
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "config": {
+      "target": "TixCraft_Coldplay",
+      "account": "fan_123",
+      "notify": true
+    }
   },
   {
     "id": "TSK-0065",
@@ -29,7 +44,12 @@
     "iconType": "train",
     "scheduledAt": "2024-07-20",
     "priority": "HIGH",
-    "status": "QUEUED"
+    "status": "QUEUED",
+    "config": {
+      "target": "THSR_Holiday_Express",
+      "account": "thsr_pass_user",
+      "notify": true
+    }
   },
   {
     "id": "TSK-0059",
@@ -37,6 +57,11 @@
     "iconType": "utensils",
     "scheduledAt": "2024-03-10",
     "priority": "MED",
-    "status": "FAILED"
+    "status": "FAILED",
+    "config": {
+      "target": "Island_Paradise",
+      "account": "dining_club_member",
+      "notify": false
+    }
   }
 ]
