@@ -26,6 +26,16 @@ export interface Preference {
   label: string;
 }
 
+// ─── 優先序列任務 (Queue) ─────────────────────────────────────────────────────
+export interface QueueTask {
+  id: string; // TSK-0001
+  name: string; // 任務名稱
+  iconType: string; // 對應 ICON_MAP key
+  scheduledAt: string; // 預約日期 YYYY-MM-DD
+  priority: "HIGH" | "MED" | "LOW";
+  status: "RUNNING" | "QUEUED" | "SUCCESS" | "FAILED";
+}
+
 // ─── 執行中任務 (Process) ────────────────────────────────────────────────────
 export interface Process {
   id: number;
