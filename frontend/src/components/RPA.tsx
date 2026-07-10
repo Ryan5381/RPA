@@ -3,6 +3,7 @@ import { Navbar } from "@/components/common/Navbar";
 import { Sidebar } from "@/components/common/Sidebar";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { Workflows } from "@/components/workflows/Workflows";
+import { Queue } from "@/components/queue/Queue";
 
 export const RPA = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -15,9 +16,7 @@ export const RPA = () => {
         <main className="flex-1 self-start p-6 md:p-8">
           {activeTab === "dashboard" && <Dashboard />}
           {activeTab === "workflows" && <Workflows />}
-          {activeTab === "queue" && (
-            <div className="text-slate-400">優先序列元件開發中...</div>
-          )}
+          {activeTab === "queue" && <Queue />}
           {activeTab === "logs" && (
             <div className="text-slate-400">日誌終端元件開發中...</div>
           )}
