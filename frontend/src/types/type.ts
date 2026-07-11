@@ -1,7 +1,7 @@
 export interface LogItem {
   id: string;
   time: string;
-  level: "INFO" | "WARN" | "EXEC" | "SUCCESS" | "ERROR";
+  level: "start" | "navigating" | "action" | "waiting" | "success" | "end" | "error" | "INFO";
   message: string;
 }
 

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Copy, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogStream } from "@/hooks/useLogStream";
@@ -6,18 +6,21 @@ import { useLogStream } from "@/hooks/useLogStream";
 // ─── 日誌等級顏色對應 ───────────────────────────────────────────────────────
 const getLevelColor = (level: string) => {
   switch (level) {
-    case "INFO":
-      return "text-cyan-400";
-    case "WARN":
-      return "text-amber-400";
-    case "EXEC":
-      return "text-indigo-400";
-    case "SUCCESS":
-      return "text-emerald-400";
-    case "ERROR":
-      return "text-rose-400";
+    case "start":
+    case "end":
+      return "text-indigo-400"; // 流程節點
+    case "navigating":
+      return "text-cyan-400"; // 導航
+    case "action":
+      return "text-emerald-400"; // 填表動作
+    case "waiting":
+      return "text-amber-400 animate-pulse"; // 等待輸入 (加入閃爍效果)
+    case "success":
+      return "text-green-400 font-bold"; // 成功
+    case "error":
+      return "text-rose-400 font-bold"; // 錯誤
     default:
-      return "text-slate-400";
+      return "text-slate-400"; // 其他/預設
   }
 };
 
@@ -70,7 +73,7 @@ export const LiveTerminal: React.FC = () => {
             size="icon-sm"
             onClick={handleCopy}
             title="複製日誌"
-            className="border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-slate-200 cursor-pointer transition-all duration-200"
+            className="border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-slate-200 cursor-pointer transition-all duration-200 h-8 w-8"
           >
             {isCopied ? (
               <Check className="w-4 h-4 text-emerald-400 animate-scale-in" />
@@ -84,7 +87,7 @@ export const LiveTerminal: React.FC = () => {
             size="icon-sm"
             onClick={clearLogs}
             title="清除日誌"
-            className="border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-rose-400 cursor-pointer transition-all duration-200"
+            className="border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-rose-400 cursor-pointer transition-all duration-200 h-8 w-8"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

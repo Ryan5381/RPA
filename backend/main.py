@@ -3,10 +3,10 @@ import sys
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from dummy_script import run_dummy_script
+from scripts import dispatch_script
 
 # 1. 載入 .env 檔案中的環境變數
 load_dotenv()
@@ -50,16 +50,25 @@ async def create_task(payload: TaskPayload):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 6. 建立執行腳本的 API 路由，透過 BackgroundTasks 在背景執行 Playwright
+# 6. 建立執行腳本的 API 路由，透過 BackgroundTasks 在背景執行
 @app.post("/api/tasks/{task_id}/execute")
 async def execute_task(task_id: str, background_tasks: BackgroundTasks):
     try:
-        # 將 async 函式加入背景佇列，API 立即回覆不會被瀏覽器自動化卡住
-        background_tasks.add_task(run_dummy_script, task_id)
+        # 從 Supabase 查詢此 task 的 task_type，以決定要呼叫哪個腳本
+        task_data = supabase.table("tasks").select("task_type").eq("id", task_id).execute()
+        if not task_data.data:
+            raise HTTPException(status_code=404, detail=f"找不到 task_id={task_id} 的任務")
+        task_type = task_data.data[0]["task_type"]
+
+        # 將 dispatch_script 加入背景佇列，API 立即回覆不被卡住
+        background_tasks.add_task(dispatch_script, task_type, task_id)
         return {
-            "message": f"任務 {task_id} 已派發至背景執行器",
+            "message": f"任務 {task_id} (類型: {task_type}) 已派發至背景執行器",
             "task_id": task_id,
+            "task_type": task_type,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

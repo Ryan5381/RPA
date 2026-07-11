@@ -2,13 +2,29 @@ import React from "react";
 import { Plus, Trash2, CalendarDays, Clock, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { usePreferenceList } from "@/hooks/usePreferenceList";
 import { ORDER_LABELS, MAX_PREFERENCES } from "@/lib/workflowHelpers";
 
-export const PreferenceSelector: React.FC = () => {
-  const { preferences, addPreference, removePreference, updatePreference, isAtMax } =
-    usePreferenceList();
+interface PreferenceSelectorProps {
+  preferences: any[];
+  addPreference: () => void;
+  removePreference: (id: string) => void;
+  updatePreference: (id: string, field: any, value: string) => void;
+  isAtMax: boolean;
+  handleLaunchTask: () => void;
+  isLaunching: boolean;
+  selectedKey: string;
+}
 
+export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
+  preferences,
+  addPreference,
+  removePreference,
+  updatePreference,
+  isAtMax,
+  handleLaunchTask,
+  isLaunching,
+  selectedKey,
+}) => {
   return (
     <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur-xl flex flex-col h-full">
       {/* 標頭 */}
@@ -16,7 +32,9 @@ export const PreferenceSelector: React.FC = () => {
         <h3 className="text-sm font-bold text-slate-200 tracking-wider flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
           預約偏好順位
-          <span className="text-[10px] font-mono text-slate-500 font-normal">PRIORITY</span>
+          <span className="text-[10px] font-mono text-slate-500 font-normal">
+            PRIORITY
+          </span>
         </h3>
         <Badge
           variant="outline"
@@ -40,7 +58,11 @@ export const PreferenceSelector: React.FC = () => {
               </div>
               <div
                 className={`text-xs font-bold mt-0.5 ${
-                  index === 0 ? "text-cyan-400" : index === 1 ? "text-indigo-400" : "text-slate-400"
+                  index === 0
+                    ? "text-cyan-400"
+                    : index === 1
+                      ? "text-indigo-400"
+                      : "text-slate-400"
                 }`}
               >
                 #{String(index + 1).padStart(2, "0")}
@@ -57,7 +79,9 @@ export const PreferenceSelector: React.FC = () => {
                 <input
                   type="text"
                   value={pref.date}
-                  onChange={(e) => updatePreference(pref.id, "date", e.target.value)}
+                  onChange={(e) =>
+                    updatePreference(pref.id, "date", e.target.value)
+                  }
                   placeholder="YYYY-MM-DD"
                   className="bg-transparent text-xs text-slate-300 placeholder:text-slate-600 outline-none w-full font-mono"
                 />
@@ -67,7 +91,9 @@ export const PreferenceSelector: React.FC = () => {
                 <input
                   type="text"
                   value={pref.time}
-                  onChange={(e) => updatePreference(pref.id, "time", e.target.value)}
+                  onChange={(e) =>
+                    updatePreference(pref.id, "time", e.target.value)
+                  }
                   placeholder="HH:MM"
                   className="bg-transparent text-xs text-slate-300 placeholder:text-slate-600 outline-none w-full font-mono"
                 />
@@ -106,9 +132,13 @@ export const PreferenceSelector: React.FC = () => {
 
       {/* 啟動按鈕 */}
       <div className="pt-4 border-t border-slate-800/60">
-        <Button className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm tracking-wider border-0 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] transition-all duration-300 gap-2">
+        <Button
+          onClick={handleLaunchTask}
+          disabled={isLaunching}
+          className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white font-bold text-sm tracking-wider border-0 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] transition-all duration-300 gap-2"
+        >
           <Zap className="w-4 h-4" />
-          啟動自動化任務
+          {isLaunching ? "正在啟動中..." : "啟動自動化任務"}
         </Button>
         <p className="text-[10px] font-mono text-slate-600 text-center mt-2">
           任務將依偏好順位依序嘗試，直到成功為止
