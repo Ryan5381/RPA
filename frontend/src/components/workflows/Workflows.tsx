@@ -1,10 +1,18 @@
-import { useState } from "react";
 import { Cards } from "./Cards";
 import { WorkflowConfigForm } from "./WorkflowConfigForm";
 import { PreferenceSelector } from "./PreferenceSelector";
+import { useWorkflowManager } from "@/hooks/useWorkflowManager";
 
 export const Workflows = () => {
-  const [selectedKey, setSelectedKey] = useState("hospital");
+  const {
+    selectedKey,
+    setSelectedKey,
+    genericForm,
+    thsrWorkflow,
+    preferenceList,
+    handleLaunchTask,
+    isLaunching,
+  } = useWorkflowManager();
 
   return (
     <div className="space-y-8">
@@ -37,8 +45,24 @@ export const Workflows = () => {
 
         {/* 工作流配置 + 預約偏好順位 */}
         <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-6 items-start">
-          <WorkflowConfigForm selectedKey={selectedKey} />
-          <PreferenceSelector />
+          <WorkflowConfigForm
+            selectedKey={selectedKey}
+            form={genericForm.form}
+            setField={genericForm.setField}
+            resetForm={genericForm.resetForm}
+            thsrForm={thsrWorkflow.thsrForm}
+            setThsrForm={thsrWorkflow.setThsrForm}
+          />
+          <PreferenceSelector
+            preferences={preferenceList.preferences}
+            addPreference={preferenceList.addPreference}
+            removePreference={preferenceList.removePreference}
+            updatePreference={preferenceList.updatePreference}
+            isAtMax={preferenceList.isAtMax}
+            handleLaunchTask={handleLaunchTask}
+            isLaunching={isLaunching}
+            selectedKey={selectedKey}
+          />
         </div>
       </div>
     </div>
