@@ -11,4 +11,3 @@ export const Dashboard = () => {
     </div>
   );
 };
-
