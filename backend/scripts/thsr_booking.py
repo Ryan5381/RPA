@@ -77,9 +77,35 @@ def _run_thsr_bot_sync(task_id: str):
             page.wait_for_selector("form#BookingS2Form", timeout=120000)
             log_execution(task_id, "success", "🎉 驗證碼通關！成功進入車次選擇頁面！")
 
-            # 7. 第二階段填表：選擇車次
-            log_execution(task_id, "action", "正在為您選擇第一個可行車次...")
-            page.locator("form#BookingS2Form input[type='radio']").first.click()
+            # 7. 第二階段填表：選擇車次（支援預約偏好順位自動候補接力）
+            preferences = config.get("preferences", [])
+            selected_train = False
+            if preferences:
+                log_execution(task_id, "action", f"正在根據您設定的 {len(preferences)} 筆偏好順位尋找最佳車次...")
+                for idx, pref in enumerate(preferences):
+                    pref_time = pref.get("time", "").strip()
+                    if not pref_time:
+                        continue
+                    try:
+                        rows = page.locator("form#BookingS2Form tr").all()
+                        for row in rows:
+                            text = row.text_content() or ""
+                            if pref_time in text:
+                                radio = row.locator("input[type='radio']")
+                                if radio.count() > 0:
+                                    radio.first.click()
+                                    log_execution(task_id, "success", f"🎯 已鎖定第 {idx+1} 順位偏好時段車次 ({pref_time})！")
+                                    selected_train = True
+                                    break
+                    except Exception:
+                        pass
+                    if selected_train:
+                        break
+
+            if not selected_train:
+                log_execution(task_id, "action", "為您鎖定系統第一個可行之車次...")
+                page.locator("form#BookingS2Form input[type='radio']").first.click()
+
             page.wait_for_timeout(1000)
 
             # 點擊確認車次按鈕
@@ -141,6 +167,8 @@ def _run_thsr_bot_sync(task_id: str):
         log_execution(task_id, "error", f"執行發生錯誤: {str(e)}")
 
 
-async def run_thsr_script(task_id: str):
+async def run_thsr_booking(task_id: str):
     """FastAPI BackgroundTask 入口點"""
     await asyncio.to_thread(_run_thsr_bot_sync, task_id)
+
+run_thsr_script = run_thsr_booking

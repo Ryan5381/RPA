@@ -1,0 +1,862 @@
+[
+  {
+    "ts": 1783831645.626,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783831645.875,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10310",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 04:47:26 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783831645.498,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783831645.661,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10318",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 04:47:24 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783835053.231,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783835054.512,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10329",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 05:44:14 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783835053.148,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783835053.443,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10305",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 05:44:13 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783835943.985,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783835944.259,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10309",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 05:59:04 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783835943.874,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783835944.13,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10308",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 05:59:03 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783836484.344,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783836484.715,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10305",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 06:08:04 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783836484.355,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783836484.652,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10311",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 06:08:04 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783837688.274,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783837688.503,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10328",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 06:28:08 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783837688.304,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "cookie": "ASP.NET_SessionId=up4zzex0bfries2l1ppigyu5",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783837688.57,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10716",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 06:28:08 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783838531.986,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783838533.006,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10298",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 06:42:12 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783838532.032,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783838532.989,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10325",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 06:42:12 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783839911.994,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783839913.224,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10315",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:05:12 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783839912.107,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783839912.323,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10300",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:05:12 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783840382.376,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783840382.668,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10308",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:13:02 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783840382.357,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783840382.766,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10309",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:13:02 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783840613.556,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783840613.807,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10312",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:16:52 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783840613.618,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "cookie": "ASP.NET_SessionId=30yxaxqg1vq1f30tobppvvn3",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783840614.562,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10732",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:16:54 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783841067.002,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783841067.987,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10287",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:24:27 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783841067.073,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783841068.291,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10322",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 07:24:27 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783854578.454,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783854578.678,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10314",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 11:09:38 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  },
+  {
+    "ts": 1783854578.458,
+    "dir": "REQ",
+    "method": "GET",
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "zh-TW",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  },
+  {
+    "ts": 1783854578.74,
+    "dir": "RESP",
+    "status": 200,
+    "url": "https://scr.cyc.org.tw/tp11.aspx?module=login_page&files=login&PT=1",
+    "headers": {
+      "cache-control": "no-cache",
+      "content-encoding": "gzip",
+      "content-length": "10291",
+      "content-security-policy": "default-src * 'self' ; img-src 'self' data: ; script-src http: https: 'unsafe-inline' 'self' 'unsafe-eval' data: ;style-src 'unsafe-inline' 'self';script-src-elem * 'unsafe-inline' 'unsafe-eval';font-src * 'self'  'unsafe-inline' data: ;connect-src * 'self'  'unsafe-inline';object-src 'none';frame-ancestors 'self';",
+      "content-type": "text/html; charset=utf-8",
+      "date": "Sun, 12 Jul 2026 11:09:38 GMT",
+      "expires": "-1",
+      "pragma": "no-cache",
+      "referrer-policy": "No-referrer-when-downgrade",
+      "server": "Microsoft-IIS/10.0",
+      "strict-transport-security": "max-age=31536000",
+      "vary": "Accept-Encoding",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
+      "x-xss-protection": "1; mode=block"
+    },
+    "body_raw": "\r\n\r\n<!DOCTYPE html>\r\n<link rel=\"stylesheet\" href=\"/Scripts/sweetalert2.min.css\">\r\n<script src=\"/Scripts/sweetalert2.all.min.js\"></script>\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>\r\n\t網路預約平台\r\n</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width\" />\r\n\r\n    <script type=\"text/javascript\" src=\"Scripts/jquery-3.6.0.min.js\"></script"
+  }
+]
