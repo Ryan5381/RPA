@@ -77,3 +77,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 讓 React DatePicker Wrapper 100% 撐滿寬度 */
+.react-datepicker-wrapper,
+.react-datepicker__input-container {
+  display: block !important;
+  width: 100% !important;
+}

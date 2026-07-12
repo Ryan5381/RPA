@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useWorkflowForm } from "./useWorkflowForm";
 import { usePreferenceList } from "./usePreferenceList";
 import { useTHSRWorkflow } from "./useTHSRWorkflow";
+import { useBadmintonWorkflow } from "./useBadmintonWorkflow";
 import { useLaunchWorkflow } from "./useWorkflowMutations";
 
 export const useWorkflowManager = () => {
@@ -12,6 +13,7 @@ export const useWorkflowManager = () => {
   // 表單 Hooks
   const genericForm = useWorkflowForm();
   const thsrWorkflow = useTHSRWorkflow();
+  const badmintonWorkflow = useBadmintonWorkflow();
   const preferenceList = usePreferenceList();
 
   // API 啟動 Hook
@@ -23,6 +25,12 @@ export const useWorkflowManager = () => {
     // 高鐵
     if (selectedKey === "train") {
       launchConfig = thsrWorkflow.getLaunchConfig(preferenceList.preferences);
+    }
+    // 羽球
+    else if (selectedKey === "gym") {
+      launchConfig = badmintonWorkflow.getLaunchConfig(
+        preferenceList.preferences,
+      );
     } else {
       // 這裡未來可以實作其他表單的 config 取法
       alert("此類型腳本尚未實作，敬請期待！");
@@ -37,6 +45,7 @@ export const useWorkflowManager = () => {
     setSelectedKey,
     genericForm,
     thsrWorkflow,
+    badmintonWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching: launchMutation.isPending,

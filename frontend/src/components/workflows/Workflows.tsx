@@ -9,6 +9,7 @@ export const Workflows = () => {
     setSelectedKey,
     genericForm,
     thsrWorkflow,
+    badmintonWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching,
@@ -16,24 +17,11 @@ export const Workflows = () => {
 
   return (
     <div className="space-y-8">
-      {/* 頁面標頭 */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-100 tracking-wide">
-          自動化預約的指揮中心
-        </h1>
-        <p className="text-sm text-slate-500 mt-1 font-mono">
-          選擇自動化應用程式，配置帳號與偏好時段，一鍵啟動智能搶位任務
-        </p>
-      </div>
-
       {/* 新建工作流區塊 */}
       <div className="space-y-6">
         <div>
           <h2 className="text-base font-bold text-slate-300 tracking-wider flex items-center gap-2 mb-1">
             新建工作流
-            <span className="text-xs font-mono text-slate-500 font-normal">
-              New Workflow
-            </span>
           </h2>
           <p className="text-xs text-slate-500 font-mono">
             選取下方的自動化類型，填寫對應參數，設定偏好預約時段後啟動任務
@@ -52,6 +40,10 @@ export const Workflows = () => {
             resetForm={genericForm.resetForm}
             thsrForm={thsrWorkflow.thsrForm}
             setThsrForm={thsrWorkflow.setThsrForm}
+            resetThsrForm={thsrWorkflow.resetThsrForm}
+            badmintonForm={badmintonWorkflow.badmintonForm}
+            setBadmintonField={badmintonWorkflow.setBadmintonField}
+            resetBadmintonForm={badmintonWorkflow.resetBadmintonForm}
           />
           <PreferenceSelector
             preferences={preferenceList.preferences}
@@ -62,6 +54,7 @@ export const Workflows = () => {
             handleLaunchTask={handleLaunchTask}
             isLaunching={isLaunching}
             selectedKey={selectedKey}
+            badmintonForm={badmintonWorkflow.badmintonForm}
           />
         </div>
       </div>

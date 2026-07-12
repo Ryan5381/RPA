@@ -8,13 +8,15 @@ scripts/__init__.py
 3. 在下方的 SCRIPT_ROUTER 字典中加入對應的 key
 """
 
-from scripts.thsr_booking import run_thsr_script
+from .thsr_booking import run_thsr_booking
+from .badminton_booking import run_badminton_booking
 
 # ─── 腳本路由表 ───────────────────────────────────────────────────────────────
 # key: 前端送出時的 task_type 值
 # value: 對應的 async 執行函式
 SCRIPT_ROUTER = {
-    "thsr_booking": run_thsr_script,
+    "thsr_booking": run_thsr_booking,
+    "badminton_booking": run_badminton_booking,
     # "hospital_booking": run_hospital_script,  # 未來新增時在這裡擴充
     # "concert_ticket":  run_concert_script,
 }

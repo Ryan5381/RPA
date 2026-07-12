@@ -1,19 +1,25 @@
 import { useState } from "react";
 import type { Preference } from "@/types/type";
 
+const initialState = {
+  from: "台中",
+  to: "台北",
+  date: "",
+  time: "11:00",
+  count: "1",
+  user_id: "",
+  user_phone: "",
+};
+
 export const useTHSRWorkflow = () => {
-  const [thsrForm, setThsrForm] = useState({
-    from: "台中",
-    to: "台北",
-    date: "",
-    time: "11:00",
-    count: "1",
-    user_id: "",
-    user_phone: "",
-  });
+  const [thsrForm, setThsrForm] = useState(initialState);
 
   const setThsrField = (field: keyof typeof thsrForm, value: string) => {
     setThsrForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const resetThsrForm = () => {
+    setThsrForm(initialState);
   };
 
   const getLaunchConfig = (preferences: Preference[]) => {
@@ -44,5 +50,5 @@ export const useTHSRWorkflow = () => {
     };
   };
 
-  return { thsrForm, setThsrForm, setThsrField, getLaunchConfig };
+  return { thsrForm, setThsrForm, setThsrField, resetThsrForm, getLaunchConfig };
 };
