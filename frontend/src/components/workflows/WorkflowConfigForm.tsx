@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getFieldLabels } from "@/lib/workflowHelpers";
 import { BadmintonForm } from "./forms/BadmintonForm";
 import { ThsrForm } from "./forms/ThsrForm";
+import { HospitalForm } from "./forms/HospitalForm";
 import { GenericForm } from "./forms/GenericForm";
 
 interface WorkflowConfigFormProps {
@@ -17,6 +18,9 @@ interface WorkflowConfigFormProps {
   badmintonForm?: any;
   setBadmintonField?: any;
   resetBadmintonForm?: () => void;
+  hospitalForm?: any;
+  setHospitalForm?: any;
+  resetHospitalForm?: () => void;
 }
 
 export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
@@ -30,12 +34,17 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
   badmintonForm,
   setBadmintonField,
   resetBadmintonForm,
+  hospitalForm,
+  setHospitalForm,
+  resetHospitalForm,
 }) => {
   const isBadminton =
     selectedKey === "gym" ||
     selectedKey === "badminton" ||
     selectedKey === "badminton-booking";
   const isThsr = selectedKey === "train";
+  const isHospital =
+    selectedKey === "hospital" || selectedKey === "hospital-booking";
 
   const labels = getFieldLabels(selectedKey);
 
@@ -47,6 +56,8 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
       resetBadmintonForm();
     } else if (isThsr && resetThsrForm) {
       resetThsrForm();
+    } else if (isHospital && resetHospitalForm) {
+      resetHospitalForm();
     } else {
       resetForm();
     }
@@ -82,6 +93,12 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
         <ThsrForm
           thsrForm={thsrForm}
           setThsrForm={setThsrForm}
+          inputClass={inputClass}
+        />
+      ) : isHospital ? (
+        <HospitalForm
+          hospitalForm={hospitalForm}
+          setHospitalForm={setHospitalForm}
           inputClass={inputClass}
         />
       ) : (

@@ -10,6 +10,7 @@ export const Workflows = () => {
     genericForm,
     thsrWorkflow,
     badmintonWorkflow,
+    hospitalWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching,
@@ -44,6 +45,9 @@ export const Workflows = () => {
             badmintonForm={badmintonWorkflow.badmintonForm}
             setBadmintonField={badmintonWorkflow.setBadmintonField}
             resetBadmintonForm={badmintonWorkflow.resetBadmintonForm}
+            hospitalForm={hospitalWorkflow.hospitalForm}
+            setHospitalForm={hospitalWorkflow.setHospitalForm}
+            resetHospitalForm={hospitalWorkflow.resetHospitalForm}
           />
           <PreferenceSelector
             preferences={preferenceList.preferences}

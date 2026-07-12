@@ -10,6 +10,7 @@ scripts/__init__.py
 
 from .thsr_booking import run_thsr_booking
 from .badminton_booking import run_badminton_booking
+from .hospital_booking import run_hospital_booking
 
 # ─── 腳本路由表 ───────────────────────────────────────────────────────────────
 # key: 前端送出時的 task_type 值
@@ -17,7 +18,7 @@ from .badminton_booking import run_badminton_booking
 SCRIPT_ROUTER = {
     "thsr_booking": run_thsr_booking,
     "badminton_booking": run_badminton_booking,
-    # "hospital_booking": run_hospital_script,  # 未來新增時在這裡擴充
+    "hospital_booking": run_hospital_booking,
     # "concert_ticket":  run_concert_script,
 }
 
