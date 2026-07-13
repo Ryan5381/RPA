@@ -5,6 +5,7 @@ import { getFieldLabels } from "@/lib/workflowHelpers";
 import { BadmintonForm } from "./forms/BadmintonForm";
 import { ThsrForm } from "./forms/ThsrForm";
 import { HospitalForm } from "./forms/HospitalForm";
+import { TixCraftForm } from "./forms/TixCraftForm";
 import { GenericForm } from "./forms/GenericForm";
 
 interface WorkflowConfigFormProps {
@@ -21,6 +22,9 @@ interface WorkflowConfigFormProps {
   hospitalForm?: any;
   setHospitalForm?: any;
   resetHospitalForm?: () => void;
+  tixCraftForm?: any;
+  setTixCraftForm?: any;
+  resetTixCraftForm?: () => void;
 }
 
 export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
@@ -37,6 +41,9 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
   hospitalForm,
   setHospitalForm,
   resetHospitalForm,
+  tixCraftForm,
+  setTixCraftForm,
+  resetTixCraftForm,
 }) => {
   const isBadminton =
     selectedKey === "gym" ||
@@ -45,6 +52,8 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
   const isThsr = selectedKey === "train";
   const isHospital =
     selectedKey === "hospital" || selectedKey === "hospital-booking";
+  const isTicket =
+    selectedKey === "ticket" || selectedKey === "tixcraft";
 
   const labels = getFieldLabels(selectedKey);
 
@@ -58,6 +67,8 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
       resetThsrForm();
     } else if (isHospital && resetHospitalForm) {
       resetHospitalForm();
+    } else if (isTicket && resetTixCraftForm) {
+      resetTixCraftForm();
     } else {
       resetForm();
     }
@@ -99,6 +110,12 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
         <HospitalForm
           hospitalForm={hospitalForm}
           setHospitalForm={setHospitalForm}
+          inputClass={inputClass}
+        />
+      ) : isTicket ? (
+        <TixCraftForm
+          tixCraftForm={tixCraftForm}
+          setTixCraftForm={setTixCraftForm}
           inputClass={inputClass}
         />
       ) : (
