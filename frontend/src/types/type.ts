@@ -1,8 +1,9 @@
 export interface LogItem {
   id: string;
   time: string;
-  level: "start" | "navigating" | "action" | "waiting" | "success" | "end" | "error" | "INFO";
+  level: "start" | "navigating" | "action" | "waiting" | "success" | "end" | "error" | "INFO" | "WARN" | "EXEC" | "SUCCESS" | string;
   message: string;
+  taskId?: string;
 }
 
 // ─── Workflow 表單狀態 ────────────────────────────────────────────────────────
@@ -56,4 +57,36 @@ export interface Process {
   footerValue: string;
   footerType: string;
   logs?: string[];
+}
+
+// ─── 日誌系統與任務狀態 (Logs & Task Stats) ────────────────────────────────────
+export type LogLevelFilter = "INFO" | "WARN" | "EXEC" | "SUCCESS";
+
+export interface LogEntry {
+  id: string;
+  time: string;
+  level: LogLevelFilter | string;
+  message: string;
+  taskId?: string;
+}
+
+export interface TaskOption {
+  id: string;
+  name: string;
+  status: "RUNNING" | "IDLE" | "ERROR" | "SUCCESS";
+}
+
+export interface TaskStats {
+  successRate24h: number;
+  running: number;
+  completed: number;
+  error: number;
+  waiting: number;
+}
+
+export interface BrowserPreviewState {
+  status: "RUNNING" | "IDLE" | "PAUSED";
+  url: string;
+  stepDescription: string;
+  confidence?: number;
 }
