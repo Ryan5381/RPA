@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { LogItem } from "@/types/type";
-import { getFormattedTime } from "@/lib/utils";
+import { getFormattedTime, formatLogEntry } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
 interface UseLogStreamOptions {
@@ -17,21 +17,6 @@ export const useLogStream = ({ maxItems = 150, taskId }: UseLogStreamOptions = {
       message: "系統日誌串流已連接 (Supabase Realtime Ready)...",
     },
   ]);
-
-  // 將 Supabase 資料庫的一筆紀錄轉換為前端 LogItem 格式
-  const formatLogEntry = (row: any): LogItem => {
-    let timeStr = getFormattedTime(0);
-    if (row.created_at) {
-      const dateObj = new Date(row.created_at);
-      timeStr = dateObj.toTimeString().split(" ")[0]; // 取得 HH:mm:ss
-    }
-    return {
-      id: row.id ? String(row.id) : `log-${Date.now()}-${Math.random()}`,
-      time: timeStr,
-      level: (row.level || "INFO") as LogItem["level"],
-      message: row.message || "",
-    };
-  };
 
   useEffect(() => {
     let isMounted = true;
