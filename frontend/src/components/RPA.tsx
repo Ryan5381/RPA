@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { Workflows } from "@/components/workflows/Workflows";
 import { Queue } from "@/components/queue/Queue";
 import { Logs } from "@/components/logs/Logs";
+import { Settings } from "@/components/settings/Settings";
 
 export const RPA = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -19,9 +20,7 @@ export const RPA = () => {
           {activeTab === "workflows" && <Workflows />}
           {activeTab === "queue" && <Queue />}
           {activeTab === "logs" && <Logs />}
-          {activeTab === "settings" && (
-            <div className="text-slate-400">設定頁面元件開發中...</div>
-          )}
+          {activeTab === "settings" && <Settings />}
         </main>
       </div>
     </div>
