@@ -51,20 +51,20 @@ export const LiveTerminal: React.FC = () => {
   };
 
   return (
-    <div className="w-full text-slate-100">
+    <div className="w-full text-slate-900 dark:text-slate-100">
       {/* ── 區塊標頭 ── */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-slate-200 tracking-wider flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-200 tracking-wider flex items-center gap-2">
           即時日誌{" "}
-          <span className="text-xs font-mono text-slate-500 font-normal">
+          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 font-normal">
             Live System Terminal
           </span>
         </h2>
 
         <div className="flex items-center gap-3">
           {/* 連線狀態標記 */}
-          <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono font-medium bg-emerald-950/30 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium bg-emerald-100 dark:bg-emerald-950/30 px-2.5 py-0.5 rounded-full border border-emerald-400/60 dark:border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
             LIVE
           </span>
 
@@ -73,10 +73,10 @@ export const LiveTerminal: React.FC = () => {
             size="icon-sm"
             onClick={handleCopy}
             title="複製日誌"
-            className="border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-slate-200 cursor-pointer transition-all duration-200 h-8 w-8"
+            className="border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer h-8 w-8"
           >
             {isCopied ? (
-              <Check className="w-4 h-4 text-emerald-400 animate-scale-in" />
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-scale-in" />
             ) : (
               <Copy className="w-4 h-4" />
             )}
@@ -87,7 +87,7 @@ export const LiveTerminal: React.FC = () => {
             size="icon-sm"
             onClick={clearLogs}
             title="清除日誌"
-            className="border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-slate-400 hover:text-rose-400 cursor-pointer transition-all duration-200 h-8 w-8"
+            className="border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer h-8 w-8"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

@@ -45,15 +45,15 @@ export const ActiveProcesses = () => {
     <div className="w-full">
       {/* 區塊標頭 */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-slate-200 tracking-wider flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-200 tracking-wider flex items-center gap-2">
           執行中任務{" "}
-          <span className="text-xs font-mono text-slate-500 font-normal">
+          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 font-normal">
             Active Processes
           </span>
         </h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="text-xs text-cyan-400 hover:text-cyan-300 font-mono tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+          className="text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-mono tracking-wider transition-colors flex items-center gap-1 cursor-pointer font-semibold"
         >
           檢視全部 VIEW ALL ({processes.length})
         </button>
@@ -66,12 +66,12 @@ export const ActiveProcesses = () => {
           return (
             <div
               key={proc.id}
-              className={`bg-background/40 rounded-xl p-5 border transition-all duration-300 flex flex-col justify-between ${
+              className={`bg-card/90 dark:bg-background/40 rounded-xl p-5 border flex flex-col justify-between shadow-sm dark:shadow-none ${
                 proc.status === "RUNNING"
-                  ? "border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:border-cyan-500/70"
+                  ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:border-cyan-500/80"
                   : proc.status === "SUCCESS"
-                    ? "border-emerald-500/20 hover:border-emerald-500/40"
-                    : "border-slate-800 hover:border-slate-700"
+                    ? "border-emerald-500/30 hover:border-emerald-500/50"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
               }`}
             >
               <div>
@@ -81,15 +81,15 @@ export const ActiveProcesses = () => {
                     <div
                       className={`p-2 rounded-lg ${
                         proc.status === "RUNNING"
-                          ? "bg-cyan-950/40 text-cyan-400"
+                          ? "bg-cyan-100 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400"
                           : proc.status === "SUCCESS"
-                            ? "bg-emerald-950/40 text-emerald-400"
-                            : "bg-slate-900/50 text-slate-400"
+                            ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+                            : "bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400"
                       }`}
                     >
                       <Icon className="w-4 h-4" />
                     </div>
-                    <span className="font-bold text-slate-200 text-sm tracking-wide">
+                    <span className="font-bold text-slate-900 dark:text-slate-200 text-sm tracking-wide">
                       {proc.title}
                     </span>
                   </div>
@@ -99,14 +99,14 @@ export const ActiveProcesses = () => {
                     variant="outline"
                     className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${
                       proc.status === "RUNNING"
-                        ? "bg-cyan-950/80 text-cyan-400 border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]"
+                        ? "bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-400 border-cyan-400/60 dark:border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]"
                         : proc.status === "SUCCESS"
-                          ? "bg-emerald-950/80 text-emerald-400 border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
-                          : "bg-slate-900/90 text-slate-400 border-slate-700/60"
+                          ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border-emerald-400/60 dark:border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                          : "bg-slate-100 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700/60"
                     }`}
                   >
                     {proc.status === "RUNNING" && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-ping" />
                     )}
                     {proc.status}
                   </Badge>
@@ -119,8 +119,8 @@ export const ActiveProcesses = () => {
                       key={idx}
                       className="flex justify-between text-xs font-mono"
                     >
-                      <span className="text-slate-500">{detail.label}:</span>
-                      <span className="text-slate-300 font-medium">
+                      <span className="text-slate-500 dark:text-slate-400">{detail.label}:</span>
+                      <span className="text-slate-900 dark:text-slate-200 font-semibold">
                         {detail.value}
                       </span>
                     </div>
@@ -128,21 +128,21 @@ export const ActiveProcesses = () => {
                 </div>
 
                 {/* 任務進度與步驟條 (使用 shadcn Progress) */}
-                <div className="mt-4 pt-3 border-t border-slate-800/60 space-y-2">
+                <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 space-y-2">
                   <div className="flex justify-between items-center text-xs font-mono">
-                    <span className="text-slate-400 flex items-center gap-1.5 truncate pr-2">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5 truncate pr-2 font-medium">
                       {proc.status === "RUNNING" && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping inline-block shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-ping inline-block shrink-0" />
                       )}
                       <span className="truncate">{proc.stepLabel}</span>
                     </span>
                     <span
                       className={`font-bold tabular-nums shrink-0 ${
                         proc.status === "RUNNING"
-                          ? "text-cyan-400"
+                          ? "text-cyan-600 dark:text-cyan-400"
                           : proc.status === "SUCCESS"
-                            ? "text-emerald-400"
-                            : "text-slate-400"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-slate-600 dark:text-slate-400"
                       }`}
                     >
                       {proc.progress}%
@@ -151,13 +151,13 @@ export const ActiveProcesses = () => {
                   <Progress
                     value={proc.progress}
                     className="w-full"
-                    trackClassName="h-1.5 bg-slate-900 border border-slate-800/80"
+                    trackClassName="h-1.5 bg-slate-200 dark:bg-slate-900 border border-slate-300/80 dark:border-slate-800/80"
                     indicatorClassName={`transition-all duration-500 ${
                       proc.status === "RUNNING"
-                        ? "bg-gradient-to-r from-cyan-500 to-blue-400 shadow-[0_0_10px_rgba(6,182,212,0.6)]"
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-500 dark:from-cyan-500 dark:to-blue-400 shadow-[0_0_10px_rgba(6,182,212,0.6)]"
                         : proc.status === "SUCCESS"
-                          ? "bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                          : "bg-slate-700"
+                          ? "bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                          : "bg-slate-400 dark:bg-slate-700"
                     }`}
                   />
                 </div>
@@ -165,18 +165,18 @@ export const ActiveProcesses = () => {
 
               <div>
                 {/* 分隔線 */}
-                <div className="border-t border-dashed border-slate-800/80 my-4" />
+                <div className="border-t border-dashed border-slate-200 dark:border-slate-800/80 my-4" />
 
                 {/* 卡片尾部狀態 */}
                 <div className="flex justify-between items-center text-xs font-mono">
-                  <span className="text-slate-500">{proc.footerLabel}:</span>
+                  <span className="text-slate-500 dark:text-slate-400">{proc.footerLabel}:</span>
                   <span
                     className={`font-semibold ${
                       proc.footerType === "running"
-                        ? "text-cyan-400 animate-pulse"
+                        ? "text-cyan-600 dark:text-cyan-400 animate-pulse"
                         : proc.footerType === "success"
-                          ? "text-emerald-400"
-                          : "text-slate-400"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-slate-600 dark:text-slate-400"
                     }`}
                   >
                     {proc.footerValue}

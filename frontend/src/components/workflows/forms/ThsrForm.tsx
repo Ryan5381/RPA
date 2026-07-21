@@ -50,9 +50,9 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
   return (
     <div className="space-y-4 pt-1">
       {/* 模式宣告提示條 */}
-      <div className="bg-indigo-950/30 border border-indigo-800/40 rounded-lg p-3 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-indigo-300 font-mono">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+      <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-300 dark:border-indigo-800/40 rounded-lg p-3 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-300 font-mono font-medium">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-400/60 dark:border-indigo-500/30 font-bold">
             SINGLE-WAY
           </span>
           單程自動訂票模式
@@ -61,11 +61,11 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
 
       {/* 乘客資訊卡片區 */}
       <div className="space-y-3">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           訂票身分與聯繫資訊
         </p>
         <div className="space-y-1.5">
-          <Label htmlFor="thsr-id" className="text-xs text-slate-400 font-mono">
+          <Label htmlFor="thsr-id" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             身分證字號 / 護照號碼
           </Label>
           <Input
@@ -80,7 +80,7 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="thsr-phone"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               手機號碼
             </Label>
@@ -95,7 +95,7 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="thsr-count"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               訂票張數
             </Label>
@@ -103,16 +103,16 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
               value={thsrForm.count}
               onValueChange={(v) => setThsrField("count", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <SelectValue placeholder="選擇張數" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map(
                   (n) => (
                     <SelectItem
                       key={n}
                       value={n}
-                      className="text-xs focus:bg-slate-800"
+                      className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                     >
                       {n} 張
                     </SelectItem>
@@ -125,26 +125,26 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
       </div>
 
       {/* 車次與站點選定 */}
-      <div className="space-y-3 pt-2 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+      <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           行程與車次目標
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">起站</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">起站</Label>
             <Select
               value={thsrForm.from}
               onValueChange={(v) => setThsrField("from", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <SelectValue placeholder="請選擇起站" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {THSR_STATIONS.map((st) => (
                   <SelectItem
                     key={st}
                     value={st}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {st}
                   </SelectItem>
@@ -153,20 +153,20 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">迄站</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">迄站</Label>
             <Select
               value={thsrForm.to}
               onValueChange={(v) => setThsrField("to", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <SelectValue placeholder="請選擇迄站" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {THSR_STATIONS.map((st) => (
                   <SelectItem
                     key={st}
                     value={st}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {st}
                   </SelectItem>
@@ -180,7 +180,7 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="thsr-date"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               出發日期
             </Label>
@@ -209,20 +209,20 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">出發時段</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">出發時段</Label>
             <Select
               value={thsrForm.time}
               onValueChange={(v) => setThsrField("time", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <SelectValue placeholder="請選擇出發時段" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300 max-h-56">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 max-h-56">
                 {THSR_TIMES.map((t) => (
                   <SelectItem
                     key={t}
                     value={t}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {t}
                   </SelectItem>

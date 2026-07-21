@@ -31,16 +31,16 @@ export const QueueTable = ({
   onRemove,
 }: QueueTableProps) => {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-slate-800/70">
+    <div className="w-full overflow-x-auto rounded-xl border border-slate-300 dark:border-slate-800/70 bg-white dark:bg-transparent shadow-sm dark:shadow-none">
       <table className="w-full text-sm">
         {/* 表頭 */}
         <thead>
-          <tr className="border-b border-slate-800/70 bg-slate-900/60">
+          <tr className="border-b border-slate-300 dark:border-slate-800/70 bg-slate-100 dark:bg-slate-900/60">
             {COL_HEADERS.map((h) => (
               <th
                 key={h.label}
                 className={cn(
-                  "px-4 py-3 text-left text-xs font-mono text-slate-500 tracking-widest font-medium",
+                  "px-4 py-3 text-left text-xs font-mono text-slate-700 dark:text-slate-400 tracking-widest font-semibold",
                   h.className,
                 )}
               >
@@ -56,7 +56,7 @@ export const QueueTable = ({
             <tr>
               <td
                 colSpan={6}
-                className="px-4 py-16 text-center text-slate-500 font-mono text-xs tracking-wider"
+                className="px-4 py-16 text-center text-slate-600 dark:text-slate-500 font-mono text-xs tracking-wider"
               >
                 目前序列中沒有任何任務
               </td>
@@ -71,10 +71,10 @@ export const QueueTable = ({
               <tr
                 key={task.id}
                 className={cn(
-                  "border-b border-slate-800/40 transition-colors duration-150",
+                  "border-b border-slate-200 dark:border-slate-800/40 transition-colors duration-150",
                   isRunning
-                    ? "bg-cyan-950/10 hover:bg-cyan-950/20"
-                    : "hover:bg-slate-900/40",
+                    ? "bg-cyan-50 dark:bg-cyan-950/10 hover:bg-cyan-100/80 dark:hover:bg-cyan-950/20"
+                    : "hover:bg-slate-50 dark:hover:bg-slate-900/40",
                 )}
               >
                 {/* 任務名稱 + ID */}
@@ -83,12 +83,12 @@ export const QueueTable = ({
                     <span
                       className={cn(
                         "font-medium text-sm tracking-wide",
-                        isRunning ? "text-cyan-100" : "text-slate-200",
+                        isRunning ? "text-cyan-800 dark:text-cyan-100 font-bold" : "text-slate-900 dark:text-slate-200",
                       )}
                     >
                       {task.name}
                     </span>
-                    <span className="text-[11px] font-mono text-slate-500">
+                    <span className="text-[11px] font-mono text-slate-600 dark:text-slate-500">
                       ID: {task.id}
                     </span>
                   </div>
@@ -100,21 +100,21 @@ export const QueueTable = ({
                     className={cn(
                       "inline-flex items-center justify-center w-7 h-7 rounded-lg",
                       isRunning
-                        ? "bg-cyan-950/40 text-cyan-400"
+                        ? "bg-cyan-100 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-400"
                         : task.status === "SUCCESS"
-                          ? "bg-emerald-950/40 text-emerald-400"
+                          ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
                           : task.status === "FAILED"
-                            ? "bg-rose-950/40 text-rose-400"
-                            : "bg-slate-800/60 text-slate-400",
+                            ? "bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400"
+                            : "bg-slate-200 dark:bg-slate-800/60 text-slate-700 dark:text-slate-400",
                     )}
                   >
                     <Icon className="w-3.5 h-3.5" />
                   </div>
                 </td>
 
-                {/* 立候日期 */}
+                {/* 預約日期 */}
                 <td className="px-4 py-3.5">
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-slate-700 dark:text-slate-400">
                     {task.scheduledAt}
                   </span>
                 </td>
@@ -147,7 +147,7 @@ export const QueueTable = ({
                       <ActionBtn
                         title="重試"
                         onClick={() => onRetry(task.id)}
-                        className="text-amber-400 hover:text-amber-300 hover:bg-amber-950/40"
+                        className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/40"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                       </ActionBtn>
@@ -157,7 +157,7 @@ export const QueueTable = ({
                     <ActionBtn
                       title="刪除"
                       onClick={() => onRemove(task.id)}
-                      className="text-rose-400/70 hover:text-rose-400 hover:bg-rose-950/40"
+                      className="text-rose-600 dark:text-rose-400/70 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/40"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </ActionBtn>
@@ -193,7 +193,7 @@ const ActionBtn = ({
     disabled={disabled}
     onClick={onClick}
     className={cn(
-      "p-1.5 rounded-md text-slate-400 hover:text-cyan-400 hover:bg-slate-800/60 transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer",
+      "p-1.5 rounded-md text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer",
       className,
     )}
   >

@@ -126,7 +126,7 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
       />
 
       {/* Modal 主體 */}
-      <div className="relative z-10 w-full max-w-sm mx-4 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-sm mx-4 bg-card dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden">
         {/* 頂部橙色光條 */}
         <div className="h-1 bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500" />
 
@@ -134,7 +134,7 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
         {(status === "success" || status === "error") && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors"
+            className="absolute top-4 right-4 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -146,20 +146,20 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
             <>
               {/* 圖示 */}
               <div className="flex justify-center mb-5">
-                <div className="w-16 h-16 rounded-full bg-orange-950/50 border border-orange-500/30 flex items-center justify-center">
-                  <Smartphone className="w-8 h-8 text-orange-400" />
+                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-950/50 border border-orange-400/50 dark:border-orange-500/30 flex items-center justify-center">
+                  <Smartphone className="w-8 h-8 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
 
               {/* 標題 */}
-              <h2 className="text-lg font-bold text-slate-100 text-center mb-1">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 text-center mb-1">
                 輸入手機驗證碼
               </h2>
-              <p className="text-xs text-slate-500 text-center font-mono mb-1">
+              <p className="text-xs text-slate-600 dark:text-slate-400 text-center font-mono mb-1">
                 訂位機器人正在等待你輸入 OTP
               </p>
               {summary?.restaurant && (
-                <p className="text-xs text-orange-400/80 text-center font-mono mb-5">
+                <p className="text-xs text-orange-600 dark:text-orange-400/80 text-center font-mono mb-5">
                   {summary.restaurant}
                   {summary.branch ? ` · ${summary.branch}` : ""}
                   {summary.date ? ` · ${summary.date}` : ""}
@@ -181,17 +181,17 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     onPaste={i === 0 ? handlePaste : undefined}
                     disabled={status === "submitting"}
-                    className={`w-14 h-14 text-center text-2xl font-bold font-mono rounded-xl border-2 bg-slate-950/80 outline-none transition-all duration-200 ${
+                    className={`w-14 h-14 text-center text-2xl font-bold font-mono rounded-xl border-2 bg-white dark:bg-slate-950/80 outline-none transition-all duration-200 ${
                       digit
-                        ? "border-orange-500 text-orange-400 shadow-[0_0_12px_rgba(249,115,22,0.3)]"
-                        : "border-slate-700 text-slate-400"
+                        ? "border-orange-500 text-orange-600 dark:text-orange-400 shadow-[0_0_12px_rgba(249,115,22,0.3)]"
+                        : "border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-400"
                     } focus:border-orange-400 focus:shadow-[0_0_15px_rgba(249,115,22,0.4)] disabled:opacity-50`}
                   />
                 ))}
               </div>
 
               {/* 提示文字 */}
-              <p className="text-[11px] text-slate-600 text-center font-mono mb-5">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 text-center font-mono mb-5">
                 請查看 +886 {summary?.date ? "" : ""} 收到的簡訊，輸入 4 位數驗證碼
               </p>
 
@@ -216,7 +216,7 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
 
               {/* 等待動畫提示 */}
               {status === "waiting" && (
-                <p className="text-[10px] text-slate-600 font-mono text-center mt-3 flex items-center justify-center gap-1.5">
+                <p className="text-[10px] text-slate-600 dark:text-slate-400 font-mono text-center mt-3 flex items-center justify-center gap-1.5">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                   機器人等待中，OTP 有效時間有限，請盡快輸入
                 </p>
@@ -228,12 +228,12 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
           {status === "success" && (
             <div className="text-center py-4">
               <div className="flex justify-center mb-5">
-                <div className="w-16 h-16 rounded-full bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-center">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-400/50 dark:border-emerald-500/30 flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                 </div>
               </div>
-              <h2 className="text-lg font-bold text-emerald-400 mb-2">訂位成功！</h2>
-              <p className="text-xs text-slate-500 font-mono mb-6">
+              <h2 className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-2">訂位成功！</h2>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-mono mb-6">
                 {summary?.restaurant && `${summary.restaurant} `}
                 {summary?.branch && `${summary.branch} `}
                 {summary?.date && `· ${summary.date}`}
@@ -251,16 +251,16 @@ export const OtpModal: React.FC<OtpModalProps> = ({ taskId, onClose, summary }) 
           {status === "error" && (
             <div className="text-center py-4">
               <div className="flex justify-center mb-5">
-                <div className="w-16 h-16 rounded-full bg-red-950/50 border border-red-500/30 flex items-center justify-center">
-                  <XCircle className="w-8 h-8 text-red-400" />
+                <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/50 border border-red-400/50 dark:border-red-500/30 flex items-center justify-center">
+                  <XCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              <h2 className="text-lg font-bold text-red-400 mb-2">訂位失敗</h2>
-              <p className="text-xs text-slate-500 font-mono mb-6 break-all">{errorMsg}</p>
+              <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">訂位失敗</h2>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-mono mb-6 break-all">{errorMsg}</p>
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="w-full h-10 border-slate-700 text-slate-400 hover:text-slate-200 font-bold text-sm cursor-pointer"
+                className="w-full h-10 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-bold text-sm cursor-pointer"
               >
                 關閉並查看 Logs
               </Button>

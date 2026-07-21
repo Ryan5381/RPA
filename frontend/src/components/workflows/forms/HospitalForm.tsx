@@ -71,42 +71,42 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
   return (
     <div className="space-y-4 pt-1">
       {/* 醫院自動化掛號標籤 */}
-      <div className="bg-emerald-950/30 border border-emerald-800/40 rounded-lg p-3 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-emerald-300 font-mono">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+      <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/40 rounded-lg p-3 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-mono">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-400/60 dark:border-emerald-500/30 font-bold">
             智能預約助手
           </span>
           醫療門診自動掛號助理
         </div>
-        <span className="text-[10px] text-slate-500 font-mono">
+        <span className="text-[10px] text-slate-600 dark:text-slate-500 font-mono">
           支援台大與長庚雙院區自動名額候補
         </span>
       </div>
 
       {/* 院區與看診科別 */}
       <div className="space-y-3">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           選擇醫療院所與看診門診
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">醫院據點</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">醫院據點</Label>
             <Select
               value={hospitalForm.hospital}
               onValueChange={(v) => setHospitalField("hospital", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <span className="truncate">
                   {HOSPITALS.find((h) => h.code === hospitalForm.hospital)
                     ?.name || "選擇醫院"}
                 </span>
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {HOSPITALS.map((h) => (
                   <SelectItem
                     key={h.code}
                     value={h.code}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {h.name}
                   </SelectItem>
@@ -115,23 +115,23 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">掛號科別</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">掛號科別</Label>
             <Select
               value={hospitalForm.department}
               onValueChange={(v) => setHospitalField("department", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <span className="truncate">
                   {currentDepts.find((d) => d.code === hospitalForm.department)
                     ?.name || "選擇科別"}
                 </span>
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300 max-h-56">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 max-h-56">
                 {currentDepts.map((d) => (
                   <SelectItem
                     key={d.code}
                     value={d.code}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {d.name}
                   </SelectItem>
@@ -143,7 +143,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               預約看診首選日期
             </Label>
             <DatePicker
@@ -173,7 +173,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="hosp-doctor"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               指定醫師姓名 (可不填)
             </Label>
@@ -189,30 +189,30 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
       </div>
 
       {/* 病患基本資料卡 */}
-      <div className="space-y-3 pt-2 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+      <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           看診人身分驗證資訊 (掛號必備)
         </p>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">就診身分類別</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">就診身分類別</Label>
             <Select
               value={hospitalForm.patientType || "return"}
               onValueChange={(v) => setHospitalField("patientType", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <span className="truncate">
                   {hospitalForm.patientType === "first_time"
                     ? "初診預約 (首次於本院就診)"
                     : "複診掛號 (已有就診病歷號)"}
                 </span>
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
-                <SelectItem value="return" className="text-xs focus:bg-slate-800">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
+                <SelectItem value="return" className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                   複診掛號 (已有就診病歷號)
                 </SelectItem>
-                <SelectItem value="first_time" className="text-xs focus:bg-slate-800">
+                <SelectItem value="first_time" className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                   初診預約 (首次於本院就診)
                 </SelectItem>
               </SelectContent>
@@ -222,7 +222,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="hosp-name"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               看診人真實姓名 {hospitalForm.patientType === "first_time" && "(初診必填)"}
             </Label>
@@ -240,7 +240,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="hosp-id"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               身分證字號 / 居留證號
             </Label>
@@ -255,7 +255,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="hosp-birth"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               出生年月日 (核驗用)
             </Label>
@@ -289,7 +289,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
         <div className="space-y-1.5">
           <Label
             htmlFor="hosp-phone"
-            className="text-xs text-slate-400 font-mono"
+            className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
           >
             看診聯絡簡訊手機
           </Label>

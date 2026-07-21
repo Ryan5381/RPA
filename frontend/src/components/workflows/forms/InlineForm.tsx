@@ -43,7 +43,7 @@ const GENDER_OPTIONS: { value: InlineGender; label: string }[] = [
 ];
 
 const selectClass =
-  "w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs focus:border-cyan-500/60";
+  "w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs focus:border-cyan-500/60";
 
 export const InlineForm: React.FC<InlineFormProps> = ({
   inlineForm,
@@ -61,15 +61,15 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
       {/* ── 區塊一：餐廳與分店 ── */}
       <div className="space-y-3">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-          <UtensilsCrossed className="w-3 h-3 text-orange-400" />
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+          <UtensilsCrossed className="w-3 h-3 text-orange-500 dark:text-orange-400" />
           餐廳與分店
         </p>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 餐廳選擇 */}
           <div className="space-y-1.5">
-            <Label htmlFor="restaurant_key" className="text-xs text-slate-400 font-mono">
+            <Label htmlFor="restaurant_key" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               餐廳品牌
             </Label>
             <Select
@@ -86,9 +86,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               <SelectTrigger className={selectClass}>
                 <SelectValue placeholder="選擇餐廳" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {INLINE_RESTAURANTS.map((r) => (
-                  <SelectItem key={r.key} value={r.key} className="text-xs focus:bg-slate-800">
+                  <SelectItem key={r.key} value={r.key} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {r.name}
                   </SelectItem>
                 ))}
@@ -98,7 +98,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
           {/* 分店選擇 */}
           <div className="space-y-1.5">
-            <Label htmlFor="branch_key" className="text-xs text-slate-400 font-mono">
+            <Label htmlFor="branch_key" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               分店
             </Label>
             <Select
@@ -108,9 +108,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               <SelectTrigger className={selectClass}>
                 <SelectValue placeholder="選擇分店" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {branches.map((b) => (
-                  <SelectItem key={b.key} value={b.key} className="text-xs focus:bg-slate-800">
+                  <SelectItem key={b.key} value={b.key} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {b.name}
                   </SelectItem>
                 ))}
@@ -121,16 +121,16 @@ export const InlineForm: React.FC<InlineFormProps> = ({
       </div>
 
       {/* ── 區塊二：日期、時段、人數 ── */}
-      <div className="space-y-3 pt-3 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-          <CalendarDays className="w-3 h-3 text-cyan-400" />
+      <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+          <CalendarDays className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
           訂位時間與人數
         </p>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 日期 */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">訂位日期</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">訂位日期</Label>
             <DatePicker
               selected={(() => {
                 if (!inlineForm.target_date) return null;
@@ -158,7 +158,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
           {/* 時段 */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">用餐時段</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">用餐時段</Label>
             <Select
               value={inlineForm.session}
               onValueChange={(v) => setInlineField("session", v as InlineSession)}
@@ -166,9 +166,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               <SelectTrigger className={selectClass}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {SESSION_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value} className="text-xs focus:bg-slate-800">
+                  <SelectItem key={s.value} value={s.value} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {s.label}
                   </SelectItem>
                 ))}
@@ -180,7 +180,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
         <div className="grid grid-cols-2 gap-3">
           {/* 大人人數 */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono flex items-center gap-1">
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium flex items-center gap-1">
               <Users className="w-3 h-3" /> 大人人數
             </Label>
             <Select
@@ -190,9 +190,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               <SelectTrigger className={selectClass}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {["1", "2", "3", "4", "5", "6", "7"].map((n) => (
-                  <SelectItem key={n} value={n} className="text-xs focus:bg-slate-800">
+                  <SelectItem key={n} value={n} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {n} 位
                   </SelectItem>
                 ))}
@@ -202,7 +202,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
           {/* 小孩人數 */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">小孩人數</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">小孩人數</Label>
             <Select
               value={inlineForm.kids}
               onValueChange={(v) => setInlineField("kids", v)}
@@ -210,9 +210,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               <SelectTrigger className={selectClass}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {["0", "1", "2", "3", "4", "5"].map((n) => (
-                  <SelectItem key={n} value={n} className="text-xs focus:bg-slate-800">
+                  <SelectItem key={n} value={n} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {n} 位
                   </SelectItem>
                 ))}
@@ -223,16 +223,16 @@ export const InlineForm: React.FC<InlineFormProps> = ({
       </div>
 
       {/* ── 區塊三：聯絡資訊 ── */}
-      <div className="space-y-3 pt-3 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-          <Phone className="w-3 h-3 text-emerald-400" />
+      <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+          <Phone className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
           聯絡資訊
         </p>
 
         {/* 姓名 + 稱謂 */}
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="last_name" className="text-xs text-slate-400 font-mono">姓</Label>
+            <Label htmlFor="last_name" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">姓</Label>
             <Input
               id="last_name"
               placeholder="姓"
@@ -242,7 +242,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="first_name" className="text-xs text-slate-400 font-mono">名</Label>
+            <Label htmlFor="first_name" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">名</Label>
             <Input
               id="first_name"
               placeholder="名"
@@ -252,7 +252,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">稱謂</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">稱謂</Label>
             <Select
               value={inlineForm.gender}
               onValueChange={(v) => setInlineField("gender", v as InlineGender)}
@@ -260,9 +260,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               <SelectTrigger className={selectClass}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {GENDER_OPTIONS.map((g) => (
-                  <SelectItem key={g.value} value={g.value} className="text-xs focus:bg-slate-800">
+                  <SelectItem key={g.value} value={g.value} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {g.label}
                   </SelectItem>
                 ))}
@@ -273,11 +273,11 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
         {/* 手機號碼 */}
         <div className="space-y-1.5">
-          <Label htmlFor="phone" className="text-xs text-slate-400 font-mono">
-            手機號碼 <span className="text-slate-600">（將接收 OTP 驗證碼）</span>
+          <Label htmlFor="phone" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+            手機號碼 <span className="text-slate-500 dark:text-slate-600">（將接收 OTP 驗證碼）</span>
           </Label>
           <div className="flex gap-2">
-            <div className="flex items-center px-3 h-9 rounded-md border border-slate-700/80 bg-slate-950/80 text-slate-500 text-xs font-mono shrink-0">
+            <div className="flex items-center px-3 h-9 rounded-md border border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-950/80 text-slate-600 dark:text-slate-500 text-xs font-mono shrink-0">
               +886
             </div>
             <Input
@@ -296,8 +296,8 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
         {/* Email */}
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs text-slate-400 font-mono">
-            Email <span className="text-slate-600">（選填）</span>
+          <Label htmlFor="email" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+            Email <span className="text-slate-500 dark:text-slate-600">（選填）</span>
           </Label>
           <Input
             id="email"
@@ -311,9 +311,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
       </div>
 
       {/* ── 區塊四：用餐目的 ── */}
-      <div className="space-y-3 pt-3 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-          用餐目的 <span className="text-slate-600 normal-case">（選填）</span>
+      <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
+          用餐目的 <span className="text-slate-500 dark:text-slate-600 normal-case font-normal">（選填）</span>
         </p>
         <div className="grid grid-cols-3 gap-2">
           {PURPOSE_OPTIONS.filter((p) => p.value !== "").map((p) => (
@@ -325,8 +325,8 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               }
               className={`px-3 py-2 rounded-lg text-xs font-mono border transition-all duration-200 cursor-pointer ${
                 inlineForm.purpose === p.value
-                  ? "border-orange-500/60 bg-orange-950/30 text-orange-400"
-                  : "border-slate-700/60 bg-slate-950/30 text-slate-500 hover:border-slate-600 hover:text-slate-400"
+                  ? "border-orange-500/60 bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-bold"
+                  : "border-slate-300 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-950/30 text-slate-700 dark:text-slate-500 hover:border-slate-400 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-400"
               }`}
             >
               {p.label}
@@ -336,11 +336,11 @@ export const InlineForm: React.FC<InlineFormProps> = ({
       </div>
 
       {/* ── 提示說明 ── */}
-      <div className="bg-amber-950/20 border border-amber-800/30 rounded-lg p-3 text-[11px] text-amber-300 font-mono space-y-1 flex gap-2">
-        <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800/30 rounded-lg p-3 text-[11px] text-amber-800 dark:text-amber-300 font-mono space-y-1 flex gap-2">
+        <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
         <div>
-          <div className="font-bold text-amber-200 mb-1">半自動化模式說明</div>
-          <p className="text-amber-400/80 leading-relaxed">
+          <div className="font-bold text-amber-900 dark:text-amber-200 mb-1">半自動化模式說明</div>
+          <p className="text-amber-700 dark:text-amber-400/80 leading-relaxed">
             機器人將自動完成填表與「按住不放」挑戰。<br />
             手機收到 4 位數 OTP 後，請回到前端「任務序列」頁面輸入驗證碼即可完成訂位。
           </p>

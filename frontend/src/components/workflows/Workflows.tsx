@@ -26,10 +26,10 @@ export const Workflows = () => {
       {/* 新建工作流區塊 */}
       <div className="space-y-6">
         <div>
-          <h2 className="text-base font-bold text-slate-300 tracking-wider flex items-center gap-2 mb-1">
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-300 tracking-wider flex items-center gap-2 mb-1">
             新建工作流
           </h2>
-          <p className="text-xs text-slate-500 font-mono">
+          <p className="text-xs text-slate-600 dark:text-slate-500 font-mono">
             選取下方的自動化類型，填寫對應參數，設定偏好預約時段後啟動任務
           </p>
         </div>

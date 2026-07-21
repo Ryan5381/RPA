@@ -20,35 +20,35 @@ export const Cards = () => {
       {card.map((item) => (
         <div
           key={item.key}
-          className="border border-cyan-300/40 bg-background/40 hover:border-cyan-300/70 rounded-xl p-4 transition-all duration-300"
+          className="border border-slate-200 dark:border-cyan-500/30 bg-card/90 dark:bg-background/40 hover:border-cyan-500/50 rounded-xl p-4 shadow-sm dark:shadow-none"
         >
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-cyan-900/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center shrink-0">
               {item.icon === "total" && (
-                <Activity className="w-5 h-5 text-cyan-400" />
+                <Activity className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
               )}
               {item.icon === "success" && (
-                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               )}
               {item.icon === "fail" && (
-                <XCircle className="w-5 h-5 text-rose-400" />
+                <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
               )}
               {item.icon === "running" && (
-                <Clock className="w-5 h-5 text-amber-400" />
+                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               )}
               {item.icon === "line" && (
-                <MessageSquare className="w-5 h-5 text-emerald-400 animate-pulse" />
+                <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
               )}
             </div>
-            <div className="flex flex-1 flex-col items-center justify-center">
-              <p className="text-base text-slate-400 uppercase font-bold">
+            <div className="flex flex-1 flex-col items-center justify-center min-w-0">
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-bold truncate">
                 {item.label}
               </p>
               <p
-                className={`text-2xl font-mono ${
+                className={`text-2xl font-mono font-bold ${
                   item.key === "line"
-                    ? "text-emerald-400 font-semibold flex items-center gap-2"
-                    : "text-slate-100"
+                    ? "text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-2"
+                    : "text-slate-900 dark:text-slate-100"
                 }`}
               >
                 {item.key === "line" && (

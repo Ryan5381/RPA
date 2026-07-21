@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -36,8 +38,41 @@
 
 @layer base {
   :root {
-    /* 預設強制使用深色模式的數值 */
-    --background: 222 84% 5%; /* 極深藍黑 #030712 */
+    /* 淺色模式（乾淨通透的極簡科技感 #F8FAFC） */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 189 95% 38%; /* 高亮清晰青色 #0891B2 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 93%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 189 95% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 86%; /* 清爽的邊框色 */
+    --input: 214 32% 88%;
+    --ring: 189 95% 38%;
+
+    --radius: 0.25rem;
+  }
+
+  .dark {
+    /* 深色模式（軍事科技極深藍黑 #030712） */
+    --background: 222 84% 5%;
     --foreground: 210 40% 98%;
 
     --card: 222 84% 5%;
@@ -64,10 +99,9 @@
     --border: 193 82% 31%; /* 深青色邊框 */
     --input: 217 33% 17%;
     --ring: 189 95% 43%; /* 點擊時的青色光暈 */
-
-    --radius: 0.25rem; /* 微小圓角，更具軍事科技感 */
   }
 }
+
 
 @layer base {
   * {
@@ -85,21 +119,22 @@
   width: 100% !important;
 }
 
-/* 科幻感垂直捲軸 */
+/* 垂直與水平捲軸樣式 (支援雙模式) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(2, 5, 14, 0.9);
-  border-left: 1px solid rgba(30, 41, 59, 0.8);
+  background: var(--color-background);
+  border-left: 1px solid var(--color-border);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.9);
+  background: var(--color-secondary);
   border-radius: 4px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid var(--color-border);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.7);
-  border-color: rgba(6, 182, 212, 0.9);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
+
