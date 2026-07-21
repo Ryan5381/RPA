@@ -7,6 +7,7 @@ import { ThsrForm } from "./forms/ThsrForm";
 import { HospitalForm } from "./forms/HospitalForm";
 import { TixCraftForm } from "./forms/TixCraftForm";
 import { GenericForm } from "./forms/GenericForm";
+import { InlineForm } from "./forms/InlineForm";
 
 interface WorkflowConfigFormProps {
   selectedKey: string;
@@ -25,6 +26,9 @@ interface WorkflowConfigFormProps {
   tixCraftForm?: any;
   setTixCraftForm?: any;
   resetTixCraftForm?: () => void;
+  inlineForm?: any;
+  setInlineField?: any;
+  resetInlineForm?: () => void;
 }
 
 export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
@@ -44,6 +48,9 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
   tixCraftForm,
   setTixCraftForm,
   resetTixCraftForm,
+  inlineForm,
+  setInlineField,
+  resetInlineForm,
 }) => {
   const isBadminton =
     selectedKey === "gym" ||
@@ -54,6 +61,7 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
     selectedKey === "hospital" || selectedKey === "hospital-booking";
   const isTicket =
     selectedKey === "ticket" || selectedKey === "tixcraft";
+  const isInline = selectedKey === "utensils";
 
   const labels = getFieldLabels(selectedKey);
 
@@ -69,6 +77,8 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
       resetHospitalForm();
     } else if (isTicket && resetTixCraftForm) {
       resetTixCraftForm();
+    } else if (isInline && resetInlineForm) {
+      resetInlineForm();
     } else {
       resetForm();
     }
@@ -116,6 +126,12 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
         <TixCraftForm
           tixCraftForm={tixCraftForm}
           setTixCraftForm={setTixCraftForm}
+          inputClass={inputClass}
+        />
+      ) : isInline ? (
+        <InlineForm
+          inlineForm={inlineForm}
+          setInlineField={setInlineField}
           inputClass={inputClass}
         />
       ) : (

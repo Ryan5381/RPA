@@ -8,7 +8,12 @@ interface LaunchConfig {
   config: any;
 }
 
-export const useLaunchWorkflow = () => {
+interface UseLaunchWorkflowOptions {
+  /** inline 任務啟動成功後的回呼，回傳 task_id */
+  onInlineLaunched?: (taskId: string) => void;
+}
+
+export const useLaunchWorkflow = (options?: UseLaunchWorkflowOptions) => {
   return useMutation({
     mutationFn: async ({ taskType, config }: LaunchConfig) => {
       // 1. 建立任務
@@ -17,10 +22,17 @@ export const useLaunchWorkflow = () => {
 
       // 2. 觸發執行
       await executeTask({ taskId });
-      return taskId;
+      return { taskId, taskType };
     },
-    onSuccess: (taskId) => {
+    onSuccess: ({ taskId, taskType }) => {
       console.log("任務已成功派發，ID:", taskId);
+
+      // inline 訂位：不顯示 alert，改由 OTP Modal 接管
+      if (taskType === "inline_booking") {
+        options?.onInlineLaunched?.(taskId);
+        return;
+      }
+
       alert(`自動化任務已成功啟動！(任務 ID: ${taskId})`);
     },
     onError: (error) => {

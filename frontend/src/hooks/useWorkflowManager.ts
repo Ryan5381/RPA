@@ -7,10 +7,15 @@ import { useTHSRWorkflow } from "./useTHSRWorkflow";
 import { useBadmintonWorkflow } from "./useBadmintonWorkflow";
 import { useHospitalWorkflow } from "./useHospitalWorkflow";
 import { useTixCraftWorkflow } from "./useTixCraftWorkflow";
+import { useInlineWorkflow } from "./useInlineWorkflow";
 import { useLaunchWorkflow } from "./useWorkflowMutations";
 
 export const useWorkflowManager = () => {
   const [selectedKey, setSelectedKey] = useState("hospital");
+
+  // OTP Modal 狀態：task_id 或 null
+  const [otpTaskId, setOtpTaskId] = useState<string | null>(null);
+  const clearOtpTask = () => setOtpTaskId(null);
 
   // 表單 Hooks
   const genericForm = useWorkflowForm();
@@ -18,10 +23,18 @@ export const useWorkflowManager = () => {
   const badmintonWorkflow = useBadmintonWorkflow();
   const hospitalWorkflow = useHospitalWorkflow();
   const tixCraftWorkflow = useTixCraftWorkflow();
+  const inlineWorkflow = useInlineWorkflow();
   const preferenceList = usePreferenceList();
 
   // API 啟動 Hook
-  const launchMutation = useLaunchWorkflow();
+  const launchMutation = useLaunchWorkflow({
+    // inline 任務成功啟動後，開啟 OTP Modal 等待
+    onInlineLaunched: (taskId: string) => {
+      if (selectedKey === "utensils") {
+        setOtpTaskId(taskId);
+      }
+    },
+  });
 
   const handleLaunchTask = () => {
     let launchConfig;
@@ -47,6 +60,10 @@ export const useWorkflowManager = () => {
       launchConfig = tixCraftWorkflow.getLaunchConfig(
         preferenceList.preferences,
       );
+    }
+    // 美食預約 (inline.app)
+    else if (selectedKey === "utensils") {
+      launchConfig = inlineWorkflow.getLaunchConfig();
     } else {
       // 這裡未來可以實作其他表單的 config 取法
       alert("此類型腳本尚未實作，敬請期待！");
@@ -64,8 +81,11 @@ export const useWorkflowManager = () => {
     badmintonWorkflow,
     hospitalWorkflow,
     tixCraftWorkflow,
+    inlineWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching: launchMutation.isPending,
+    otpTaskId,
+    clearOtpTask,
   };
 };

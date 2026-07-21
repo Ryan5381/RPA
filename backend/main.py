@@ -73,7 +73,58 @@ async def execute_task(task_id: str, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# 7. OTP 提交 API：讓前端傳入驗證碼，後端腳本會 polling 到後填入
+class OtpPayload(BaseModel):
+    otp_code: str
+
+@app.post("/api/tasks/{task_id}/otp")
+async def submit_otp(task_id: str, payload: OtpPayload):
+    try:
+        # 驗證格式：只接受 4 位數字
+        code = payload.otp_code.strip()
+        if not code.isdigit() or len(code) != 4:
+            raise HTTPException(status_code=400, detail="OTP 必須為 4 位數字")
+
+        # 確認任務存在且狀態為 waiting_otp
+        task_data = supabase.table("tasks").select("status").eq("id", task_id).execute()
+        if not task_data.data:
+            raise HTTPException(status_code=404, detail=f"找不到 task_id={task_id}")
+        current_status = task_data.data[0]["status"]
+        if current_status != "waiting_otp":
+            raise HTTPException(
+                status_code=400,
+                detail=f"任務狀態為 '{current_status}'，目前不在等待 OTP 的狀態"
+            )
+
+        # 寫入 OTP 到 Supabase（後端腳本會 polling 到這個值）
+        supabase.table("tasks").update({"otp_code": code}).eq("id", task_id).execute()
+        return {"message": "OTP 已提交，訂位機器人將立即填入驗證碼", "task_id": task_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 8. 任務狀態查詢 API：前端 OTP Modal polling 用
+@app.get("/api/tasks/{task_id}/status")
+async def get_task_status(task_id: str):
+    try:
+        task_data = supabase.table("tasks").select("id, status, result").eq("id", task_id).execute()
+        if not task_data.data:
+            raise HTTPException(status_code=404, detail=f"找不到 task_id={task_id}")
+        task = task_data.data[0]
+        return {
+            "task_id": task["id"],
+            "status": task["status"],
+            "result": task.get("result"),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     # 加上 loop="asyncio" 強制使用系統預設支援背景程序的引擎
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, loop="asyncio")
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, loop="asyncio")

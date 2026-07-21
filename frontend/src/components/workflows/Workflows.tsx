@@ -2,6 +2,7 @@ import { Cards } from "./Cards";
 import { WorkflowConfigForm } from "./WorkflowConfigForm";
 import { PreferenceSelector } from "./PreferenceSelector";
 import { useWorkflowManager } from "@/hooks/useWorkflowManager";
+import { OtpModal } from "@/components/common/OtpModal";
 
 export const Workflows = () => {
   const {
@@ -12,9 +13,12 @@ export const Workflows = () => {
     badmintonWorkflow,
     hospitalWorkflow,
     tixCraftWorkflow,
+    inlineWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching,
+    otpTaskId,
+    clearOtpTask,
   } = useWorkflowManager();
 
   return (
@@ -52,6 +56,9 @@ export const Workflows = () => {
             tixCraftForm={tixCraftWorkflow.tixCraftForm}
             setTixCraftForm={tixCraftWorkflow.setTixCraftForm}
             resetTixCraftForm={tixCraftWorkflow.resetTixCraftForm}
+            inlineForm={inlineWorkflow.inlineForm}
+            setInlineField={inlineWorkflow.setInlineField}
+            resetInlineForm={inlineWorkflow.resetInlineForm}
           />
           <PreferenceSelector
             preferences={preferenceList.preferences}
@@ -63,9 +70,26 @@ export const Workflows = () => {
             isLaunching={isLaunching}
             selectedKey={selectedKey}
             badmintonForm={badmintonWorkflow.badmintonForm}
+            inlineForm={inlineWorkflow.inlineForm}
           />
         </div>
       </div>
+
+      {/* OTP Modal（inline 訂位等待手機驗證碼時彈出） */}
+      <OtpModal
+        taskId={otpTaskId ?? null}
+        onClose={clearOtpTask}
+        summary={
+          otpTaskId
+            ? {
+                restaurant: inlineWorkflow.inlineForm.restaurant_key,
+                branch: inlineWorkflow.inlineForm.branch_key,
+                date: inlineWorkflow.inlineForm.target_date,
+                session: inlineWorkflow.inlineForm.session,
+              }
+            : undefined
+        }
+      />
     </div>
   );
 };

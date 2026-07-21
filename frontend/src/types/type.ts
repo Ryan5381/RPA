@@ -19,6 +19,26 @@ export interface WorkflowFormState {
   lineNotify: boolean;
 }
 
+// ─── inline.app 訂位表單狀態 ─────────────────────────────────────────────
+export type InlineGender = "小姐" | "先生" | "其他";
+export type InlineSession = "midday" | "afternoon" | "evening";
+export type InlinePurpose = "birthday" | "date" | "anniversary" | "family" | "friends" | "business" | "";
+
+export interface InlineBookingForm {
+  restaurant_key: string;  // e.g. "islandbuffet"
+  branch_key: string;      // e.g. "kaohsiung_hanshin"
+  target_date: string;     // YYYY-MM-DD
+  session: InlineSession;
+  adults: string;          // "1"~"7"
+  kids: string;            // "0"~"5"
+  last_name: string;
+  first_name: string;
+  gender: InlineGender;
+  phone: string;           // 09xxxxxxxx
+  email: string;
+  purpose: InlinePurpose;
+}
+
 // ─── 預約偏好順位 ─────────────────────────────────────────────────────────────
 export interface Preference {
   id: string;
