@@ -33,11 +33,11 @@ export const GenericForm: React.FC<GenericFormProps> = ({
     <div className="space-y-4 pt-1">
       {/* 帳務與授權 */}
       <div className="space-y-3">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           認證與連線憑據
         </p>
         <div className="space-y-1.5">
-          <Label htmlFor="account" className="text-xs text-slate-400 font-mono">
+          <Label htmlFor="account" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             {labels.account || "帳號 / 身分識別"}
           </Label>
           <Input
@@ -49,7 +49,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-xs text-slate-400 font-mono">
+          <Label htmlFor="password" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             連線密碼 / 憑證授權碼
           </Label>
           <Input
@@ -64,15 +64,15 @@ export const GenericForm: React.FC<GenericFormProps> = ({
       </div>
 
       {/* 目標偏好設定 */}
-      <div className="space-y-3 pt-2 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+      <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           目標條件配置
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label
               htmlFor="specialtyA"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               {labels.specialtyA}
             </Label>
@@ -87,7 +87,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
           <div className="space-y-1.5">
             <Label
               htmlFor="specialtyB"
-              className="text-xs text-slate-400 font-mono"
+              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
             >
               {labels.specialtyB}
             </Label>
@@ -103,22 +103,22 @@ export const GenericForm: React.FC<GenericFormProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="slotA" className="text-xs text-slate-400 font-mono">
+            <Label htmlFor="slotA" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               {labels.slotA}
             </Label>
             <Select
               value={form.slotA || "上午診"}
               onValueChange={(v) => setField("slotA", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-200 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200">
                 {["上午診", "下午診", "夜間診", "全天候搶位"].map((s) => (
                   <SelectItem
                     key={s}
                     value={s}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {s}
                   </SelectItem>
@@ -127,22 +127,22 @@ export const GenericForm: React.FC<GenericFormProps> = ({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="slotB" className="text-xs text-slate-400 font-mono">
+            <Label htmlFor="slotB" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               {labels.slotB}
             </Label>
             <Select
               value={form.slotB || "初診預約"}
               onValueChange={(v) => setField("slotB", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-200 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200">
                 {["初診預約", "複診掛號", "急件代搶", "VIP 專區"].map((s) => (
                   <SelectItem
                     key={s}
                     value={s}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {s}
                   </SelectItem>

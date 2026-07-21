@@ -37,10 +37,10 @@ export const AllProcessesModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-6xl bg-slate-950/95 border-slate-800 text-slate-100 p-6 shadow-2xl backdrop-blur-xl">
+      <DialogContent className="sm:max-w-6xl bg-card dark:bg-slate-950/95 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 p-6 shadow-2xl backdrop-blur-xl">
         <DialogHeader className="mb-4">
-          <DialogDescription className="flex items-center justify-start gap-3 text-xs font-mono text-slate-400">
-            <FileTerminal className="w-5 h-5 text-cyan-400" />
+          <DialogDescription className="flex items-center justify-start gap-3 text-xs font-mono text-slate-600 dark:text-slate-400">
+            <FileTerminal className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             顯示所有 RPA 執行中的任務、排程與歷史記錄。
           </DialogDescription>
         </DialogHeader>
@@ -54,12 +54,12 @@ export const AllProcessesModal = ({
             return (
               <div
                 key={proc.id}
-                className={`p-5 rounded-xl border transition-all duration-300 flex flex-col gap-4 ${
+                className={`p-5 rounded-xl border transition-all duration-200 flex flex-col gap-4 shadow-sm dark:shadow-none ${
                   proc.status === "RUNNING"
-                    ? "bg-cyan-950/15 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.03)]"
+                    ? "bg-cyan-50 dark:bg-cyan-950/15 border-cyan-400/60 dark:border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.03)]"
                     : proc.status === "SUCCESS"
-                      ? "bg-emerald-950/5 border-emerald-500/15"
-                      : "bg-slate-900/30 border-slate-800"
+                      ? "bg-emerald-50 dark:bg-emerald-950/5 border-emerald-400/50 dark:border-emerald-500/15"
+                      : "bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800"
                 }`}
               >
                 {/* 第一排：標頭資訊與操作控制列 */}
@@ -69,30 +69,30 @@ export const AllProcessesModal = ({
                     <div
                       className={`p-2.5 rounded-lg ${
                         proc.status === "RUNNING"
-                          ? "bg-cyan-950/50 text-cyan-400"
+                          ? "bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400"
                           : proc.status === "SUCCESS"
-                            ? "bg-emerald-950/50 text-emerald-400"
-                            : "bg-slate-900 text-slate-400"
+                            ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400"
+                            : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400"
                       }`}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-200 text-sm tracking-wide">
+                        <span className="font-bold text-slate-900 dark:text-slate-200 text-sm tracking-wide">
                           {proc.title}
                         </span>
                         <Badge
                           variant="outline"
-                          className="text-[9px] bg-slate-900/60 text-slate-400 border-slate-800 px-1.5 py-0 rounded"
+                          className="text-[9px] bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-800 px-1.5 py-0 rounded"
                         >
                           {proc.category}
                         </Badge>
                       </div>
                       <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5 mt-1">
-                        <User className="w-3 h-3 text-slate-600" />
+                        <User className="w-3 h-3 text-slate-500 dark:text-slate-600" />
                         執行帳號:{" "}
-                        <span className="text-slate-400">{proc.account}</span>
+                        <span className="text-slate-700 dark:text-slate-400 font-semibold">{proc.account}</span>
                       </div>
                     </div>
                   </div>
@@ -100,19 +100,19 @@ export const AllProcessesModal = ({
                   {/* 進度顯示與進度條 */}
                   <div className="flex-1 w-full px-0 lg:px-6">
                     <div className="flex justify-between items-center text-xs font-mono mb-1.5">
-                      <span className="text-slate-400 truncate pr-2 flex items-center gap-1">
+                      <span className="text-slate-600 dark:text-slate-400 truncate pr-2 flex items-center gap-1 font-medium">
                         {proc.status === "RUNNING" && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping inline-block shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-ping inline-block shrink-0" />
                         )}
                         <span>{proc.stepLabel}</span>
                       </span>
                       <span
                         className={`font-bold tabular-nums ${
                           proc.status === "RUNNING"
-                            ? "text-cyan-400"
+                            ? "text-cyan-600 dark:text-cyan-400"
                             : proc.status === "SUCCESS"
-                              ? "text-emerald-400"
-                              : "text-slate-400"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-slate-600 dark:text-slate-400"
                         }`}
                       >
                         {proc.progress}%
@@ -121,22 +121,22 @@ export const AllProcessesModal = ({
                     <Progress
                       value={proc.progress}
                       className="w-full"
-                      trackClassName="h-1.5 bg-slate-900 border border-slate-800/80"
+                      trackClassName="h-1.5 bg-slate-200 dark:bg-slate-900 border border-slate-300/80 dark:border-slate-800/80"
                       indicatorClassName={
                         proc.status === "RUNNING"
-                          ? "bg-gradient-to-r from-cyan-500 to-blue-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-500 dark:from-cyan-500 dark:to-blue-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
                           : proc.status === "SUCCESS"
-                            ? "bg-emerald-400"
-                            : "bg-slate-700"
+                            ? "bg-emerald-500 dark:bg-emerald-400"
+                            : "bg-slate-400 dark:bg-slate-700"
                       }
                     />
                   </div>
 
                   {/* 狀態 Badge 與控制操作按鈕 */}
-                  <div className="flex items-center justify-between lg:justify-end gap-3 w-full lg:w-auto shrink-0 border-t border-slate-900 pt-3 lg:border-none lg:pt-0">
+                  <div className="flex items-center justify-between lg:justify-end gap-3 w-full lg:w-auto shrink-0 border-t border-slate-200 dark:border-slate-900 pt-3 lg:border-none lg:pt-0">
                     <div className="text-left lg:text-right font-mono text-xs hidden sm:block">
-                      <div className="text-slate-500">{proc.footerLabel}</div>
-                      <div className="text-slate-300 font-semibold">
+                      <div className="text-slate-500 dark:text-slate-400">{proc.footerLabel}</div>
+                      <div className="text-slate-900 dark:text-slate-300 font-semibold">
                         {proc.footerValue}
                       </div>
                     </div>
@@ -145,37 +145,37 @@ export const AllProcessesModal = ({
                       variant="outline"
                       className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-full ${
                         proc.status === "RUNNING"
-                          ? "bg-cyan-950/80 text-cyan-400 border-cyan-500/40"
+                          ? "bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-400 border-cyan-400/60 dark:border-cyan-500/40"
                           : proc.status === "SUCCESS"
-                            ? "bg-emerald-950/80 text-emerald-400 border-emerald-500/40"
-                            : "bg-slate-900 text-slate-400 border-slate-700"
+                            ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border-emerald-400/60 dark:border-emerald-500/40"
+                            : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700"
                       }`}
                     >
                       {proc.status === "RUNNING" && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping mr-1" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-ping mr-1" />
                       )}
                       {proc.status}
                     </Badge>
 
                     {/* 控制按鈕組 */}
-                    <div className="flex items-center gap-1 bg-slate-900/60 p-0.5 rounded-lg border border-slate-800/80">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/60 p-0.5 rounded-lg border border-slate-300 dark:border-slate-800/80">
                       {proc.status === "RUNNING" ? (
                         <button
-                          className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-amber-400 transition-colors tooltip"
+                          className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors tooltip"
                           title="暫停任務"
                         >
                           <Pause className="w-3.5 h-3.5" />
                         </button>
                       ) : (
                         <button
-                          className="p-1.5 hover:bg-slate-800 rounded text-slate-500 hover:text-emerald-400 transition-colors"
+                          className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                           title="啟動任務"
                         >
                           <Play className="w-3.5 h-3.5" />
                         </button>
                       )}
                       <button
-                        className="p-1.5 hover:bg-slate-800 rounded text-slate-500 hover:text-cyan-400 transition-colors"
+                        className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                         title="重置/重啟任務"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -186,10 +186,10 @@ export const AllProcessesModal = ({
 
                 {/* 第二排：即時執行日誌 logs (摺疊面板) */}
                 {proc.logs && proc.logs.length > 0 && (
-                  <div className="border-t border-slate-900/60 pt-3">
+                  <div className="border-t border-slate-200 dark:border-slate-900/60 pt-3">
                     <button
                       onClick={() => toggleLogs(proc.id)}
-                      className="text-[10px] font-mono text-cyan-500/80 hover:text-cyan-400 transition-colors flex items-center gap-1 cursor-pointer"
+                      className="text-[10px] font-mono text-cyan-600 dark:text-cyan-500/80 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors flex items-center gap-1 cursor-pointer font-bold"
                     >
                       <Terminal className="w-3 h-3" />
                       {isLogOpen
@@ -199,10 +199,10 @@ export const AllProcessesModal = ({
                     </button>
 
                     {isLogOpen && (
-                      <div className="mt-2.5 p-3 bg-black/70 rounded-lg border border-slate-900 font-mono text-[10px] text-slate-400 space-y-1.5 shadow-inner">
-                        <div className="flex justify-between items-center text-slate-600 border-b border-slate-900 pb-1 mb-1 font-bold">
+                      <div className="mt-2.5 p-3 bg-slate-900 dark:bg-black/70 rounded-lg border border-slate-800 dark:border-slate-900 font-mono text-[10px] text-slate-300 dark:text-slate-400 space-y-1.5 shadow-inner">
+                        <div className="flex justify-between items-center text-slate-400 dark:text-slate-600 border-b border-slate-800 dark:border-slate-900 pb-1 mb-1 font-bold">
                           <span>LOGSTREAM // PROCESS_ID: #00{proc.id}</span>
-                          <span className="flex items-center gap-1 text-[9px] text-cyan-500">
+                          <span className="flex items-center gap-1 text-[9px] text-cyan-400 dark:text-cyan-500">
                             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                             LIVE FEED
                           </span>
@@ -210,9 +210,9 @@ export const AllProcessesModal = ({
                         {proc.logs.map((log, logIdx) => (
                           <div
                             key={logIdx}
-                            className="flex gap-2 text-slate-300"
+                            className="flex gap-2 text-slate-200 dark:text-slate-300"
                           >
-                            <span className="text-cyan-500/60 shrink-0">❯</span>
+                            <span className="text-cyan-400 dark:text-cyan-500/60 shrink-0">❯</span>
                             <span className="break-all">{log}</span>
                           </div>
                         ))}

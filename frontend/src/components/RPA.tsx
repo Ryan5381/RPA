@@ -6,12 +6,14 @@ import { Workflows } from "@/components/workflows/Workflows";
 import { Queue } from "@/components/queue/Queue";
 import { Logs } from "@/components/logs/Logs";
 import { Settings } from "@/components/settings/Settings";
+import { useTheme } from "@/hooks/useTheme";
 
 export const RPA = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen dark bg-background text-slate-100 flex flex-col">
+    <div className={`min-h-screen bg-background text-foreground flex flex-col ${theme === "dark" ? "dark" : ""}`}>
       <Navbar />
       <div className="flex flex-1">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -26,3 +28,4 @@ export const RPA = () => {
     </div>
   );
 };
+

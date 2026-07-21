@@ -7,11 +7,11 @@ export type TaskStatus = "RUNNING" | "QUEUED" | "SUCCESS" | "FAILED";
 export const getPriorityStyle = (priority: Priority) => {
   switch (priority) {
     case "HIGH":
-      return "bg-red-950/80 text-red-400 border-red-500/40 shadow-[0_0_8px_rgba(248,113,113,0.2)]";
+      return "bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/40 shadow-sm dark:shadow-[0_0_8px_rgba(248,113,113,0.2)]";
     case "MED":
-      return "bg-amber-950/80 text-amber-400 border-amber-500/40 shadow-[0_0_8px_rgba(251,191,36,0.2)]";
+      return "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-500/40 shadow-sm dark:shadow-[0_0_8px_rgba(251,191,36,0.2)]";
     case "LOW":
-      return "bg-slate-800/80 text-slate-400 border-slate-600/40";
+      return "bg-slate-200 dark:bg-slate-800/80 text-slate-700 dark:text-slate-400 border-slate-300 dark:border-slate-600/40";
   }
 };
 
@@ -19,13 +19,13 @@ export const getPriorityStyle = (priority: Priority) => {
 export const getStatusStyle = (status: TaskStatus) => {
   switch (status) {
     case "RUNNING":
-      return "bg-cyan-950/80 text-cyan-400 border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]";
+      return "bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-400 border-cyan-400 dark:border-cyan-500/40 shadow-sm dark:shadow-[0_0_8px_rgba(6,182,212,0.2)]";
     case "QUEUED":
-      return "bg-slate-800/80 text-slate-300 border-slate-600/40";
+      return "bg-slate-200 dark:bg-slate-800/80 text-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-600/40";
     case "SUCCESS":
-      return "bg-emerald-950/80 text-emerald-400 border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]";
+      return "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 border-emerald-400 dark:border-emerald-500/40 shadow-sm dark:shadow-[0_0_8px_rgba(16,185,129,0.2)]";
     case "FAILED":
-      return "bg-rose-950/80 text-rose-400 border-rose-500/40 shadow-[0_0_8px_rgba(244,63,94,0.2)]";
+      return "bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-400 border-rose-400 dark:border-rose-500/40 shadow-sm dark:shadow-[0_0_8px_rgba(244,63,94,0.2)]";
   }
 };
 

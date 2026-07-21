@@ -20,7 +20,7 @@ export const QueueStatusBadge = ({ status }: QueueStatusBadgeProps) => {
     >
       {/* RUNNING 閃爍點 */}
       {isRunning && (
-        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping shrink-0" />
+        <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 dark:bg-cyan-400 animate-ping shrink-0" />
       )}
       {status}
     </Badge>

@@ -26,22 +26,22 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
   isLaunching,
 }) => {
   return (
-    <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-6 backdrop-blur-xl flex flex-col h-full justify-between">
+    <div className="bg-card/90 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-6 backdrop-blur-xl flex flex-col h-full justify-between shadow-sm dark:shadow-none">
       <div>
         {/* 標頭 */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-sm font-bold text-slate-200 tracking-wider flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wider flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 shrink-0" />
             預約偏好順位
           </h3>
         </div>
 
         {/* 多順位自動候選說明 */}
-        <div className="bg-slate-950/40 border border-slate-800/60 rounded-lg p-3 mb-4 text-[11px] text-slate-400 font-mono space-y-1">
-          <div className="flex items-center gap-1.5 text-indigo-300 font-bold">
+        <div className="bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/60 rounded-lg p-3 mb-4 text-[11px] text-slate-600 dark:text-slate-400 font-mono space-y-1">
+          <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-300 font-bold">
             💡 多順位自動候補接力
           </div>
-          <p className="text-[10px] leading-relaxed text-slate-500">
+          <p className="text-[10px] leading-relaxed text-slate-600 dark:text-slate-500">
             首選車次/時段若額滿或客滿，AI
             腳本立刻依序比對備份時段，確保搶到理想車票。
           </p>
@@ -52,20 +52,20 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
           {preferences.map((pref, index) => (
             <div
               key={pref.id}
-              className="group flex items-center gap-3 bg-slate-950/40 border border-slate-800/60 hover:border-slate-700/80 rounded-lg p-3.5 transition-all duration-200"
+              className="group flex items-center gap-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-300 dark:border-slate-800/60 hover:border-slate-400 dark:hover:border-slate-700/80 rounded-lg p-3.5 transition-all duration-200"
             >
               {/* 順位標籤 */}
               <div className="shrink-0 text-center min-w-[52px]">
-                <div className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">
+                <div className="text-[9px] font-mono text-slate-500 dark:text-slate-500 uppercase tracking-widest">
                   {ORDER_LABELS[index] ?? `第${index + 1}順位`}
                 </div>
                 <div
                   className={`text-xs font-bold mt-0.5 ${
                     index === 0
-                      ? "text-cyan-400"
+                      ? "text-cyan-600 dark:text-cyan-400"
                       : index === 1
-                        ? "text-indigo-400"
-                        : "text-slate-400"
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-slate-600 dark:text-slate-400"
                   }`}
                 >
                   #{String(index + 1).padStart(2, "0")}
@@ -73,11 +73,11 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
               </div>
 
               {/* 分隔線 */}
-              <div className="w-px h-8 bg-slate-800/80 shrink-0" />
+              <div className="w-px h-8 bg-slate-200 dark:bg-slate-800/80 shrink-0" />
 
               {/* 日期時間輸入 */}
               <div className="flex-1 flex gap-2 min-w-0">
-                <div className="flex items-center gap-1.5 flex-1 min-w-0 bg-slate-900/50 border border-slate-700/60 rounded-md px-2.5 h-8 focus-within:border-cyan-500/50 transition-colors">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0 bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700/60 rounded-md px-2.5 h-8 focus-within:border-cyan-500/50 transition-colors">
                   <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
                   <DatePicker
                     selected={(() => {
@@ -101,11 +101,11 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
                     }}
                     dateFormat="yyyy-MM-dd"
                     wrapperClassName="w-full block"
-                    className="bg-transparent text-xs text-slate-300 placeholder:text-slate-600 outline-none w-full font-mono cursor-pointer"
+                    className="bg-transparent text-xs text-slate-900 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none w-full font-mono cursor-pointer"
                     placeholderText="點選日期"
                   />
                 </div>
-                <div className="flex items-center gap-1.5 w-24 bg-slate-900/50 border border-slate-700/60 rounded-md px-2.5 h-8 focus-within:border-cyan-500/50 transition-colors shrink-0">
+                <div className="flex items-center gap-1.5 w-24 bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700/60 rounded-md px-2.5 h-8 focus-within:border-cyan-500/50 transition-colors shrink-0">
                   <Clock className="w-3 h-3 text-slate-500 shrink-0" />
                   <DatePicker
                     selected={(() => {
@@ -130,7 +130,7 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
                     timeFormat="HH:mm"
                     dateFormat="HH:mm"
                     wrapperClassName="w-full block"
-                    className="bg-transparent text-xs text-slate-300 placeholder:text-slate-600 outline-none w-full font-mono cursor-pointer"
+                    className="bg-transparent text-xs text-slate-900 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none w-full font-mono cursor-pointer"
                     placeholderText="時段"
                   />
                 </div>
@@ -139,7 +139,7 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
               {/* 刪除按鈕 */}
               <button
                 onClick={() => removePreference(pref.id)}
-                className="shrink-0 p-1.5 rounded-md text-slate-600 hover:text-rose-400 hover:bg-rose-950/30 transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer"
+                className="shrink-0 p-1.5 rounded-md text-slate-500 dark:text-slate-600 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/30 transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -150,7 +150,7 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
           {!isAtMax && (
             <button
               onClick={addPreference}
-              className="w-full h-11 border border-dashed border-slate-700/60 hover:border-cyan-500/40 hover:bg-cyan-950/10 rounded-lg flex items-center justify-center gap-2 text-xs font-mono text-slate-500 hover:text-cyan-400 transition-all duration-200 cursor-pointer"
+              className="w-full h-11 border border-dashed border-slate-300 dark:border-slate-700/60 hover:border-cyan-500/40 hover:bg-cyan-50 dark:hover:bg-cyan-950/10 rounded-lg flex items-center justify-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               新增偏好時段
@@ -159,7 +159,7 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
 
           {/* 已達上限提示 */}
           {isAtMax && (
-            <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono text-amber-500/70 py-2">
+            <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono text-amber-600 dark:text-amber-500/70 py-2">
               <span className="w-1 h-1 rounded-full bg-amber-500/70" />
               已達順位上限 ({MAX_PREFERENCES}/{MAX_PREFERENCES})
             </div>
@@ -168,16 +168,16 @@ export const PrioritySelectorPanel: React.FC<PrioritySelectorPanelProps> = ({
       </div>
 
       {/* 啟動按鈕 */}
-      <div className="pt-4 border-t border-slate-800/60">
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60">
         <Button
           onClick={handleLaunchTask}
           disabled={isLaunching}
-          className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white font-bold text-sm tracking-wider border-0 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] transition-all duration-300 gap-2"
+          className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white font-bold text-sm tracking-wider border-0 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] transition-all duration-200 gap-2"
         >
           <Zap className="w-4 h-4" />
           {isLaunching ? "正在啟動中..." : "啟動自動化任務"}
         </Button>
-        <p className="text-[10px] font-mono text-slate-600 text-center mt-2">
+        <p className="text-[10px] font-mono text-slate-500 dark:text-slate-600 text-center mt-2">
           任務將依偏好順位依序嘗試，直到成功為止
         </p>
       </div>

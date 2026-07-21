@@ -48,12 +48,12 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
     <div className="space-y-4 pt-1">
       {/* 帳密設定 */}
       <div className="space-y-3">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           會員資料
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               身分證字號 / 會員帳號
             </Label>
             <Input
@@ -64,7 +64,7 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">密碼</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">密碼</Label>
             <Input
               type="password"
               placeholder="請輸入密碼"
@@ -75,7 +75,7 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs text-slate-400 font-mono">
+          <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             CapSolver API Key (自動驗證碼通關)
           </Label>
           <Input
@@ -91,13 +91,13 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
       </div>
 
       {/* 預訂目標設定 (日期/時間/球場順位) */}
-      <div className="space-y-3 pt-2 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+      <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           預定目標與順位設定
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">預訂日期</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">預訂日期</Label>
             <DatePicker
               selected={(() => {
                 const str = badmintonForm.target_date || "2026-07-14";
@@ -119,7 +119,7 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono">預訂時段</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">預訂時段</Label>
             <Input
               placeholder="如 13 (表示 13:00) 或 18"
               value={badmintonForm.target_time_slot || "13"}
@@ -131,9 +131,9 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs text-slate-400 font-mono flex items-center justify-between">
+          <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium flex items-center justify-between">
             <span>優先球場順位 (以逗號隔開)</span>
-            <span className="text-[10px] text-cyan-400 font-normal">
+            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-normal">
               自動順位接力
             </span>
           </Label>
@@ -147,15 +147,15 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
       </div>
 
       {/* 搶票時機與並行 Session 設定 */}
-      <div className="space-y-4 pt-2 border-t border-slate-800/60">
-        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+      <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
           發動時機與多線程並行
         </p>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium flex items-center gap-1.5">
               發動搶票日期與時間
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-100 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border border-cyan-400/60 dark:border-cyan-500/30">
                 SCHEDULE
               </span>
             </Label>
@@ -195,9 +195,9 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium flex items-center gap-1.5">
               並行 Session 數
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono bg-violet-500/15 text-violet-400 border border-violet-500/30">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400 border border-violet-400/60 dark:border-violet-500/30">
                 MULTI
               </span>
             </Label>
@@ -205,15 +205,15 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
               value={badmintonForm.session_count}
               onValueChange={(v) => setBadmintonField("session_count", v)}
             >
-              <SelectTrigger className="w-full h-9 border-slate-700/80 bg-slate-950/50 text-slate-300 text-xs">
+              <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-200 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200">
                 {["1", "2", "3", "4", "5"].map((n) => (
                   <SelectItem
                     key={n}
                     value={n}
-                    className="text-xs focus:bg-slate-800"
+                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
                   >
                     {n} 個 Session
                     {n === "1" ? "（單線）" : n === "2" ? "（推薦）" : ""}
