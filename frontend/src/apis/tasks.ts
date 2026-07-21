@@ -16,3 +16,15 @@ export const createTask = ({
 
 export const executeTask = ({ taskId }: { taskId: string }): Promise<AxiosResponse<any>> =>
   axiosInstance.post(`/tasks/${taskId}/execute`);
+
+export const submitOtp = ({
+  taskId,
+  otpCode,
+}: {
+  taskId: string;
+  otpCode: string;
+}): Promise<AxiosResponse<any>> =>
+  axiosInstance.post(`/tasks/${taskId}/otp`, { otp_code: otpCode });
+
+export const getTaskStatus = ({ taskId }: { taskId: string }): Promise<AxiosResponse<any>> =>
+  axiosInstance.get(`/tasks/${taskId}/status`);

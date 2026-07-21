@@ -12,6 +12,7 @@ from .thsr_booking import run_thsr_booking
 from .badminton_booking import run_badminton_booking
 from .hospital_booking import run_hospital_booking
 from .tixcraft_booking import run_tixcraft_booking
+from .inline_booking import run_inline_booking
 
 # ─── 腳本路由表 ───────────────────────────────────────────────────────────────
 # key: 前端送出時的 task_type 值
@@ -22,6 +23,7 @@ SCRIPT_ROUTER = {
     "hospital_booking": run_hospital_booking,
     "tixcraft_booking": run_tixcraft_booking,
     "concert_ticket": run_tixcraft_booking,
+    "inline_booking": run_inline_booking,
 }
 
 
