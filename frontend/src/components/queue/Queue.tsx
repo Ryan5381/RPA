@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { ListOrdered, Plus } from "lucide-react";
+import { ListOrdered, Plus, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QueueTable } from "./QueueTable";
 import { QueueEditSheet } from "./QueueEditSheet";
 import { useQueueTasks } from "@/hooks/useQueueTasks";
 
 export const Queue = () => {
-  const { tasks, removeTask, retryTask, togglePriority, updateTask } = useQueueTasks();
+  const { tasks, removeTask, retryTask, togglePriority, updateTask, clearTasks } = useQueueTasks();
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
   const runningCount = tasks.filter((t) => t.status === "RUNNING").length;
@@ -29,20 +29,32 @@ export const Queue = () => {
         </div>
 
         {/* 右側操作 */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Button
             variant="outline"
-            className="text-xs font-mono text-slate-700 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:border-cyan-500/50 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all cursor-pointer"
-            onClick={() => alert("管理序列 (TODO)")}
+            className="gap-1.5 text-xs font-mono text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:border-amber-500/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all cursor-pointer"
+            onClick={() => {
+              if (window.confirm("確定要清空所有已結束/異常的歷史紀錄嗎？（排程中的任務將予保留）")) {
+                clearTasks("history");
+              }
+            }}
+            title="清空已失敗、已完成或殘留的歷史紀錄"
           >
-            管理序列
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            清空已結束
           </Button>
           <Button
-            className="gap-2 bg-cyan-600 hover:bg-cyan-500 dark:bg-cyan-100 dark:hover:bg-cyan-200 text-white dark:text-slate-900 font-semibold border border-cyan-700 dark:border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all text-xs cursor-pointer"
-            onClick={() => alert("新任務 (TODO)")}
+            variant="outline"
+            className="gap-1.5 text-xs font-mono text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+            onClick={() => {
+              if (window.confirm("⚠️ 確定要一鍵清空序列中的「全部任務」嗎？此動作將刪除所有排程與歷史。")) {
+                clearTasks("all");
+              }
+            }}
+            title="徹底清空所有任務紀錄"
           >
-            <Plus className="w-3.5 h-3.5" />
-            新任務
+            <Trash2 className="w-3.5 h-3.5" />
+            清空全部序列
           </Button>
         </div>
       </div>

@@ -30,9 +30,23 @@ SCRIPT_ROUTER = {
 async def dispatch_script(task_type: str, task_id: str):
     """
     根據 task_type 找到對應腳本並執行。
-    若找不到對應腳本，會拋出 ValueError。
+    若找不到對應腳本或執行異常，將狀態更新為 failed，避免殘留或報錯。
     """
+    from tasks_dispatcher import supabase
     handler = SCRIPT_ROUTER.get(task_type)
     if handler is None:
-        raise ValueError(f"找不到對應的腳本: task_type='{task_type}'。請確認 SCRIPT_ROUTER 中是否已登錄此類型。")
-    await handler(task_id)
+        print(f"[Dispatch Warning] 找不到對應的腳本: task_type='{task_type}' (ID={task_id})。自動將狀態更改為 failed。")
+        try:
+            supabase.table("tasks").update({"status": "failed"}).eq("id", task_id).execute()
+        except Exception as e:
+            print(f"[Dispatch Error] 無法更新任務 {task_id} 狀態為 failed: {e}")
+        return
+
+    try:
+        await handler(task_id)
+    except Exception as e:
+        print(f"[Dispatch Error] 任務 {task_id} (Type: {task_type}) 執行失敗: {e}")
+        try:
+            supabase.table("tasks").update({"status": "failed"}).eq("id", task_id).execute()
+        except Exception:
+            pass

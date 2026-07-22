@@ -1,11 +1,18 @@
 import os
 import sys
+import asyncio
+import random
+import time
+import traceback
+from datetime import datetime
+from pathlib import Path
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from scripts import dispatch_script
 
 # 1. 載入 .env 檔案中的環境變數
@@ -21,46 +28,264 @@ app = FastAPI()
 # 3. 設定 CORS，允許前端 React 連線
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# 4. 初始化 APScheduler 非同步排程器
+scheduler = AsyncIOScheduler()
+PRIORITY_ORDER = {"HIGH": 3, "MED": 2, "LOW": 1}
 
-# 4. 定義前端傳來的資料結構
+async def check_scheduled_tasks():
+    """
+    每 5 秒定時巡邏：檢查是否有 scheduled_at 到期的 queued/scheduled 任務，並依優先度調度執行
+    """
+    try:
+        # 只掃描進入優先序列池 (queued 或 scheduled) 的排程任務，避免觸發歷史 pending 或即時任務
+        res = supabase.table("tasks").select("*").in_("status", ["queued", "scheduled"]).execute()
+        if not res.data:
+            return
+
+        ready_tasks = []
+        now_dt = datetime.now()
+
+        for task in res.data:
+            scheduled_str = task.get("scheduled_at") or (task.get("config", {}).get("scheduled_at"))
+            priority = task.get("priority") or (task.get("config", {}).get("priority", "MED"))
+            
+            # 判斷是否已到期或無指定時間 (queued 狀態下無指定時間視為進入排隊派發)
+            is_ready = False
+            if not scheduled_str:
+                is_ready = True
+            else:
+                try:
+                    clean_str = str(scheduled_str).replace("T", " ").split(".")[0]
+                    task_dt = datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
+                    if task_dt <= now_dt:
+                        is_ready = True
+                except Exception as parse_err:
+                    # 若時間字串格式特殊無法解析，或設為空字串，視為立即執行
+                    is_ready = True
+
+            if is_ready:
+                ready_tasks.append({
+                    "task": task,
+                    "priority_weight": PRIORITY_ORDER.get(str(priority).upper(), 2),
+                    "created_at": task.get("created_at") or task.get("create_at", "")
+                })
+
+        if not ready_tasks:
+            return
+
+        # 優先度排序：優先度較高 (weight 較大) 優先；若相同，依照建立時間早先執行
+        ready_tasks.sort(key=lambda x: (-x["priority_weight"], x["created_at"]))
+
+        # 每次挑選最優先的一筆任務進行派發 (避免並發衝突與資源爭搶)
+        target = ready_tasks[0]["task"]
+        task_id = str(target["id"])
+        task_type = str(target["task_type"])
+        prio_label = str(target.get("priority") or target.get("config", {}).get("priority", "MED"))
+
+        print(f"[APScheduler] ⏰ 觸發到期/優先排程任務：ID={task_id}, Type={task_type}, Priority={prio_label}")
+
+        # 將狀態正式改為 running
+        supabase.table("tasks").update({"status": "running"}).eq("id", task_id).execute()
+
+        # 在非同步背景調用 dispatch_script
+        asyncio.create_task(dispatch_script(task_type, task_id))
+
+    except Exception as e:
+        print(f"[APScheduler] 掃描排程任務發生異常: {e}")
+        traceback.print_exc()
+
+@app.on_event("startup")
+async def start_scheduler():
+    scheduler.add_job(check_scheduled_tasks, "interval", seconds=5, id="rpa_scheduler_job", replace_existing=True)
+    scheduler.start()
+    print("[APScheduler] 🚀 RPA 自動化優先序列與排程巡邏引擎已成功啟動 (掃描間隔: 5秒)")
+
+@app.on_event("shutdown")
+async def shutdown_scheduler():
+    scheduler.shutdown()
+    print("[APScheduler] 🛑 排程引擎已關閉")
+
+
+# 5. 定義前端傳來的資料結構
 class TaskPayload(BaseModel):
     task_type: str
-    status: str = "pending"
+    status: Optional[str] = "pending"
+    priority: Optional[str] = "MED"
+    scheduled_at: Optional[str] = None
     config: Dict[str, Any]
 
+class TaskUpdatePayload(BaseModel):
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    scheduled_at: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
 
-# 5. 建立第一支 API 路由：接收任務並寫入資料庫
+
+# 6. 查詢所有任務清單 (供 Queue 優先序列與 Dashboard 頁面使用)
+@app.get("/api/tasks")
+async def list_tasks(status: Optional[str] = None):
+    try:
+        # 優先使用 created_at 排序
+        try:
+            query1 = supabase.table("tasks").select("*")
+            if status:
+                query1 = query1.eq("status", status)
+            res = query1.order("created_at", desc=True).execute()
+        except Exception:
+            # 若 created_at 失敗，改試 create_at
+            try:
+                query2 = supabase.table("tasks").select("*")
+                if status:
+                    query2 = query2.eq("status", status)
+                res = query2.order("create_at", desc=True).execute()
+            except Exception:
+                # 若兩者皆無，直接不帶排序撈取
+                query3 = supabase.table("tasks").select("*")
+                if status:
+                    query3 = query3.eq("status", status)
+                res = query3.execute()
+
+        return {"message": "取得清單成功", "data": res.data or []}
+    except Exception as e:
+        print("[Error] /api/tasks 列表查詢失敗:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 7. 接收新任務並寫入資料庫 (支援排程與優先度設定)
 @app.post("/api/tasks")
 async def create_task(payload: TaskPayload):
     try:
+        initial_status = payload.status or "pending"
+        # 若指定了預約執行時間，將初始狀態預設為 queued (排程中)
+        if payload.scheduled_at:
+            initial_status = "queued"
+
+        prio = (payload.priority or "MED").upper()
+        
         data_to_insert = {
             "task_type": payload.task_type,
-            "status": payload.status,
-            "config": payload.config,
+            "status": initial_status,
+            "priority": prio,
+            "scheduled_at": payload.scheduled_at,
+            "config": {
+                **payload.config,
+                "priority": prio,
+                "scheduled_at": payload.scheduled_at
+            }
         }
-        response = supabase.table("tasks").insert(data_to_insert).execute()
+
+        try:
+            response = supabase.table("tasks").insert(data_to_insert).execute()
+        except Exception as insert_err:
+            # 備援機制：若 Supabase 表格尚未建立 priority/scheduled_at 頂層欄位，先寫入 config 中
+            fallback_data = {
+                "task_type": payload.task_type,
+                "status": initial_status,
+                "config": data_to_insert["config"]
+            }
+            try:
+                response = supabase.table("tasks").insert(fallback_data).execute()
+                print("[Warning] Supabase tasks 表格原生寫入失敗，已自動備援儲存於 config 中。原錯誤訊息:", insert_err)
+            except Exception as fallback_err:
+                print(f"[Error] 寫入 tasks 失敗 (原生與備援皆失敗): {fallback_err}")
+                raise fallback_err
+
         return {"message": "任務成功建立！", "data": response.data}
+    except Exception as e:
+        print("[Error] /api/tasks 建立失敗:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 8. 修改任務狀態、優先度或執行時間
+@app.patch("/api/tasks/{task_id}")
+async def update_task(task_id: str, payload: TaskUpdatePayload):
+    try:
+        update_fields = {}
+        if payload.status is not None:
+            update_fields["status"] = payload.status
+        if payload.priority is not None:
+            update_fields["priority"] = payload.priority.upper()
+        if payload.scheduled_at is not None:
+            update_fields["scheduled_at"] = payload.scheduled_at
+        if payload.config is not None:
+            update_fields["config"] = payload.config
+
+        if not update_fields:
+            return {"message": "無更新欄位"}
+
+        # 嘗試直接更新，若欄位不存在則同步更新至 config 內部
+        try:
+            res = supabase.table("tasks").update(update_fields).eq("id", task_id).execute()
+        except Exception as patch_err:
+            if "column" in str(patch_err).lower() or "schema" in str(patch_err).lower() or "PGRST" in str(patch_err):
+                # 抓取目前 config 並合併更新
+                cur = supabase.table("tasks").select("config, status").eq("id", task_id).execute()
+                if cur.data:
+                    cur_cfg = cur.data[0].get("config") or {}
+                    safe_fields = {}
+                    if "status" in update_fields:
+                        safe_fields["status"] = update_fields["status"]
+                    if "priority" in update_fields:
+                        cur_cfg["priority"] = update_fields["priority"]
+                    if "scheduled_at" in update_fields:
+                        cur_cfg["scheduled_at"] = update_fields["scheduled_at"]
+                    if "config" in update_fields:
+                        cur_cfg = {**cur_cfg, **update_fields["config"]}
+                    safe_fields["config"] = cur_cfg
+                    res = supabase.table("tasks").update(safe_fields).eq("id", task_id).execute()
+            else:
+                raise patch_err
+
+        return {"message": "任務更新成功", "data": res.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 6. 建立執行腳本的 API 路由，透過 BackgroundTasks 在背景執行
+# 9. 批次清空任務 (支援清理已結束歷史紀錄或全部任務)
+@app.delete("/api/tasks/batch/clear")
+async def clear_batch_tasks(mode: Optional[str] = "history"):
+    try:
+        if mode == "all":
+            # 刪除所有不是 id 0 的紀錄（即全部任務）
+            res = supabase.table("tasks").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
+            return {"message": "已清空所有任務紀錄", "data": res.data}
+        else:
+            # 只清理已結束或殘留：failed, error, completed, success, pending, running
+            res = supabase.table("tasks").delete().in_("status", ["failed", "error", "completed", "success", "pending", "running"]).execute()
+            return {"message": "已清空所有歷史與已結束任務", "data": res.data}
+    except Exception as e:
+        print("[Error] 批次清空任務失敗:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 10. 刪除單一任務
+@app.delete("/api/tasks/{task_id}")
+async def delete_task(task_id: str):
+    try:
+        res = supabase.table("tasks").delete().eq("id", task_id).execute()
+        return {"message": "任務已刪除", "data": res.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 10. 建立執行腳本的 API 路由，透過 BackgroundTasks 在背景執行
 @app.post("/api/tasks/{task_id}/execute")
 async def execute_task(task_id: str, background_tasks: BackgroundTasks):
     try:
-        # 從 Supabase 查詢此 task 的 task_type，以決定要呼叫哪個腳本
         task_data = supabase.table("tasks").select("task_type").eq("id", task_id).execute()
         if not task_data.data:
             raise HTTPException(status_code=404, detail=f"找不到 task_id={task_id} 的任務")
         task_type = task_data.data[0]["task_type"]
 
-        # 將 dispatch_script 加入背景佇列，API 立即回覆不被卡住
+        # 立即更新狀態為 running
+        supabase.table("tasks").update({"status": "running"}).eq("id", task_id).execute()
+
         background_tasks.add_task(dispatch_script, task_type, task_id)
         return {
             "message": f"任務 {task_id} (類型: {task_type}) 已派發至背景執行器",
@@ -73,19 +298,17 @@ async def execute_task(task_id: str, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 7. OTP 提交 API：讓前端傳入驗證碼，後端腳本會 polling 到後填入
+# 11. OTP 提交 API
 class OtpPayload(BaseModel):
     otp_code: str
 
 @app.post("/api/tasks/{task_id}/otp")
 async def submit_otp(task_id: str, payload: OtpPayload):
     try:
-        # 驗證格式：只接受 4 位數字
         code = payload.otp_code.strip()
         if not code.isdigit() or len(code) != 4:
             raise HTTPException(status_code=400, detail="OTP 必須為 4 位數字")
 
-        # 確認任務存在且狀態為 waiting_otp
         task_data = supabase.table("tasks").select("status").eq("id", task_id).execute()
         if not task_data.data:
             raise HTTPException(status_code=404, detail=f"找不到 task_id={task_id}")
@@ -96,7 +319,6 @@ async def submit_otp(task_id: str, payload: OtpPayload):
                 detail=f"任務狀態為 '{current_status}'，目前不在等待 OTP 的狀態"
             )
 
-        # 寫入 OTP 到 Supabase（後端腳本會 polling 到這個值）
         supabase.table("tasks").update({"otp_code": code}).eq("id", task_id).execute()
         return {"message": "OTP 已提交，訂位機器人將立即填入驗證碼", "task_id": task_id}
     except HTTPException:
@@ -105,7 +327,7 @@ async def submit_otp(task_id: str, payload: OtpPayload):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 8. 任務狀態查詢 API：前端 OTP Modal polling 用
+# 12. 任務狀態查詢 API
 @app.get("/api/tasks/{task_id}/status")
 async def get_task_status(task_id: str):
     try:
@@ -126,5 +348,4 @@ async def get_task_status(task_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    # 加上 loop="asyncio" 強制使用系統預設支援背景程序的引擎
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, loop="asyncio")

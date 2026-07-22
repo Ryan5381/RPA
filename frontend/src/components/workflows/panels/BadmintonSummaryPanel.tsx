@@ -1,7 +1,8 @@
-import React from "react";
-import { Zap } from "lucide-react";
+import React, { useState } from "react";
+import { Zap, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 interface BadmintonSummaryPanelProps {
   badmintonForm?: {
@@ -11,7 +12,7 @@ interface BadmintonSummaryPanelProps {
     target_time?: string;
     session_count?: string;
   };
-  handleLaunchTask: () => void;
+  handleLaunchTask: (options?: { priority?: string; scheduledAt?: string }) => void;
   isLaunching: boolean;
 }
 
@@ -20,6 +21,22 @@ export const BadmintonSummaryPanel: React.FC<BadmintonSummaryPanelProps> = ({
   handleLaunchTask,
   isLaunching,
 }) => {
+  const [isScheduledMode, setIsScheduledMode] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState(badmintonForm?.target_date || new Date().toISOString().split("T")[0]);
+  const [scheduledTime, setScheduledTime] = useState("11:59:50");
+  const [priority, setPriority] = useState<"HIGH" | "MED" | "LOW">("HIGH");
+
+  const onSubmit = () => {
+    if (isScheduledMode) {
+      handleLaunchTask({
+        priority,
+        scheduledAt: `${scheduledDate} ${scheduledTime}`,
+      });
+    } else {
+      handleLaunchTask({ priority });
+    }
+  };
+
   return (
     <div className="bg-card/90 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-6 backdrop-blur-xl flex flex-col h-full justify-between shadow-sm dark:shadow-none">
       <div>
@@ -27,18 +44,18 @@ export const BadmintonSummaryPanel: React.FC<BadmintonSummaryPanelProps> = ({
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wider flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 shrink-0" />
-            任務總覽
+            任務總覽與派發
           </h3>
           <Badge
             variant="outline"
             className="text-[10px] font-mono bg-cyan-100 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-400 border-cyan-400/60 dark:border-cyan-500/40 px-2"
           >
-            API ENGINE v2.0
+            API ENGINE & SCHEDULER
           </Badge>
         </div>
 
         {/* 任務設定摘要面板 */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4">
           <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 rounded-lg p-4 space-y-3 font-mono text-xs">
             <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800/60">
               <span className="text-slate-500 dark:text-slate-400">目標打球日</span>
@@ -60,18 +77,6 @@ export const BadmintonSummaryPanel: React.FC<BadmintonSummaryPanelProps> = ({
                 {badmintonForm?.target_courts || "羽6,羽8,羽9"}
               </span>
             </div>
-            <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800/60">
-              <span className="text-slate-500 dark:text-slate-400">發動策略</span>
-              {badmintonForm?.target_time ? (
-                <span className="text-amber-600 dark:text-amber-400 font-bold">
-                  ⏰ 定時：{badmintonForm.target_time}
-                </span>
-              ) : (
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                  ⚡ 立即毫秒秒殺
-                </span>
-              )}
-            </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-500 dark:text-slate-400">線程火力</span>
               <span className="text-violet-600 dark:text-violet-400 font-bold">
@@ -85,25 +90,129 @@ export const BadmintonSummaryPanel: React.FC<BadmintonSummaryPanelProps> = ({
               ⚡ 核心 API 秒殺引擎就緒
             </div>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[10px]">
-              全自動依賴後端 HTTPX 併發通訊，內建 Turnstile 雲端 AI
-              預先授權與動態訂單編號協議穿透。
+              全自動依賴後端 HTTPX 併發通訊，內建 Turnstile 雲端 AI 預先授權與動態訂單編號協議穿透。
             </p>
           </div>
+        </div>
+
+        {/* ── 執行模式設定：立即 vs 定時排程 ── */}
+        <div className="bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg p-3.5 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <Clock3 className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+              排程觸發模式
+            </span>
+            <div className="flex bg-slate-200 dark:bg-slate-900 rounded p-0.5 border border-slate-300 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsScheduledMode(false)}
+                className={`px-2.5 py-1 rounded text-[11px] font-mono transition-all cursor-pointer ${
+                  !isScheduledMode
+                    ? "bg-cyan-600 text-white font-bold shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                立即執行
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsScheduledMode(true)}
+                className={`px-2.5 py-1 rounded text-[11px] font-mono transition-all cursor-pointer ${
+                  isScheduledMode
+                    ? "bg-cyan-600 text-white font-bold shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                ⏰ 定時預約排程
+              </button>
+            </div>
+          </div>
+
+          {isScheduledMode && (
+            <div className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block mb-1">
+                    啟動日期
+                  </label>
+                  <Input
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="h-8 text-xs font-mono bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block mb-1">
+                    啟動時間（秒）
+                  </label>
+                  <Input
+                    type="text"
+                    value={scheduledTime}
+                    onChange={(e) => setScheduledTime(e.target.value)}
+                    placeholder="11:59:50"
+                    className="h-8 text-xs font-mono bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block mb-1">
+                  優先序列順位
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(["HIGH", "MED", "LOW"] as const).map((prio) => (
+                    <button
+                      key={prio}
+                      type="button"
+                      onClick={() => setPriority(prio)}
+                      className={`py-1 rounded text-[11px] font-mono font-bold border transition-all cursor-pointer ${
+                        priority === prio
+                          ? prio === "HIGH"
+                            ? "bg-red-500 text-white border-red-600 shadow-sm"
+                            : prio === "MED"
+                            ? "bg-amber-500 text-white border-amber-600 shadow-sm"
+                            : "bg-emerald-500 text-white border-emerald-600 shadow-sm"
+                          : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                      }`}
+                    >
+                      {prio === "HIGH" ? "🔴 高優先" : prio === "MED" ? "🟡 中優先" : "🟢 低優先"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* 啟動按鈕 */}
-      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60">
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60 mt-4">
         <Button
-          onClick={handleLaunchTask}
+          onClick={onSubmit}
           disabled={isLaunching}
-          className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white font-bold text-sm tracking-wider border-0 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] transition-all duration-200 gap-2"
+          className={`w-full h-11 text-white font-bold text-sm tracking-wider border-0 cursor-pointer transition-all duration-200 gap-2 ${
+            isScheduledMode
+              ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-[0_0_20px_rgba(6,182,212,0.25)]"
+              : "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+          }`}
         >
-          <Zap className="w-4 h-4" />
-          {isLaunching ? "正在發動搶票攻擊..." : "啟動自動化任務"}
+          {isScheduledMode ? (
+            <>
+              <Clock3 className="w-4 h-4" />
+              加入優先排程序列 (預約 {scheduledTime} 啟動)
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4" />
+              {isLaunching ? "正在發動搶票攻擊..." : "立即發動秒殺任務"}
+            </>
+          )}
         </Button>
         <p className="text-[10px] font-mono text-slate-500 dark:text-slate-600 text-center mt-2">
-          按鍵即啟動，後端純 API 毫秒執行無須等待瀏覽器
+          {isScheduledMode
+            ? "排程成功後可至左側「優先序列」頁面隨時調整時間與順位"
+            : "按鍵即啟動，後端純 API 毫秒執行無須等待瀏覽器"}
         </p>
       </div>
     </div>

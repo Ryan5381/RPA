@@ -9,7 +9,7 @@ interface PreferenceSelectorProps {
   removePreference: (id: string) => void;
   updatePreference: (id: string, field: any, value: string) => void;
   isAtMax: boolean;
-  handleLaunchTask: () => void;
+  handleLaunchTask: (options?: { priority?: string; scheduledAt?: string }) => void;
   isLaunching: boolean;
   selectedKey: string;
   badmintonForm?: any;
