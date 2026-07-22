@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ListOrdered, Plus, Trash2, Sparkles } from "lucide-react";
+import { ListOrdered, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QueueTable } from "./QueueTable";
 import { QueueEditSheet } from "./QueueEditSheet";

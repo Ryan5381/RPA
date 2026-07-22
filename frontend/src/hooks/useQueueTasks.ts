@@ -4,12 +4,12 @@ import type { QueueTask } from "@/types/type";
 import { sortTasks, cyclePriority } from "@/lib/queueHelpers";
 
 const TASK_TYPE_MAP: Record<string, { name: string; icon: string }> = {
-  inline_booking: { name: "inline.app 美食訂位", icon: "inline_booking" },
+  inline_booking: { name: "inline.app 美食訂位", icon: "utensils" },
   hospital_booking: { name: "長庚醫院自動掛號", icon: "hospital" },
   thsr_booking: { name: "高鐵搶票自動化", icon: "train" },
   tixcraft_booking: { name: "拓元售票搶票", icon: "ticket" },
   concert_ticket: { name: "演唱會搶票助手", icon: "ticket" },
-  badminton_booking: { name: "羽球場地自動預約", icon: "badminton" },
+  badminton_booking: { name: "羽球場地自動預約", icon: "gym" },
 };
 
 const formatSupabaseRow = (row: any): QueueTask => {

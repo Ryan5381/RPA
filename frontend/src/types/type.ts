@@ -64,7 +64,7 @@ export interface QueueTask {
 
 // ─── 執行中任務 (Process) ────────────────────────────────────────────────────
 export interface Process {
-  id: number;
+  id: number | string;
   title: string;
   iconType: string;
   category: string;

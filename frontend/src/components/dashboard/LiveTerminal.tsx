@@ -28,11 +28,16 @@ const getLevelColor = (level: string) => {
 export const LiveTerminal: React.FC = () => {
   const { logs, clearLogs, getFormattedTime } = useLogStream({ maxItems: 150 });
   const [isCopied, setIsCopied] = useState(false);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // 自動捲動到底部
+  // 自動捲動到底部：只有當內容高度超過容器視窗高度時才進行捲動，避免短內容被 scrollIntoView 截斷頂部起始行
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      if (container.scrollHeight > container.clientHeight) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [logs]);
 
   // 複製所有日誌到剪貼簿
@@ -101,7 +106,10 @@ export const LiveTerminal: React.FC = () => {
         <div className="absolute bottom-0 right-0 w-32 h-32 translate-x-1/2 translate-y-1/2 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
         {/* 日誌列表 */}
-        <div className="max-h-48 overflow-y-auto font-mono text-xs md:text-sm text-slate-300 space-y-2.5 pr-2">
+        <div
+          ref={scrollContainerRef}
+          className="max-h-48 overflow-y-auto font-mono text-xs md:text-sm text-slate-300 space-y-2.5 pr-2"
+        >
           {logs.map((log) => (
             <div
               key={log.id}
@@ -128,8 +136,6 @@ export const LiveTerminal: React.FC = () => {
             </span>
             <span className="ml-1 inline-block w-1.5 h-3.5 bg-cyan-400 animate-[pulse_1s_infinite]" />
           </div>
-
-          <div ref={terminalEndRef} />
         </div>
       </div>
 

@@ -1,14 +1,66 @@
 import { useState, useEffect } from "react";
 import { Terminal } from "lucide-react";
-import mockProcesses from "@/data/processes.json";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { AllProcessesModal } from "./AllProcessesModal";
 import { ICON_MAP } from "../../lib/icons";
+import { useQueueTasks } from "@/hooks/useQueueTasks";
+import type { QueueTask, Process } from "@/types/type";
+
+const mapQueueTasksToProcesses = (tasks: QueueTask[]): Process[] => {
+  if (!tasks || tasks.length === 0) return [];
+  return tasks.map((t, idx) => {
+    const isRunning = t.status === "RUNNING";
+    const isSuccess = t.status === "SUCCESS";
+    const isFailed = t.status === "FAILED";
+
+    return {
+      id: t.id || idx + 1,
+      title: t.name || "自動化 RPA 任務",
+      iconType: t.iconType || "terminal",
+      category: "自動化流程",
+      account: String(t.config?.account || "預設聯絡人"),
+      status: isRunning ? "RUNNING" : isSuccess ? "SUCCESS" : isFailed ? "FAILED" : "QUEUED",
+      progress: isSuccess ? 100 : isFailed ? 100 : isRunning ? 65 : 10,
+      stepLabel: isSuccess
+        ? "任務已順利執行完成"
+        : isFailed
+        ? "任務執行遭遇異常或中斷"
+        : isRunning
+        ? "步驟 2/4: 自動化腳本與瀏覽器互動中..."
+        : `排程等待: ${t.scheduledAt || "排隊派發中"}`,
+      details: [
+        { label: "Target", value: String(t.config?.target || t.name) },
+        { label: "Priority", value: t.priority || "MED" },
+        { label: "Scheduled", value: String(t.scheduledAt || "立即執行") },
+      ],
+      footerLabel: isSuccess || isFailed ? "Result" : "Status",
+      footerValue: isSuccess
+        ? "Completed Successfully"
+        : isFailed
+        ? "Execution Error"
+        : isRunning
+        ? "Bot Active in Browser..."
+        : "Queued in Scheduler",
+      footerType: isSuccess ? "success" : isFailed ? "error" : isRunning ? "running" : "waiting",
+      logs: [
+        `[系統] 載入任務 ID ${t.id} 資訊成功`,
+        `[設定] 目標: ${t.config?.target || t.name}, 優先順位: ${t.priority}`,
+        `[狀態] 目前執行狀態為: ${t.status}`,
+      ],
+    };
+  });
+};
 
 export const ActiveProcesses = () => {
-  const [processes, setProcesses] = useState(mockProcesses);
+  const { tasks } = useQueueTasks();
+  const [processes, setProcesses] = useState<Process[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 當 Supabase 任務清單更新時，轉換並同步至 processes
+  useEffect(() => {
+    setProcesses(mapQueueTasksToProcesses(tasks));
+  }, [tasks]);
 
   // 模擬 RUNNING 狀態任務的即時進度流動效果
   useEffect(() => {
@@ -18,10 +70,10 @@ export const ActiveProcesses = () => {
           if (proc.status === "RUNNING") {
             const nextProgress = proc.progress >= 90 ? 60 : proc.progress + 5;
             const steps = [
-              "步驟 1/4: 填寫預約表單資料...",
-              "步驟 2/4: 識別圖形驗證碼 (OCR)",
-              "步驟 3/4: 驗證碼校對中 (CNN 模型)",
-              "步驟 4/4: 送出預約請求封包...",
+              "步驟 1/4: 填寫預約表單與聯絡人資料...",
+              "步驟 2/4: 識別圖形驗證碼與安全校驗 (OCR)",
+              "步驟 3/4: 驗證碼校對與防阻擋策略 (CNN 模型)",
+              "步驟 4/4: 送出預約請求與等待伺服器回應...",
             ];
             const stepIdx = Math.floor((nextProgress - 60) / 8) % steps.length;
             return {
@@ -59,10 +111,15 @@ export const ActiveProcesses = () => {
         </button>
       </div>
 
-      {/* 卡片網格 (儀表板首頁只顯示前 3 個首要任務) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {processes.slice(0, 3).map((proc) => {
-          const Icon = ICON_MAP[proc.iconType] || Terminal;
+      {/* 卡片網格 (儀表板首頁只顯示前 3 個首要任務，無任務時顯示提示) */}
+      {processes.length === 0 ? (
+        <div className="bg-card/90 dark:bg-background/40 rounded-xl p-8 border border-dashed border-slate-300 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400 font-mono text-sm">
+          目前序列中無任務，請至左側工作流或「新任務」建立並執行 RPA 自動化腳本。
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {processes.slice(0, 3).map((proc) => {
+            const Icon = ICON_MAP[proc.iconType] || Terminal;
           return (
             <div
               key={proc.id}
@@ -187,6 +244,7 @@ export const ActiveProcesses = () => {
           );
         })}
       </div>
+      )}
 
       {/* 檢視全部排程的 Modal 彈跳視窗 */}
       <AllProcessesModal

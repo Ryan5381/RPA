@@ -29,9 +29,9 @@ export const AllProcessesModal = ({
   onClose,
   processes,
 }: AllProcessesModalProps) => {
-  const [expandedLogs, setExpandedLogs] = useState<Record<number, boolean>>({});
+  const [expandedLogs, setExpandedLogs] = useState<Record<string | number, boolean>>({});
 
-  const toggleLogs = (id: number) => {
+  const toggleLogs = (id: string | number) => {
     setExpandedLogs((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
