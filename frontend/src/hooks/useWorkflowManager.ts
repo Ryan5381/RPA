@@ -36,7 +36,7 @@ export const useWorkflowManager = () => {
     },
   });
 
-  const handleLaunchTask = () => {
+  const handleLaunchTask = (options?: { priority?: string; scheduledAt?: string }) => {
     let launchConfig;
 
     // 高鐵
@@ -70,7 +70,11 @@ export const useWorkflowManager = () => {
       return;
     }
 
-    launchMutation.mutate(launchConfig);
+    launchMutation.mutate({
+      ...launchConfig,
+      priority: options?.priority || "MED",
+      scheduledAt: options?.scheduledAt,
+    });
   };
 
   return {

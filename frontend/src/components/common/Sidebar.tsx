@@ -29,7 +29,9 @@ export const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
       {/* 系統標題與版本 */}
       <div className="mb-6 px-2">
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-muted-foreground font-mono">v4.2.0</span>
+          <span className="text-xs text-muted-foreground font-mono">
+            v4.2.0
+          </span>
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono uppercase tracking-widest font-semibold">
             Active
@@ -40,7 +42,7 @@ export const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
       {/* 新任務按鈕 */}
       <Button
         className="w-full justify-center gap-2 mb-6 bg-cyan-100 dark:bg-cyan-100 hover:bg-cyan-200 text-slate-900 font-semibold border border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all cursor-pointer"
-        onClick={() => alert("建立新任務")}
+        onClick={() => setActiveTab("workflows")}
       >
         <Plus className="w-4 h-4" />
         <span>新任務</span>
