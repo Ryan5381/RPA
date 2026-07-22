@@ -27,6 +27,7 @@ export const useLogStream = ({ maxItems = 150, taskId }: UseLogStreamOptions = {
         let query = supabase
           .from("execution_logs")
           .select("*")
+          .order("created_at", { ascending: false })
           .limit(maxItems);
 
         if (taskId) {
@@ -43,7 +44,7 @@ export const useLogStream = ({ maxItems = 150, taskId }: UseLogStreamOptions = {
 
         if (isMounted && data) {
           if (data.length > 0) {
-            const formatted = data.map(formatLogEntry);
+            const formatted = data.reverse().map(formatLogEntry);
             setLogs(formatted);
           } else {
             console.log("[useLogStream] 目前 execution_logs 表格無資料");

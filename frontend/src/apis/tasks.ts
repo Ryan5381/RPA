@@ -1,6 +1,5 @@
 import { type AxiosResponse } from "axios";
 import { axiosInstance } from "./axiosInstance";
-import type { QueueTask } from "@/types/type";
 
 export const listTasks = (status?: string): Promise<AxiosResponse<any>> => {
   const params = status ? { status } : {};

@@ -5,13 +5,21 @@ import {
   Clock,
   MessageSquare,
 } from "lucide-react";
+import { useQueueTasks } from "@/hooks/useQueueTasks";
 
 export const Cards = () => {
+  const { tasks } = useQueueTasks();
+
+  const totalCount = tasks.length;
+  const successCount = tasks.filter((t) => t.status === "SUCCESS").length;
+  const failCount = tasks.filter((t) => t.status === "FAILED").length;
+  const runningCount = tasks.filter((t) => t.status === "RUNNING" || t.status === "QUEUED").length;
+
   const card = [
-    { key: "total", label: "總任務數", value: 0, icon: "total" },
-    { key: "success", label: "執行成功", value: 0, icon: "success" },
-    { key: "fail", label: "執行失敗", value: 0, icon: "fail" },
-    { key: "running", label: "執行中", value: 0, icon: "running" },
+    { key: "total", label: "總任務數", value: totalCount, icon: "total" },
+    { key: "success", label: "執行成功", value: successCount, icon: "success" },
+    { key: "fail", label: "執行失敗", value: failCount, icon: "fail" },
+    { key: "running", label: "排隊/執行中", value: runningCount, icon: "running" },
     { key: "line", label: "Line通知狀態", value: "Active", icon: "line" },
   ];
 
