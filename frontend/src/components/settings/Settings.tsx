@@ -13,6 +13,10 @@ export const Settings = () => {
   const handleSave = () => {
     setIsSaving(true);
     setSaveSuccess(false);
+
+    // 觸發全域儲存事件，讓子元件（如 LineNotifyCard）知道要儲存狀態
+    window.dispatchEvent(new Event("saveAllSettings"));
+
     setTimeout(() => {
       setIsSaving(false);
       setSaveSuccess(true);

@@ -50,3 +50,47 @@ async def dispatch_script(task_type: str, task_id: str):
             supabase.table("tasks").update({"status": "failed"}).eq("id", task_id).execute()
         except Exception:
             pass
+    finally:
+        # ===== 新增：所有任務結束後發送 LINE 通知 =====
+        try:
+            res = supabase.table("tasks").select("status, config").eq("id", task_id).execute()
+            if res.data:
+                task_info = res.data[0]
+                status = task_info.get("status")
+                
+                # 這裡引入 line_notifier
+                from utils.line_notifier import send_line_notification
+                import json
+                from pathlib import Path
+                
+                # 讀取觸發設定
+                triggers = ["success", "fail"]
+                config_path = Path(__file__).parent.parent / "line_config.json"
+                if config_path.exists():
+                    try:
+                        with open(config_path, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            triggers = data.get("triggers", triggers)
+                    except Exception:
+                        pass
+                
+                title_map = {
+                    "thsr_booking": "高鐵訂票",
+                    "badminton_booking": "羽球場地",
+                    "hospital_booking": "醫院掛號",
+                    "tixcraft_booking": "拓元搶票",
+                    "concert_ticket": "拓元搶票",
+                    "inline_booking": "inline 訂位",
+                }
+                task_name = title_map.get(task_type, task_type)
+                
+                if status == "success" and "success" in triggers:
+                    send_line_notification(f"✅ [RPA 機器人] {task_name} 任務執行成功！\n任務ID: {task_id}")
+                elif status == "failed" and "fail" in triggers:
+                    send_line_notification(f"❌ [RPA 機器人] {task_name} 任務執行失敗。\n任務ID: {task_id}")
+                elif status not in ["success", "failed"]:
+                    # 如果因為某些原因還在 running，且 triggers 包含手動或其他
+                    # 目前主要處理 success / fail
+                    pass
+        except Exception as notify_err:
+            print(f"[Dispatch Error] 嘗試發送 LINE 通知時發生錯誤: {notify_err}")
