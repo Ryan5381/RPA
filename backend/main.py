@@ -345,6 +345,41 @@ async def get_task_status(task_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# 13. LINE 通知設定 API
+import json
+
+LINE_CONFIG_PATH = Path(__file__).parent / "line_config.json"
+
+class LineSettingsPayload(BaseModel):
+    triggers: list[str]
+
+@app.get("/api/settings/line")
+async def get_line_settings():
+    try:
+        if LINE_CONFIG_PATH.exists():
+            with open(LINE_CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return {
+                    "triggers": data.get("triggers", ["success", "fail"])
+                }
+        else:
+            return {
+                "triggers": ["success", "fail"]
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/settings/line")
+async def save_line_settings(payload: LineSettingsPayload):
+    try:
+        data = {
+            "triggers": payload.triggers
+        }
+        with open(LINE_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return {"message": "LINE 設定已儲存", "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
