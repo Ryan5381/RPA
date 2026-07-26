@@ -8,6 +8,7 @@ import { useBadmintonWorkflow } from "./useBadmintonWorkflow";
 import { useHospitalWorkflow } from "./useHospitalWorkflow";
 import { useTixCraftWorkflow } from "./useTixCraftWorkflow";
 import { useInlineWorkflow } from "./useInlineWorkflow";
+import { useFlightWorkflow } from "./useFlightWorkflow";
 import { useLaunchWorkflow } from "./useWorkflowMutations";
 
 export const useWorkflowManager = () => {
@@ -24,6 +25,7 @@ export const useWorkflowManager = () => {
   const hospitalWorkflow = useHospitalWorkflow();
   const tixCraftWorkflow = useTixCraftWorkflow();
   const inlineWorkflow = useInlineWorkflow();
+  const flightWorkflow = useFlightWorkflow();
   const preferenceList = usePreferenceList();
 
   // API 啟動 Hook
@@ -64,6 +66,10 @@ export const useWorkflowManager = () => {
     // 美食預約 (inline.app)
     else if (selectedKey === "utensils") {
       launchConfig = inlineWorkflow.getLaunchConfig();
+    }
+    // 折扣機票搜尋
+    else if (selectedKey === "airplane") {
+      launchConfig = flightWorkflow.getLaunchConfig();
     } else {
       // 這裡未來可以實作其他表單的 config 取法
       alert("此類型腳本尚未實作，敬請期待！");
@@ -86,6 +92,7 @@ export const useWorkflowManager = () => {
     hospitalWorkflow,
     tixCraftWorkflow,
     inlineWorkflow,
+    flightWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching: launchMutation.isPending,

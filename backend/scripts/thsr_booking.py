@@ -78,27 +78,37 @@ def _run_thsr_bot_sync(task_id: str):
             log_execution(task_id, "success", "🎉 驗證碼通關！成功進入車次選擇頁面！")
 
             # 7. 第二階段填表：選擇車次（支援預約偏好順位自動候補接力）
-            preferences = config.get("preferences", [])
+            target_list = []
+            if booking_time:
+                target_list.append({"time": booking_time, "label": "首選"})
+            for idx, opt in enumerate(config.get("fallback_options", [])):
+                if opt.get("time"):
+                    target_list.append({"time": opt.get("time"), "label": f"候補 {idx + 1}"})
+            
             selected_train = False
-            if preferences:
-                log_execution(task_id, "action", f"正在根據您設定的 {len(preferences)} 筆偏好順位尋找最佳車次...")
-                for idx, pref in enumerate(preferences):
-                    pref_time = pref.get("time", "").strip()
-                    if not pref_time:
+            if target_list:
+                log_execution(task_id, "action", f"正在根據您的設定嘗試尋找最佳車次...")
+                for target in target_list:
+                    t_time = target["time"].strip()
+                    t_label = target["label"]
+                    if not t_time:
                         continue
+                    
+                    log_execution(task_id, "action", f"▶️ 開始嘗試 {t_label} (時段: {t_time})")
                     try:
                         rows = page.locator("form#BookingS2Form tr").all()
                         for row in rows:
                             text = row.text_content() or ""
-                            if pref_time in text:
+                            if t_time in text:
                                 radio = row.locator("input[type='radio']")
                                 if radio.count() > 0:
                                     radio.first.click()
-                                    log_execution(task_id, "success", f"🎯 已鎖定第 {idx+1} 順位偏好時段車次 ({pref_time})！")
+                                    log_execution(task_id, "success", f"🎯 已鎖定 {t_label} 時段車次 ({t_time})！")
                                     selected_train = True
                                     break
                     except Exception:
                         pass
+                        
                     if selected_train:
                         break
 

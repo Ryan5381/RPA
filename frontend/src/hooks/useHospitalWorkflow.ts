@@ -12,6 +12,7 @@ const initialState = {
   birthDate: "1985-01-01",
   user_phone: "",
   doctorName: "",
+  fallback_options: [] as { date: string; doctorName: string }[],
 };
 
 
@@ -48,10 +49,7 @@ export const useHospitalWorkflow = () => {
         birthDate: hospitalForm.birthDate,
         user_phone: hospitalForm.user_phone,
         doctorName: hospitalForm.doctorName,
-        preferences: preferences.map((p) => ({
-          date: p.date,
-          time: p.time,
-        })),
+        fallback_options: hospitalForm.fallback_options,
       },
     };
   };

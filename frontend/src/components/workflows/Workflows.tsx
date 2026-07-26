@@ -14,6 +14,7 @@ export const Workflows = () => {
     hospitalWorkflow,
     tixCraftWorkflow,
     inlineWorkflow,
+    flightWorkflow,
     preferenceList,
     handleLaunchTask,
     isLaunching,
@@ -59,6 +60,9 @@ export const Workflows = () => {
             inlineForm={inlineWorkflow.inlineForm}
             setInlineField={inlineWorkflow.setInlineField}
             resetInlineForm={inlineWorkflow.resetInlineForm}
+            flightForm={flightWorkflow.flightForm}
+            setFlightField={flightWorkflow.setFlightField}
+            resetFlightForm={flightWorkflow.resetFlightForm}
           />
           <PreferenceSelector
             preferences={preferenceList.preferences}
@@ -71,6 +75,10 @@ export const Workflows = () => {
             selectedKey={selectedKey}
             badmintonForm={badmintonWorkflow.badmintonForm}
             inlineForm={inlineWorkflow.inlineForm}
+            hospitalForm={hospitalWorkflow.hospitalForm}
+            tixCraftForm={tixCraftWorkflow.tixCraftForm}
+            thsrForm={thsrWorkflow.thsrForm}
+            flightForm={flightWorkflow.flightForm}
           />
         </div>
       </div>

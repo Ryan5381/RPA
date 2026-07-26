@@ -7,6 +7,7 @@ const initialState = {
   target_area: "特區",
   ticket_count: "2",
   storage_state: "auth/tixcraft_state.json",
+  fallback_options: [] as { target_area: string; ticket_count: string }[],
 };
 
 export const useTixCraftWorkflow = () => {
@@ -29,7 +30,7 @@ export const useTixCraftWorkflow = () => {
         target_area: tixCraftForm.target_area,
         ticket_count: Number(tixCraftForm.ticket_count),
         storage_state: tixCraftForm.storage_state,
-        preferences: preferences.map((p) => ({ date: p.date, time: p.time })),
+        fallback_options: tixCraftForm.fallback_options,
       },
     };
   };

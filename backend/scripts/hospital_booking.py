@@ -180,113 +180,112 @@ def _check_page_result(page) -> tuple[bool, str]:
 
 def _ntuh_book(page: Page, task_id: str, config: Dict[str, Any]) -> bool:
     """
-    台大醫院完整掛號自動化流程。
+    台大醫院完整掛號自動化流程。支援多順位候補。
     回傳 True = 成功, False = 失敗。
     """
     dept_code = config.get("department", "ENT")
     dept_name = config.get("deptName", dept_code)
     user_id   = config.get("user_id", "")
-    birth_date= config.get("birthDate", "")      # 格式：YYYY-MM-DD
-    target_date = config.get("targetDate", "")   # 未來：可用來篩選日期
-    doctor_name = config.get("doctorName", "")
+    birth_date= config.get("birthDate", "")
     patient_type= config.get("patientType", "return")
-    user_name   = config.get("userName", "")
+    
+    # 建立嘗試清單：首選 + 候補
+    target_list = []
+    if config.get("targetDate") or config.get("doctorName"):
+        target_list.append({
+            "date": config.get("targetDate", ""),
+            "doctor": config.get("doctorName", ""),
+            "label": "首選"
+        })
+    for idx, opt in enumerate(config.get("fallback_options", [])):
+        if opt.get("date") or opt.get("doctorName"):
+            target_list.append({
+                "date": opt.get("date", ""),
+                "doctor": opt.get("doctorName", ""),
+                "label": f"候補 {idx + 1}"
+            })
+            
+    if not target_list:
+        target_list.append({"date": "", "doctor": "", "label": "不指定（自動選第一個）"})
 
-    # ── Step 1: 進入台大掛號首頁 ─────────────────────────────────
-    log_execution(task_id, "running", f"🚀 進入台大醫院網路掛號首頁...")
-    page.goto(NTUH_BASE, timeout=30000, wait_until="domcontentloaded")
-    page.wait_for_timeout(1500)
+    for attempt_idx, target in enumerate(target_list):
+        t_date = target["date"]
+        t_doc = target["doctor"]
+        t_label = target["label"]
+        
+        log_execution(task_id, "running", f"▶️ 開始嘗試 {t_label} (日期:{t_date or '不限'} / 醫師:{t_doc or '不限'})")
+        
+        # ── Step 1: 進入台大掛號首頁 ─────────────────────────────────
+        page.goto(NTUH_BASE, timeout=30000, wait_until="domcontentloaded")
+        page.wait_for_timeout(1000)
 
-    # ── Step 2: 選擇「總院」院區 ──────────────────────────────────
-    log_execution(task_id, "running", "🏥 選擇【總院】院區...")
-    try:
-        branch_link = page.get_by_text("總院", exact=True).first
-        if branch_link.is_visible(timeout=3000):
-            branch_link.click()
-            page.wait_for_load_state("domcontentloaded")
-            page.wait_for_timeout(1500)
-        else:
-            # 直接導向院區科別頁
-            page.goto(f"{NTUH_BASE}/WebReg/RegShowBlock?vHospCode={NTUH_HOSP_CODE}",
-                      timeout=30000, wait_until="domcontentloaded")
-            page.wait_for_timeout(1500)
-    except Exception:
-        page.goto(f"{NTUH_BASE}/WebReg/RegShowBlock?vHospCode={NTUH_HOSP_CODE}",
-                  timeout=30000, wait_until="domcontentloaded")
+        # ── Step 2: 進入科別排班頁 ──────────────────────────────────
+        schedule_url = (
+            f"{NTUH_BASE}/WebReg/RegDeptSchedule"
+            f"?vHospCode={NTUH_HOSP_CODE}&vDeptCode={dept_code}&showBlock=A"
+        )
+        page.goto(schedule_url, timeout=30000, wait_until="domcontentloaded")
         page.wait_for_timeout(1500)
 
-    # ── Step 3: 直接跳到目標科別排班頁（URL 參數方式最可靠）────────
-    schedule_url = (
-        f"{NTUH_BASE}/WebReg/RegDeptSchedule"
-        f"?vHospCode={NTUH_HOSP_CODE}&vDeptCode={dept_code}&showBlock=A"
-    )
-    log_execution(task_id, "running", f"🔍 進入【{dept_name}】門診排班頁...")
-    page.goto(schedule_url, timeout=30000, wait_until="domcontentloaded")
-    page.wait_for_timeout(2000)
+        page_text = page.inner_text("body")
+        if "查無" in page_text or "目前無" in page_text:
+            log_execution(task_id, "warning", f"⚠️ 【{dept_name}】查無可預約門診。")
+            continue # 嘗試下一個候補
 
-    # 確認頁面有排班資料
-    page_text = page.inner_text("body")
-    if "查無" in page_text or "目前無" in page_text:
-        log_execution(task_id, "error", f"❌ 【{dept_name}】目前查無可預約的門診班表，請確認科別代碼或換個日期再試。")
-        return False
+        # ── Step 4: 尋找可預約的時段並點擊 ─────────────────────────────
+        slot_clicked = False
+        if t_doc:
+            try:
+                doctor_slots = page.locator("button.avaliable").filter(has_text=t_doc)
+                if doctor_slots.count() > 0:
+                    if t_date:
+                        parts = t_date.split("-")
+                        if len(parts) == 3:
+                            date_label = f"{int(parts[1])}/{int(parts[2])}"
+                            date_section = page.locator(f"text={date_label}").locator("..").locator("..")
+                            targeted = date_section.locator("button.avaliable").filter(has_text=t_doc)
+                            if targeted.count() > 0:
+                                targeted.first.click()
+                                slot_clicked = True
+                    if not slot_clicked:
+                        doctor_slots.first.click()
+                        slot_clicked = True
+            except Exception:
+                pass
 
-    # ── Step 4: 尋找可預約的時段並點擊 ─────────────────────────────
-    # 台大排班頁的可預約按鈕 class 為 "doctor-tag avaliable"（官方故意的拼寫）
-    # 額滿 / 停診的按鈕只有 "doctor-tag"（沒有 avaliable）
-    log_execution(task_id, "running", f"📅 掃描【{dept_name}】可預約的看診號碼...")
-    page.wait_for_timeout(1000)  # 等 JS 渲染完成
-
-    slot_clicked = False
-
-    # 優先找指定醫師（若有設定）
-    if doctor_name:
-        log_execution(task_id, "running", f"🔎 優先尋找指定醫師：{doctor_name}")
-        try:
-            doctor_slots = page.locator("button.avaliable").filter(has_text=doctor_name)
-            if doctor_slots.count() > 0:
-                # 若有 targetDate，嘗試找該日期的時段
-                if target_date:
-                    # 台大日期格式：M/DD（如 7/24）
-                    parts = target_date.split("-")
+        if not slot_clicked and not t_doc:
+            # 如果沒有指定醫師，且還沒點擊，就點選第一個可預約的號次（可以加上日期過濾）
+            try:
+                if t_date:
+                    parts = t_date.split("-")
                     if len(parts) == 3:
                         date_label = f"{int(parts[1])}/{int(parts[2])}"
-                        # 找包含目標日期的段落，再在其中找醫師
                         date_section = page.locator(f"text={date_label}").locator("..").locator("..")
-                        targeted = date_section.locator("button.avaliable").filter(has_text=doctor_name)
-                        if targeted.count() > 0:
-                            targeted.first.click()
-                            page.wait_for_load_state("domcontentloaded")
-                            page.wait_for_timeout(1500)
+                        avail = date_section.locator("button.avaliable")
+                        if avail.count() > 0:
+                            avail.first.click()
                             slot_clicked = True
-                            log_execution(task_id, "running", f"🎯 已選取 {doctor_name} 醫師 {date_label} 的看診號碼！")
-
+                
                 if not slot_clicked:
-                    doctor_slots.first.click()
-                    page.wait_for_load_state("domcontentloaded")
-                    page.wait_for_timeout(1500)
-                    slot_clicked = True
-                    log_execution(task_id, "running", f"🎯 已選取 {doctor_name} 醫師的看診號碼！")
-        except Exception as e:
-            log_execution(task_id, "running", f"⚠️ 找指定醫師時出現例外：{str(e)[:60]}")
+                    all_available = page.locator("button.avaliable").all()
+                    if all_available:
+                        all_available[0].click()
+                        slot_clicked = True
+            except Exception:
+                pass
 
-    # 若未指定醫師或找不到，退而選第一個可預約的號次
-    if not slot_clicked:
-        try:
-            all_available = page.locator("button.avaliable").all()
-            if all_available:
-                log_execution(task_id, "running", f"ℹ️ 找到 {len(all_available)} 個可預約號次，選取第一個...")
-                all_available[0].click()
-                page.wait_for_load_state("domcontentloaded")
-                page.wait_for_timeout(1500)
-                slot_clicked = True
-                log_execution(task_id, "running", "🎯 已選取可預約號次")
-        except Exception as e:
-            log_execution(task_id, "running", f"⚠️ 選取號次時出現例外：{str(e)[:60]}")
-
-    if not slot_clicked:
-        log_execution(task_id, "error",
-                      f"❌ 【{dept_name}】查無可預約名額（button.avaliable 共 0 個）。"
-                      f"此科別今日所有班次可能均已額滿或停診。")
+        if not slot_clicked:
+            log_execution(task_id, "warning", f"⚠️ {t_label} (日期:{t_date} / 醫師:{t_doc}) 查無名額或已額滿，轉向下一順位...")
+            continue
+            
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(1000)
+        log_execution(task_id, "running", f"🎯 已成功選取 {t_label} 的看診號碼！進入填寫資料階段...")
+        
+        # 若成功選取號碼，跳出迴圈繼續後續的表單填寫 (Step 5)
+        break
+    else:
+        log_execution(task_id, "error", f"❌ 所有偏好順位皆已嘗試完畢，目前查無可掛號名額。")
         return False
 
     # ── Step 5: 填寫病患身分驗證表單 ───────────────────────────────

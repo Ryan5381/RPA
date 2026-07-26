@@ -221,29 +221,59 @@ def _run_tixcraft_bot_sync(task_id: str):
             # 5. 區域選擇步驟 (/ticket/area/...)
             if "/ticket/area/" in page.url or page.locator(".zone, .area-list").count() > 0:
                 reached_area_or_ticket = True
-                log_execution(task_id, "action", f"已成功跳轉進入選區頁面，正在進行區域模糊比對: '{target_area}'")
-                try:
-                    matched = False
-                    if target_area:
-                        # 優先尋找符合關鍵字且可點擊的區域連結 (排除 Sold out / 已售完 的文字)
-                        area_links = page.locator(f"ul.area-list a:has-text('{target_area}'), .area-list li.select_form_a a:has-text('{target_area}')")
-                        if area_links.count() > 0 and area_links.first.is_visible():
-                            area_text = area_links.first.inner_text().strip()
-                            area_links.first.click()
-                            matched = True
-                            log_execution(task_id, "action", f"成功鎖定並選取指定票價區域: {area_text}")
+                
+                # 建立嘗試清單：首選 + 候補
+                target_list = []
+                if target_area:
+                    target_list.append({
+                        "area": target_area,
+                        "count": ticket_count,
+                        "label": "首選"
+                    })
+                for idx, opt in enumerate(config.get("fallback_options", [])):
+                    if opt.get("target_area"):
+                        target_list.append({
+                            "area": opt.get("target_area", ""),
+                            "count": str(opt.get("ticket_count", "2")),
+                            "label": f"候補 {idx + 1}"
+                        })
+                if not target_list:
+                    target_list.append({"area": "", "count": ticket_count, "label": "自動選取"})
 
-                    if not matched:
-                        # 若指定區域售罄或未填寫，尋找全場第一個開放選購的區域連結 (<li class="select_form_a"><a> 或帶有剩餘席次的 <a>)
+                matched = False
+                for target in target_list:
+                    t_area = target["area"]
+                    t_count = target["count"]
+                    t_label = target["label"]
+                    
+                    log_execution(task_id, "action", f"▶️ 開始嘗試 {t_label} (區域: {t_area or '不限'}, 張數: {t_count}張)")
+                    
+                    try:
+                        if t_area:
+                            area_links = page.locator(f"ul.area-list a:has-text('{t_area}'), .area-list li.select_form_a a:has-text('{t_area}')")
+                            if area_links.count() > 0 and area_links.first.is_visible():
+                                area_text = area_links.first.inner_text().strip()
+                                area_links.first.click()
+                                matched = True
+                                # 同步更新 ticket_count 供後續步驟使用
+                                ticket_count = t_count
+                                log_execution(task_id, "action", f"🎯 成功鎖定並選取指定票價區域: {area_text}")
+                                break
+                    except Exception as e:
+                        log_execution(task_id, "warning", f"⚠️ 嘗試 {t_label} 發生例外: {e}")
+                        
+                if not matched:
+                    # 全都失敗，選第一個可用的
+                    try:
                         available_area = page.locator("ul.area-list li.select_form_a a, ul.area-list a[id]:not(:has-text('Sold out')):not(:has-text('已售完'))").first
                         if available_area.count() > 0 and available_area.is_visible():
                             area_text = available_area.inner_text().strip()
                             available_area.click()
-                            log_execution(task_id, "action", f"已自動選擇候補開放選購區域: {area_text}")
+                            log_execution(task_id, "action", f"⚠️ 所有指定區域均售罄，已自動選擇剩餘開放區域: {area_text}")
                         else:
-                            log_execution(task_id, "error", "當前所有票價區域皆顯示為售罄 (Sold out)")
-                except Exception as e:
-                    log_execution(task_id, "error", f"區域選取異常: {e}")
+                            log_execution(task_id, "error", "❌ 當前所有票價區域皆顯示為售罄 (Sold out)")
+                    except Exception as e:
+                        log_execution(task_id, "error", f"區域選取異常: {e}")
 
                 page.wait_for_load_state("domcontentloaded")
 

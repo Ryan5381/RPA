@@ -3,6 +3,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Plus, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -26,6 +28,7 @@ interface HospitalFormProps {
     birthDate: string;
     user_phone: string;
     doctorName: string;
+    fallback_options: { date: string; doctorName: string }[];
   };
   setHospitalForm?: React.Dispatch<
     React.SetStateAction<{
@@ -38,6 +41,7 @@ interface HospitalFormProps {
       birthDate: string;
       user_phone: string;
       doctorName: string;
+      fallback_options: { date: string; doctorName: string }[];
     }>
   >;
   inputClass: string;
@@ -52,7 +56,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
 
   const setHospitalField = (
     field: keyof typeof hospitalForm,
-    value: string
+    value: any
   ) => {
     setHospitalForm((prev) => {
       // 若切換醫院，自動將科別設為該醫院第一個預設科別
@@ -68,6 +72,28 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
   const currentDepts =
     HOSPITAL_DEPARTMENTS[hospitalForm.hospital] || HOSPITAL_DEPARTMENTS.NTUH;
 
+  const addFallback = () => {
+    setHospitalForm((prev) => ({
+      ...prev,
+      fallback_options: [...prev.fallback_options, { date: "", doctorName: "" }],
+    }));
+  };
+
+  const updateFallback = (index: number, field: "date" | "doctorName", value: string) => {
+    setHospitalForm((prev) => {
+      const newOpts = [...prev.fallback_options];
+      newOpts[index] = { ...newOpts[index], [field]: value };
+      return { ...prev, fallback_options: newOpts };
+    });
+  };
+
+  const removeFallback = (index: number) => {
+    setHospitalForm((prev) => ({
+      ...prev,
+      fallback_options: prev.fallback_options.filter((_, i) => i !== index),
+    }));
+  };
+
   return (
     <div className="space-y-4 pt-1">
       {/* 醫院自動化掛號標籤 */}
@@ -79,7 +105,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           醫療門診自動掛號助理
         </div>
         <span className="text-[10px] text-slate-600 dark:text-slate-500 font-mono">
-          支援台大與長庚雙院區自動名額候補
+          支援多順位自動候補
         </span>
       </div>
 
@@ -97,17 +123,12 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
             >
               <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <span className="truncate">
-                  {HOSPITALS.find((h) => h.code === hospitalForm.hospital)
-                    ?.name || "選擇醫院"}
+                  {HOSPITALS.find((h) => h.code === hospitalForm.hospital)?.name || "選擇醫院"}
                 </span>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {HOSPITALS.map((h) => (
-                  <SelectItem
-                    key={h.code}
-                    value={h.code}
-                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
-                  >
+                  <SelectItem key={h.code} value={h.code} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {h.name}
                   </SelectItem>
                 ))}
@@ -122,17 +143,12 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
             >
               <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
                 <span className="truncate">
-                  {currentDepts.find((d) => d.code === hospitalForm.department)
-                    ?.name || "選擇科別"}
+                  {currentDepts.find((d) => d.code === hospitalForm.department)?.name || "選擇科別"}
                 </span>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 max-h-56">
                 {currentDepts.map((d) => (
-                  <SelectItem
-                    key={d.code}
-                    value={d.code}
-                    className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800"
-                  >
+                  <SelectItem key={d.code} value={d.code} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {d.name}
                   </SelectItem>
                 ))}
@@ -141,51 +157,123 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
-              預約看診首選日期
-            </Label>
-            <DatePicker
-              selected={(() => {
-                if (!hospitalForm.targetDate) return null;
-                const d = new Date(hospitalForm.targetDate.replace(/-/g, "/"));
-                return isNaN(d.getTime()) ? null : d;
-              })()}
-              onChange={(date: Date | null) => {
-                if (date) {
-                  const yyyy = date.getFullYear();
-                  const mm = String(date.getMonth() + 1).padStart(2, "0");
-                  const dd = String(date.getDate()).padStart(2, "0");
-                  setHospitalField("targetDate", `${yyyy}-${mm}-${dd}`);
-                } else {
-                  setHospitalField("targetDate", "");
-                }
-              }}
-              dateFormat="yyyy-MM-dd"
-              wrapperClassName="w-full block"
-              className={`${inputClass} w-full`}
-              placeholderText="點選預約日期"
-              minDate={new Date()}
-            />
+        {/* 首選日期與醫師 */}
+        <div className="bg-slate-50 dark:bg-slate-950/50 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-3 space-y-3 relative">
+          <div className="absolute top-0 left-0 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-br-lg rounded-tl-lg uppercase tracking-wider">
+            1st Choice (首選)
           </div>
+          <div className="grid grid-cols-2 gap-3 pt-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+                預約看診日期
+              </Label>
+              <DatePicker
+                selected={(() => {
+                  if (!hospitalForm.targetDate) return null;
+                  const d = new Date(hospitalForm.targetDate.replace(/-/g, "/"));
+                  return isNaN(d.getTime()) ? null : d;
+                })()}
+                onChange={(date: Date | null) => {
+                  if (date) {
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, "0");
+                    const dd = String(date.getDate()).padStart(2, "0");
+                    setHospitalField("targetDate", `${yyyy}-${mm}-${dd}`);
+                  } else {
+                    setHospitalField("targetDate", "");
+                  }
+                }}
+                dateFormat="yyyy-MM-dd"
+                wrapperClassName="w-full block"
+                className={`${inputClass} w-full`}
+                placeholderText="點選預約日期"
+                minDate={new Date()}
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="hosp-doctor"
-              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
-            >
-              指定醫師姓名 (可不填)
-            </Label>
-            <Input
-              id="hosp-doctor"
-              placeholder="如：王大明 醫師"
-              value={hospitalForm.doctorName}
-              onChange={(e) => setHospitalField("doctorName", e.target.value)}
-              className={inputClass}
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="hosp-doctor" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+                指定醫師 (可不填)
+              </Label>
+              <Input
+                id="hosp-doctor"
+                placeholder="如：王大明"
+                value={hospitalForm.doctorName}
+                onChange={(e) => setHospitalField("doctorName", e.target.value)}
+                className={inputClass}
+              />
+            </div>
           </div>
         </div>
+
+        {/* 候補選項 (Fallback Options) */}
+        {hospitalForm.fallback_options.map((opt, idx) => (
+          <div key={idx} className="bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-3 relative group transition-all">
+            <div className="absolute top-0 left-0 bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[9px] font-bold px-2 py-0.5 rounded-br-lg rounded-tl-lg uppercase tracking-wider">
+              Fallback {idx + 1} (候補)
+            </div>
+            <button
+              type="button"
+              onClick={() => removeFallback(idx)}
+              className="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="grid grid-cols-2 gap-3 pt-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+                  候補日期
+                </Label>
+                <DatePicker
+                  selected={(() => {
+                    if (!opt.date) return null;
+                    const d = new Date(opt.date.replace(/-/g, "/"));
+                    return isNaN(d.getTime()) ? null : d;
+                  })()}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      const yyyy = date.getFullYear();
+                      const mm = String(date.getMonth() + 1).padStart(2, "0");
+                      const dd = String(date.getDate()).padStart(2, "0");
+                      updateFallback(idx, "date", `${yyyy}-${mm}-${dd}`);
+                    } else {
+                      updateFallback(idx, "date", "");
+                    }
+                  }}
+                  dateFormat="yyyy-MM-dd"
+                  wrapperClassName="w-full block"
+                  className={`${inputClass} w-full`}
+                  placeholderText="點選候補日期"
+                  minDate={new Date()}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+                  指定候補醫師
+                </Label>
+                <Input
+                  placeholder="如：李小明"
+                  value={opt.doctorName}
+                  onChange={(e) => updateFallback(idx, "doctorName", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {hospitalForm.fallback_options.length < 3 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addFallback}
+            className="w-full h-8 border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-xs font-mono font-semibold gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            新增候補條件
+          </Button>
+        )}
       </div>
 
       {/* 病患基本資料卡 */}
@@ -238,10 +326,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label
-              htmlFor="hosp-id"
-              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
-            >
+            <Label htmlFor="hosp-id" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               身分證字號 / 居留證號
             </Label>
             <Input
@@ -253,10 +338,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label
-              htmlFor="hosp-birth"
-              className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
-            >
+            <Label htmlFor="hosp-birth" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               出生年月日 (核驗用)
             </Label>
             <DatePicker
@@ -287,10 +369,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
         </div>
 
         <div className="space-y-1.5">
-          <Label
-            htmlFor="hosp-phone"
-            className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium"
-          >
+          <Label htmlFor="hosp-phone" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             看診聯絡簡訊手機
           </Label>
           <Input
