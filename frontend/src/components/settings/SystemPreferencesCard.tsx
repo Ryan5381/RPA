@@ -2,12 +2,18 @@ import { useState } from "react";
 import { SlidersHorizontal, Check, ChevronDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/hooks/useTheme";
+import { isNotificationSoundEnabled, setNotificationSoundEnabled } from "@/lib/notificationSound";
 
 export const SystemPreferencesCard = () => {
   const [language, setLanguage] = useState("繁體中文 (Traditional Chinese)");
   const [isLangOpen, setIsLangOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [notificationSound, setNotificationSound] = useState(false);
+  const [notificationSound, setNotificationSound] = useState(isNotificationSoundEnabled);
+
+  const handleToggleNotificationSound = (checked: boolean) => {
+    setNotificationSound(checked);
+    setNotificationSoundEnabled(checked);
+  };
 
   const languages = [
     "繁體中文 (Traditional Chinese)",
@@ -93,7 +99,7 @@ export const SystemPreferencesCard = () => {
             </div>
             <Switch
               checked={notificationSound}
-              onCheckedChange={setNotificationSound}
+              onCheckedChange={handleToggleNotificationSound}
               className="data-[state=checked]:bg-cyan-500 dark:data-[state=checked]:bg-cyan-400"
             />
           </div>

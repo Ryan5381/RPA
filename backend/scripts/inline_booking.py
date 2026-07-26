@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 import time
 import random
 from pathlib import Path
@@ -399,7 +400,39 @@ async def _select_date(page, target_date: str) -> None:
 
 
 async def _select_session(page, session: str) -> None:
-    """選擇用餐時段（midday / afternoon / evening）"""
+    """選擇用餐時段。
+
+    大部分餐廳（如島語自助餐廳）只有午餐/下午茶/晚餐三個粗略時段；
+    但屋馬燒肉等餐廳的訂位頁會直接列出精確的 15 分鐘時段按鈕
+    （例如 data-cy="book-now-time-slot-box-17-00"，顯示文字為 "17:00"），
+    此時 session 會是 "HH:MM" 格式的精確時間。
+    """
+    exact_time_match = re.fullmatch(r"(\d{1,2}):(\d{2})", session)
+    if exact_time_match:
+        hh, mm = exact_time_match.groups()
+        # 優先用穩定的 data-cy 屬性定位（不受時區/文案影響）
+        try:
+            btn = page.locator(f"[data-cy='book-now-time-slot-box-{int(hh)}-{mm}']").first
+            if await btn.is_visible(timeout=2000):
+                await btn.click()
+                await _random_sleep(0.8, 1.2)
+                print(f"[inline_booking] 時段選擇成功（data-cy 精確定位）：{session}")
+                return
+        except Exception:
+            pass
+        # 找不到就退回用畫面上顯示的時間文字比對
+        try:
+            btn = page.locator(f"text={session}").first
+            if await btn.is_visible(timeout=2000):
+                await btn.click()
+                await _random_sleep(0.8, 1.2)
+                print(f"[inline_booking] 時段選擇成功（文字比對）：{session}")
+                return
+        except Exception:
+            pass
+        print(f"[inline_booking] ⚠️ 無法自動選擇精確時段 {session}")
+        return
+
     session_keywords = {
         "midday": ["午餐", "11:30", "Midday", "Lunch"],
         "afternoon": ["下午", "14:30", "Afternoon", "Tea"],

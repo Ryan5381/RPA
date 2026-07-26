@@ -84,6 +84,7 @@ async def dispatch_script(task_type: str, task_id: str):
                     "tixcraft_booking": "拓元搶票",
                     "concert_ticket": "拓元搶票",
                     "inline_booking": "inline 訂位",
+                    "flight_search": "機票搜尋",
                 }
                 task_name = title_map.get(task_type, task_type)
                 
