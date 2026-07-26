@@ -1,7 +1,11 @@
 import React from "react";
 import { BadmintonSummaryPanel } from "./panels/BadmintonSummaryPanel";
-import { PrioritySelectorPanel } from "./panels/PrioritySelectorPanel";
+
 import { InlineSummaryPanel } from "./panels/InlineSummaryPanel";
+import { HospitalSummaryPanel } from "./panels/HospitalSummaryPanel";
+import { TixCraftSummaryPanel } from "./panels/TixCraftSummaryPanel";
+import { ThsrSummaryPanel } from "./panels/ThsrSummaryPanel";
+import { FlightSummaryPanel } from "./panels/FlightSummaryPanel";
 
 interface PreferenceSelectorProps {
   preferences: any[];
@@ -14,6 +18,10 @@ interface PreferenceSelectorProps {
   selectedKey: string;
   badmintonForm?: any;
   inlineForm?: any;
+  hospitalForm?: any;
+  tixCraftForm?: any;
+  thsrForm?: any;
+  flightForm?: any;
 }
 
 export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
@@ -27,12 +35,17 @@ export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
   selectedKey,
   badmintonForm,
   inlineForm,
+  hospitalForm,
+  tixCraftForm,
+  thsrForm,
+  flightForm,
 }) => {
-  const isBadminton =
-    selectedKey === "gym" ||
-    selectedKey === "badminton" ||
-    selectedKey === "badminton-booking";
+  const isBadminton = selectedKey === "gym" || selectedKey === "badminton" || selectedKey === "badminton-booking";
   const isInline = selectedKey === "utensils";
+  const isHospital = selectedKey === "hospital" || selectedKey === "hospital-booking";
+  const isTicket = selectedKey === "ticket" || selectedKey === "tixcraft";
+  const isThsr = selectedKey === "train";
+  const isAirplane = selectedKey === "airplane";
 
   if (isBadminton) {
     return (
@@ -54,15 +67,45 @@ export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
     );
   }
 
-  return (
-    <PrioritySelectorPanel
-      preferences={preferences}
-      addPreference={addPreference}
-      removePreference={removePreference}
-      updatePreference={updatePreference}
-      isAtMax={isAtMax}
-      handleLaunchTask={handleLaunchTask}
-      isLaunching={isLaunching}
-    />
-  );
+  if (isHospital) {
+    return (
+      <HospitalSummaryPanel
+        hospitalForm={hospitalForm}
+        handleLaunchTask={handleLaunchTask}
+        isLaunching={isLaunching}
+      />
+    );
+  }
+
+  if (isTicket) {
+    return (
+      <TixCraftSummaryPanel
+        tixCraftForm={tixCraftForm}
+        handleLaunchTask={handleLaunchTask}
+        isLaunching={isLaunching}
+      />
+    );
+  }
+
+  if (isThsr) {
+    return (
+      <ThsrSummaryPanel
+        thsrForm={thsrForm}
+        handleLaunchTask={handleLaunchTask}
+        isLaunching={isLaunching}
+      />
+    );
+  }
+
+  if (isAirplane) {
+    return (
+      <FlightSummaryPanel
+        flightForm={flightForm}
+        handleLaunchTask={handleLaunchTask}
+        isLaunching={isLaunching}
+      />
+    );
+  }
+
+  return null;
 };

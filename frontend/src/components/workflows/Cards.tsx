@@ -15,12 +15,12 @@ export const Cards: React.FC<CardsProps> = ({ selectedKey, onSelect }) => {
     { key: "airplane", label: "折扣機票", icon: ICON_MAP["airplane"] },
     { key: "gym", label: "羽球場地預約", icon: ICON_MAP["gym"] },
     { key: "train", label: "高鐵訂票", icon: ICON_MAP["train"] },
-    { key: "school", label: "大學課程選修", icon: ICON_MAP["school"] },
-    { key: "camping", label: "熱門營地預約", icon: ICON_MAP["camping"] },
+    // { key: "school", label: "大學課程選修", icon: ICON_MAP["school"] },
+    // { key: "camping", label: "熱門營地預約", icon: ICON_MAP["camping"] },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6">
       {items.map((item) => {
         const isSelected = selectedKey === item.key;
         const Icon = item.icon || ICON_MAP["hospital"];

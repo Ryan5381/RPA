@@ -9,6 +9,7 @@ const initialState = {
   count: "1",
   user_id: "",
   user_phone: "",
+  fallback_options: [] as { date: string; time: string }[],
 };
 
 export const useTHSRWorkflow = () => {
@@ -45,7 +46,7 @@ export const useTHSRWorkflow = () => {
         count: Number(thsrForm.count),
         user_id: thsrForm.user_id,
         user_phone: thsrForm.user_phone,
-        preferences: preferences.map((p) => ({ date: p.date, time: p.time })),
+        fallback_options: thsrForm.fallback_options,
       },
     };
   };
