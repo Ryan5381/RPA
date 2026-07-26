@@ -25,7 +25,7 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
   return (
-    <aside className="w-64 border-r border-dashed border-border bg-background flex flex-col h-screen p-4 text-foreground">
+    <aside className="w-64 border-r border-dashed border-border bg-background flex flex-col min-h-screen p-4 text-foreground">
       {/* 系統標題與版本 */}
       <div className="mb-6 px-2">
         <div className="flex items-center gap-2 mt-1">

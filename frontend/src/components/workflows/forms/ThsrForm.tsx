@@ -2,7 +2,7 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { SensitiveInput } from "@/components/common/SensitiveInput";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import {
@@ -94,7 +94,7 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
           <Label htmlFor="thsr-id" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             身分證字號 / 護照號碼
           </Label>
-          <Input
+          <SensitiveInput
             id="thsr-id"
             placeholder="如 A123456789 (訂票查詢必填)"
             value={thsrForm.user_id}
@@ -107,7 +107,7 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
             <Label htmlFor="thsr-phone" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               手機號碼
             </Label>
-            <Input
+            <SensitiveInput
               id="thsr-phone"
               placeholder="如 0912345678"
               value={thsrForm.user_phone}

@@ -21,7 +21,8 @@ export interface WorkflowFormState {
 
 // ─── inline.app 訂位表單狀態 ─────────────────────────────────────────────
 export type InlineGender = "小姐" | "先生" | "其他";
-export type InlineSession = "midday" | "afternoon" | "evening";
+// "midday" / "afternoon" / "evening"（粗略時段）或 "HH:MM"（部分餐廳如屋馬燒肉的精確時段）
+export type InlineSession = "midday" | "afternoon" | "evening" | (string & {});
 export type InlinePurpose = "birthday" | "date" | "anniversary" | "family" | "friends" | "business" | "";
 
 export interface InlineBookingForm {

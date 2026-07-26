@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SensitiveInput } from "@/components/common/SensitiveInput";
 import {
   Select,
   SelectContent,
@@ -45,6 +46,61 @@ const GENDER_OPTIONS: { value: InlineGender; label: string }[] = [
 const selectClass =
   "w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs focus:border-cyan-500/60";
 
+// 屋馬燒肉：inline.app 訂位頁直接列出精確 15 分鐘時段按鈕，而非粗略的午餐/下午茶/晚餐
+const WUMA_MAX_PARTY_SIZE = 6;
+
+const generateTimeSlots = (
+  startHour: number,
+  startMinute: number,
+  endHour: number,
+  endMinute: number,
+  stepMinutes: number,
+): string[] => {
+  const slots: string[] = [];
+  let h = startHour;
+  let m = startMinute;
+  while (h < endHour || (h === endHour && m <= endMinute)) {
+    slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    m += stepMinutes;
+    if (m >= 60) {
+      m -= 60;
+      h += 1;
+    }
+  }
+  return slots;
+};
+
+const WUMA_MORNING_SLOTS = generateTimeSlots(11, 0, 13, 45, 15);
+const WUMA_AFTERNOON_SLOTS = generateTimeSlots(14, 45, 16, 45, 15);
+const WUMA_EVENING_SLOTS = generateTimeSlots(17, 0, 23, 0, 15);
+
+const TimeSlotGroup: React.FC<{
+  label: string;
+  slots: string[];
+  selected: string;
+  onSelect: (time: string) => void;
+}> = ({ label, slots, selected, onSelect }) => (
+  <div>
+    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mb-1.5">{label}</p>
+    <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+      {slots.map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => onSelect(t)}
+          className={`h-8 rounded-md border text-[11px] font-mono transition-all cursor-pointer ${
+            selected === t
+              ? "border-orange-500 bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 font-bold"
+              : "border-slate-300 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-950/30 text-slate-700 dark:text-slate-400 hover:border-orange-400/60"
+          }`}
+        >
+          {t}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 export const InlineForm: React.FC<InlineFormProps> = ({
   inlineForm,
   setInlineField,
@@ -55,6 +111,27 @@ export const InlineForm: React.FC<InlineFormProps> = ({
     (r) => r.key === inlineForm.restaurant_key
   );
   const branches = currentRestaurant?.branches ?? [];
+
+  // 屋馬燒肉：精確時段選擇 + 單桌最多 6 位（大人+小孩合計）
+  const isWuma = inlineForm.restaurant_key === "wuma";
+  const adultsOptions = isWuma
+    ? ["1", "2", "3", "4", "5", "6"]
+    : ["1", "2", "3", "4", "5", "6", "7"];
+  const maxKidsForWuma = Math.max(0, WUMA_MAX_PARTY_SIZE - Number(inlineForm.adults || "1"));
+  const kidsOptions = isWuma
+    ? Array.from({ length: maxKidsForWuma + 1 }, (_, i) => String(i))
+    : ["0", "1", "2", "3", "4", "5"];
+
+  const handleAdultsChange = (v: string | null) => {
+    if (v == null) return;
+    setInlineField("adults", v);
+    if (isWuma) {
+      const newMaxKids = Math.max(0, WUMA_MAX_PARTY_SIZE - Number(v));
+      if (Number(inlineForm.kids) > newMaxKids) {
+        setInlineField("kids", String(newMaxKids));
+      }
+    }
+  };
 
   return (
     <div className="space-y-5 pt-1">
@@ -80,6 +157,26 @@ export const InlineForm: React.FC<InlineFormProps> = ({
                 const restaurant = INLINE_RESTAURANTS.find((r) => r.key === v);
                 if (restaurant?.branches[0]) {
                   setInlineField("branch_key", restaurant.branches[0].key);
+                }
+                // 切換至屋馬燒肉：時段改為精確時間、人數上限收斂為 6 位
+                if (v === "wuma") {
+                  const isValidWumaSlot =
+                    WUMA_MORNING_SLOTS.includes(inlineForm.session) ||
+                    WUMA_AFTERNOON_SLOTS.includes(inlineForm.session) ||
+                    WUMA_EVENING_SLOTS.includes(inlineForm.session);
+                  if (!isValidWumaSlot) {
+                    setInlineField("session", "18:00");
+                  }
+                  if (Number(inlineForm.adults) > WUMA_MAX_PARTY_SIZE) {
+                    setInlineField("adults", String(WUMA_MAX_PARTY_SIZE));
+                  }
+                  const maxKids = Math.max(0, WUMA_MAX_PARTY_SIZE - Math.min(Number(inlineForm.adults), WUMA_MAX_PARTY_SIZE));
+                  if (Number(inlineForm.kids) > maxKids) {
+                    setInlineField("kids", String(maxKids));
+                  }
+                } else if (inlineForm.restaurant_key === "wuma") {
+                  // 從屋馬切回其他餐廳：時段還原為粗略時段的預設值
+                  setInlineField("session", "evening");
                 }
               }}
             >
@@ -131,7 +228,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
           訂位時間與人數
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className={isWuma ? "grid grid-cols-1 gap-3" : "grid grid-cols-2 gap-3"}>
           {/* 日期 */}
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">訂位日期</Label>
@@ -160,28 +257,57 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             />
           </div>
 
-          {/* 時段 */}
+          {/* 時段：非屋馬餐廳顯示粗略時段下拉選單 */}
+          {!isWuma && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">用餐時段</Label>
+              <Select
+                value={inlineForm.session}
+                onValueChange={(v) => setInlineField("session", v as InlineSession)}
+              >
+                <SelectTrigger className={selectClass}>
+                  <SelectValue>
+                    {(v: string) => SESSION_OPTIONS.find((s) => s.value === v)?.label}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
+                  {SESSION_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        {/* 屋馬燒肉：精確時段按鈕（比照 inline.app 實際訂位頁） */}
+        {isWuma && (
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">用餐時段</Label>
-            <Select
-              value={inlineForm.session}
-              onValueChange={(v) => setInlineField("session", v as InlineSession)}
-            >
-              <SelectTrigger className={selectClass}>
-                <SelectValue>
-                  {(v: string) => SESSION_OPTIONS.find((s) => s.value === v)?.label}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
-                {SESSION_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800/60 rounded-lg p-3">
+              <TimeSlotGroup
+                label="中午"
+                slots={WUMA_MORNING_SLOTS}
+                selected={inlineForm.session}
+                onSelect={(t) => setInlineField("session", t)}
+              />
+              <TimeSlotGroup
+                label="下午"
+                slots={WUMA_AFTERNOON_SLOTS}
+                selected={inlineForm.session}
+                onSelect={(t) => setInlineField("session", t)}
+              />
+              <TimeSlotGroup
+                label="晚上"
+                slots={WUMA_EVENING_SLOTS}
+                selected={inlineForm.session}
+                onSelect={(t) => setInlineField("session", t)}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           {/* 大人人數 */}
@@ -191,13 +317,13 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             </Label>
             <Select
               value={inlineForm.adults}
-              onValueChange={(v) => setInlineField("adults", v)}
+              onValueChange={handleAdultsChange}
             >
               <SelectTrigger className={selectClass}>
                 <SelectValue>{(v: string) => `${v} 位`}</SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
-                {["1", "2", "3", "4", "5", "6", "7"].map((n) => (
+                {adultsOptions.map((n) => (
                   <SelectItem key={n} value={n} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {n} 位
                   </SelectItem>
@@ -217,7 +343,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
                 <SelectValue>{(v: string) => `${v} 位`}</SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
-                {["0", "1", "2", "3", "4", "5"].map((n) => (
+                {kidsOptions.map((n) => (
                   <SelectItem key={n} value={n} className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
                     {n} 位
                   </SelectItem>
@@ -226,6 +352,11 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             </Select>
           </div>
         </div>
+        {isWuma && (
+          <p className="text-[10px] text-slate-500 dark:text-slate-500 font-mono">
+            屋馬燒肉單桌訂位人數（大人＋小孩）最多 {WUMA_MAX_PARTY_SIZE} 位
+          </p>
+        )}
       </div>
 
       {/* ── 區塊三：聯絡資訊 ── */}
@@ -286,7 +417,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             <div className="flex items-center px-3 h-9 rounded-md border border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-950/80 text-slate-600 dark:text-slate-500 text-xs font-mono shrink-0">
               +886
             </div>
-            <Input
+            <SensitiveInput
               id="phone"
               placeholder="09xxxxxxxx"
               value={inlineForm.phone}
@@ -296,6 +427,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               }}
               maxLength={10}
               className={inputClass}
+              containerClassName="flex-1"
             />
           </div>
         </div>

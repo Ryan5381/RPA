@@ -3,7 +3,6 @@ import { SettingsHeader } from "./SettingsHeader";
 import { AccountSecurityCard } from "./AccountSecurityCard";
 import { SystemPreferencesCard } from "./SystemPreferencesCard";
 import { LineNotifyCard } from "./LineNotifyCard";
-import { AutomationEngineCard } from "./AutomationEngineCard";
 
 export const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
@@ -39,11 +38,8 @@ export const Settings = () => {
         <SystemPreferencesCard />
       </div>
 
-      {/* 下半部網格結構：LINE Notify 整合 (1 span) + 自動化引擎配置 (1 span) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <LineNotifyCard />
-        <AutomationEngineCard />
-      </div>
+      {/* 下半部：LINE Notify 整合 */}
+      <LineNotifyCard />
     </div>
   );
 };

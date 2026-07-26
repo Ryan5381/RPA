@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SensitiveInput } from "@/components/common/SensitiveInput";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import {
@@ -329,7 +330,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
             <Label htmlFor="hosp-id" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               身分證字號 / 居留證號
             </Label>
-            <Input
+            <SensitiveInput
               id="hosp-id"
               placeholder="如 A123456789"
               value={hospitalForm.user_id}
@@ -372,7 +373,7 @@ export const HospitalForm: React.FC<HospitalFormProps> = ({
           <Label htmlFor="hosp-phone" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
             看診聯絡簡訊手機
           </Label>
-          <Input
+          <SensitiveInput
             id="hosp-phone"
             placeholder="如 0912345678 (確認看診與號碼提醒)"
             value={hospitalForm.user_phone}

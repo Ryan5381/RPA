@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SensitiveInput } from "@/components/common/SensitiveInput";
 import {
   Select,
   SelectContent,
@@ -56,7 +57,7 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
             <Label className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
               身分證字號 / 會員帳號
             </Label>
-            <Input
+            <SensitiveInput
               placeholder="請輸入會員帳號/身分證字號"
               value={badmintonForm.user_id}
               onChange={(e) => setBadmintonField("user_id", e.target.value)}

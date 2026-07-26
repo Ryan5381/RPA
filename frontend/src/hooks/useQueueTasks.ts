@@ -2,6 +2,12 @@ import { useState, useCallback, useEffect } from "react";
 import { listTasks, updateTaskApi, deleteTaskApi, executeTask, clearTasksApi } from "@/apis/tasks";
 import type { QueueTask } from "@/types/type";
 import { sortTasks, cyclePriority } from "@/lib/queueHelpers";
+import { isNotificationSoundEnabled, playNotificationSound } from "@/lib/notificationSound";
+
+// 模組層級（跨元件共用）：記錄每筆任務目前已知的狀態。
+// 因為 useQueueTasks 會同時被多個元件（Dashboard/Queue）各自呼叫、各自輪詢，
+// 用模組層級的共用紀錄能確保同一次狀態轉換只會播放一次提示音，不會重複響。
+const lastKnownTaskStatus = new Map<string, QueueTask["status"]>();
 
 const TASK_TYPE_MAP: Record<string, { name: string; icon: string }> = {
   inline_booking:     { name: "🍽️ 餐廳訂位",       icon: "utensils" },
@@ -93,6 +99,22 @@ export const useQueueTasks = () => {
       const res = await listTasks();
       const rows = res.data?.data || [];
       const formatted = rows.map(formatSupabaseRow);
+
+      // 偵測任務狀態「剛轉為」成功/失敗：只有先前已知狀態存在且不同、
+      // 且新狀態為終態時才觸發，避免頁面剛載入時把歷史任務全部響一輪
+      const soundEnabled = isNotificationSoundEnabled();
+      let shouldPlaySound = false;
+      for (const t of formatted) {
+        const prevStatus = lastKnownTaskStatus.get(t.id);
+        const justCompleted =
+          prevStatus !== undefined &&
+          prevStatus !== t.status &&
+          (t.status === "SUCCESS" || t.status === "FAILED");
+        if (justCompleted) shouldPlaySound = true;
+        lastKnownTaskStatus.set(t.id, t.status);
+      }
+      if (shouldPlaySound && soundEnabled) playNotificationSound();
+
       setTasks(sortTasks(formatted));
     } catch (err) {
       console.error("[useQueueTasks] 讀取排程清單失敗:", err);
