@@ -171,8 +171,6 @@ async def create_task(payload: TaskPayload):
         data_to_insert = {
             "task_type": payload.task_type,
             "status": initial_status,
-            "priority": prio,
-            "scheduled_at": payload.scheduled_at,
             "config": {
                 **payload.config,
                 "priority": prio,
@@ -183,18 +181,8 @@ async def create_task(payload: TaskPayload):
         try:
             response = supabase.table("tasks").insert(data_to_insert).execute()
         except Exception as insert_err:
-            # 備援機制：若 Supabase 表格尚未建立 priority/scheduled_at 頂層欄位，先寫入 config 中
-            fallback_data = {
-                "task_type": payload.task_type,
-                "status": initial_status,
-                "config": data_to_insert["config"]
-            }
-            try:
-                response = supabase.table("tasks").insert(fallback_data).execute()
-                print("[Warning] Supabase tasks 表格原生寫入失敗，已自動備援儲存於 config 中。原錯誤訊息:", insert_err)
-            except Exception as fallback_err:
-                print(f"[Error] 寫入 tasks 失敗 (原生與備援皆失敗): {fallback_err}")
-                raise fallback_err
+            print(f"[Error] 寫入 tasks 失敗: {insert_err}")
+            raise insert_err
 
         return {"message": "任務成功建立！", "data": response.data}
     except Exception as e:
