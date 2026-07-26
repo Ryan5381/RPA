@@ -124,7 +124,11 @@ export const QueueEditSheet = ({
               onValueChange={(val) => setPriority(val as Priority)}
             >
               <SelectTrigger className="bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 focus:ring-cyan-500/50 font-mono">
-                <SelectValue placeholder="選擇優先度" />
+                <SelectValue placeholder="選擇優先度">
+                  {(v: string) =>
+                    ({ HIGH: "HIGH - 高優先", MED: "MED - 中優先", LOW: "LOW - 低優先" } as Record<string, string>)[v]
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 font-mono">
                 <SelectItem value="HIGH">HIGH - 高優先</SelectItem>

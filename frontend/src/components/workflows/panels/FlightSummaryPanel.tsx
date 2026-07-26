@@ -3,6 +3,7 @@ import { Zap, Clock3, Bell, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { POPULAR_AIRPORTS } from "../forms/FlightForm";
 
 interface FlightSummaryPanelProps {
   flightForm?: {
@@ -13,6 +14,8 @@ interface FlightSummaryPanelProps {
     budget?: string;
     cabin?: string;
     direct_only?: boolean;
+    trip_type?: string;
+    platform?: string;
   };
   handleLaunchTask: (options?: { priority?: string; scheduledAt?: string }) => void;
   isLaunching: boolean;
@@ -24,7 +27,7 @@ export const FlightSummaryPanel: React.FC<FlightSummaryPanelProps> = ({
   isLaunching,
 }) => {
   const [isScheduledMode, setIsScheduledMode] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().split("T")[0]);
+  const [scheduledDate, setScheduledDate] = useState(flightForm?.date_from || new Date().toISOString().split("T")[0]);
   const [scheduledTime, setScheduledTime] = useState("09:00:00");
   const [priority, setPriority] = useState<"HIGH" | "MED" | "LOW">("MED");
 
@@ -37,6 +40,9 @@ export const FlightSummaryPanel: React.FC<FlightSummaryPanelProps> = ({
   };
 
   const cabinLabel = flightForm?.cabin === "business" ? "商務艙" : "經濟艙";
+  const originName = POPULAR_AIRPORTS.find((a) => a.code === flightForm?.origin)?.name || flightForm?.origin || "???";
+  const destName = POPULAR_AIRPORTS.find((a) => a.code === flightForm?.destination)?.name || flightForm?.destination || "???";
+  const isReady = !!flightForm?.origin && !!flightForm?.destination && !!flightForm?.date_from;
 
   return (
     <div className="bg-card/90 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-6 backdrop-blur-xl flex flex-col h-full justify-between shadow-sm dark:shadow-none">
@@ -51,7 +57,7 @@ export const FlightSummaryPanel: React.FC<FlightSummaryPanelProps> = ({
             variant="outline"
             className="text-[10px] font-mono bg-sky-100 dark:bg-sky-950/50 text-sky-700 dark:text-sky-400 border-sky-400/60 dark:border-sky-500/40 px-2"
           >
-            PRICE ALERT
+            PRICE WATCHER
           </Badge>
         </div>
 
@@ -59,13 +65,15 @@ export const FlightSummaryPanel: React.FC<FlightSummaryPanelProps> = ({
         <div className="space-y-3 mb-4">
           <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 rounded-lg p-4 space-y-3 font-mono text-xs">
             {/* 航線顯示 */}
-            <div className="flex items-center justify-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800/60">
-              <span className="text-sky-600 dark:text-sky-400 font-bold text-base">
-                {flightForm?.origin || "???"}
-              </span>
-              <Plane className="w-4 h-4 text-slate-400" />
-              <span className="text-sky-600 dark:text-sky-400 font-bold text-base">
-                {flightForm?.destination || "???"}
+            <div className="flex items-center justify-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800/60 text-center">
+              <span className="text-sky-600 dark:text-sky-400 font-bold truncate max-w-[110px]">{originName}</span>
+              <Plane className="w-4 h-4 text-slate-400 shrink-0" />
+              <span className="text-sky-600 dark:text-sky-400 font-bold truncate max-w-[110px]">{destName}</span>
+            </div>
+            <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800/60">
+              <span className="text-slate-500 dark:text-slate-400">票種</span>
+              <span className="text-slate-900 dark:text-slate-200 font-bold">
+                {flightForm?.trip_type === "round_trip" ? "🔁 來回" : "✈️ 單程"}
               </span>
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800/60">
@@ -146,12 +154,18 @@ export const FlightSummaryPanel: React.FC<FlightSummaryPanelProps> = ({
             </div>
           )}
         </div>
+
+        {!isReady && (
+          <div className="mt-3 bg-red-50 dark:bg-red-950/20 border border-red-300 dark:border-red-800/30 rounded-lg p-3 text-[11px] text-red-600 dark:text-red-400 font-mono">
+            ⚠ 請填寫：出發/目的地機場、最早出發日
+          </div>
+        )}
       </div>
 
       {/* 啟動按鈕 */}
       <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60 mt-4">
-        <Button onClick={onSubmit} disabled={isLaunching}
-          className={`w-full h-11 text-white font-bold text-sm tracking-wider border-0 cursor-pointer transition-all duration-200 gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 shadow-[0_0_20px_rgba(14,165,233,0.2)]`}>
+        <Button onClick={onSubmit} disabled={isLaunching || !isReady}
+          className="w-full h-11 text-white font-bold text-sm tracking-wider border-0 cursor-pointer transition-all duration-200 gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 shadow-[0_0_20px_rgba(14,165,233,0.2)]">
           {isScheduledMode ? (
             <><Clock3 className="w-4 h-4" />排程機票價格監控 ({scheduledTime} 啟動)</>
           ) : (

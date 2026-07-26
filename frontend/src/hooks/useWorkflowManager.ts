@@ -1,6 +1,5 @@
-// 管理各類自動化任務的狀態與邏輯
-
 import { useState } from "react";
+import { toast } from "sonner";
 import { useWorkflowForm } from "./useWorkflowForm";
 import { usePreferenceList } from "./usePreferenceList";
 import { useTHSRWorkflow } from "./useTHSRWorkflow";
@@ -43,7 +42,7 @@ export const useWorkflowManager = () => {
 
     // 高鐵
     if (selectedKey === "train") {
-      launchConfig = thsrWorkflow.getLaunchConfig(preferenceList.preferences);
+      launchConfig = thsrWorkflow.getLaunchConfig();
     }
     // 羽球
     else if (selectedKey === "gym") {
@@ -53,15 +52,11 @@ export const useWorkflowManager = () => {
     }
     // 醫院掛號
     else if (selectedKey === "hospital") {
-      launchConfig = hospitalWorkflow.getLaunchConfig(
-        preferenceList.preferences,
-      );
+      launchConfig = hospitalWorkflow.getLaunchConfig();
     }
     // 演唱會搶票 (拓元售票)
     else if (selectedKey === "ticket") {
-      launchConfig = tixCraftWorkflow.getLaunchConfig(
-        preferenceList.preferences,
-      );
+      launchConfig = tixCraftWorkflow.getLaunchConfig();
     }
     // 美食預約 (inline.app)
     else if (selectedKey === "utensils") {
@@ -72,7 +67,10 @@ export const useWorkflowManager = () => {
       launchConfig = flightWorkflow.getLaunchConfig();
     } else {
       // 這裡未來可以實作其他表單的 config 取法
-      alert("此類型腳本尚未實作，敬請期待！");
+      toast.info("此類型腳本尚未實作", {
+        description: "敢請期待！此自動化流程正在開發中，將於新版本上線。",
+        duration: 4000,
+      });
       return;
     }
 

@@ -121,7 +121,9 @@ export const ThsrForm: React.FC<ThsrFormProps> = ({
             </Label>
             <Select value={thsrForm.count} onValueChange={(v) => setThsrField("count", v)}>
               <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-300 text-xs">
-                <SelectValue placeholder="選擇張數" />
+                <SelectValue placeholder="選擇張數">
+                  {(v: string) => `${v} 張`}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map((n) => (

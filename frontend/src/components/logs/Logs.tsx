@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLogsData } from "@/hooks/useLogsData";
+import { useLivePreview } from "@/hooks/useLivePreview";
 import { LogTerminal } from "./LogTerminal";
 import { LivePreviewCard } from "./LivePreviewCard";
 import { TaskStatusSummaryCard } from "./TaskStatusSummaryCard";
@@ -26,6 +27,9 @@ export const Logs: React.FC = () => {
     refetchAll,
   } = useLogsData(selectedTaskId);
 
+  // 即時截圖 WebSocket 串流
+  const { imgBase64, previewState, reconnect } = useLivePreview(selectedTaskId);
+
   // 切換日誌等級過濾
   const handleToggleLevelFilter = (level: LogLevelFilter) => {
     setLevelFilters((prev) => ({
@@ -34,7 +38,7 @@ export const Logs: React.FC = () => {
     }));
   };
 
-  // 根據目前選擇的任務，動態設定右上方「瀏覽器即時預覽」的文案與目標網址
+  // 根據目前選擇的任務，動態設定瀏覽器預覽的靜態文案
   const getPreviewConfig = () => {
     const currentTask = tasks.find((t) => t.id === selectedTaskId);
     if (selectedTaskId === "ALL" || !currentTask) {
@@ -51,17 +55,21 @@ export const Logs: React.FC = () => {
         currentTask.status === "RUNNING"
           ? `正在執行任務流程:\n${currentTask.name}`
           : `任務狀態: ${currentTask.status}\n等待指令中...`,
-      url: currentTask.name.startsWith("http")
-        ? currentTask.name
-        : `https://rpa.engine/tasks/${currentTask.id}`,
+      url: `https://rpa.engine/tasks/${currentTask.id}`,
     };
   };
 
   const previewConfig = getPreviewConfig();
 
+  // 點擊重新整理：同時 refetch 資料並重連 WebSocket
+  const handleRefresh = () => {
+    refetchAll();
+    reconnect();
+  };
+
   return (
     <div className="w-full min-w-0">
-      {/* 左右分欄或堆疊佈局 (完美還原用戶 Mockup 且完整展開) */}
+      {/* 左右分欄或堆疊佈局 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full min-w-0">
         {/* 左側：系統日誌終端區 (LogTerminal) 佔據 8/12 欄位 */}
         <div className="lg:col-span-8 min-w-0">
@@ -79,13 +87,15 @@ export const Logs: React.FC = () => {
 
         {/* 右側：上下堆疊即時預覽與任務狀態摘要 佔據 4/12 欄位 */}
         <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
-          {/* 上方：瀏覽器即時預覽 (LivePreviewCard) */}
+          {/* 上方：瀏覽器即時預覽 (LivePreviewCard) — 已串接真實截圖 */}
           <div className="min-w-0">
             <LivePreviewCard
               status={previewConfig.status}
               stepText={previewConfig.stepText}
               url={previewConfig.url}
-              onRefresh={refetchAll}
+              imgBase64={imgBase64}
+              previewState={previewState}
+              onRefresh={handleRefresh}
             />
           </div>
 
@@ -101,3 +111,4 @@ export const Logs: React.FC = () => {
     </div>
   );
 };
+

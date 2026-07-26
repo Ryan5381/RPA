@@ -39,7 +39,7 @@ export const Workflows = () => {
         <Cards selectedKey={selectedKey} onSelect={setSelectedKey} />
 
         {/* 工作流配置 + 預約偏好順位 */}
-        <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-6 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-6 items-start">
           <WorkflowConfigForm
             selectedKey={selectedKey}
             form={genericForm.form}

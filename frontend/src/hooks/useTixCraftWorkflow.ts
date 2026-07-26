@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { Preference } from "@/types/type";
 
 const initialState = {
   activity_url: "https://tixcraft.com/activity",
@@ -21,7 +20,7 @@ export const useTixCraftWorkflow = () => {
     setTixCraftForm(initialState);
   };
 
-  const getLaunchConfig = (preferences: Preference[]) => {
+  const getLaunchConfig = () => {
     return {
       taskType: "tixcraft_booking",
       config: {

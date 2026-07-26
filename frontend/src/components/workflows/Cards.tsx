@@ -15,8 +15,6 @@ export const Cards: React.FC<CardsProps> = ({ selectedKey, onSelect }) => {
     { key: "airplane", label: "折扣機票", icon: ICON_MAP["airplane"] },
     { key: "gym", label: "羽球場地預約", icon: ICON_MAP["gym"] },
     { key: "train", label: "高鐵訂票", icon: ICON_MAP["train"] },
-    // { key: "school", label: "大學課程選修", icon: ICON_MAP["school"] },
-    // { key: "camping", label: "熱門營地預約", icon: ICON_MAP["camping"] },
   ];
 
   return (

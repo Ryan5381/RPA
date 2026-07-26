@@ -13,6 +13,17 @@ export const INLINE_RESTAURANTS = [
       { key: "taichung_hanshin", name: "台中漢神洲際店" },
     ],
   },
+  {
+    key: "wuma",
+    name: "屋馬燒肉",
+    branches: [
+      { key: "wenxin", name: "屋馬文心店" },
+      { key: "zhonggang", name: "屋馬中港店" },
+      { key: "guoan", name: "屋馬國安店" },
+      { key: "chongde", name: "屋馬崇德店" },
+      { key: "zhongyou", name: "屋馬中友店" },
+    ],
+  },
   // 預留位置：未來可加入更多餐廳
   // { key: "restaurant_b", name: "某某餐廳", branches: [...] },
 ];
@@ -46,7 +57,7 @@ export const useInlineWorkflow = () => {
   /** 取得目前選擇的餐廳的分店列表 */
   const getCurrentBranches = () => {
     const restaurant = INLINE_RESTAURANTS.find(
-      (r) => r.key === inlineForm.restaurant_key
+      (r) => r.key === inlineForm.restaurant_key,
     );
     return restaurant?.branches ?? [];
   };

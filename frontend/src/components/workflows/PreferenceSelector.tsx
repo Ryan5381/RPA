@@ -1,6 +1,5 @@
 import React from "react";
 import { BadmintonSummaryPanel } from "./panels/BadmintonSummaryPanel";
-
 import { InlineSummaryPanel } from "./panels/InlineSummaryPanel";
 import { HospitalSummaryPanel } from "./panels/HospitalSummaryPanel";
 import { TixCraftSummaryPanel } from "./panels/TixCraftSummaryPanel";
@@ -25,11 +24,6 @@ interface PreferenceSelectorProps {
 }
 
 export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
-  preferences,
-  addPreference,
-  removePreference,
-  updatePreference,
-  isAtMax,
   handleLaunchTask,
   isLaunching,
   selectedKey,
@@ -45,7 +39,7 @@ export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
   const isHospital = selectedKey === "hospital" || selectedKey === "hospital-booking";
   const isTicket = selectedKey === "ticket" || selectedKey === "tixcraft";
   const isThsr = selectedKey === "train";
-  const isAirplane = selectedKey === "airplane";
+  const isFlight = selectedKey === "airplane";
 
   if (isBadminton) {
     return (
@@ -97,7 +91,7 @@ export const PreferenceSelector: React.FC<PreferenceSelectorProps> = ({
     );
   }
 
-  if (isAirplane) {
+  if (isFlight) {
     return (
       <FlightSummaryPanel
         flightForm={flightForm}

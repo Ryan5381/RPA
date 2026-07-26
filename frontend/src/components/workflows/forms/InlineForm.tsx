@@ -84,7 +84,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               }}
             >
               <SelectTrigger className={selectClass}>
-                <SelectValue placeholder="選擇餐廳" />
+                <SelectValue placeholder="選擇餐廳">
+                  {(v: string) => INLINE_RESTAURANTS.find((r) => r.key === v)?.name}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {INLINE_RESTAURANTS.map((r) => (
@@ -106,7 +108,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               onValueChange={(v) => setInlineField("branch_key", v)}
             >
               <SelectTrigger className={selectClass}>
-                <SelectValue placeholder="選擇分店" />
+                <SelectValue placeholder="選擇分店">
+                  {(v: string) => branches.find((b) => b.key === v)?.name}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {branches.map((b) => (
@@ -164,7 +168,9 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               onValueChange={(v) => setInlineField("session", v as InlineSession)}
             >
               <SelectTrigger className={selectClass}>
-                <SelectValue />
+                <SelectValue>
+                  {(v: string) => SESSION_OPTIONS.find((s) => s.value === v)?.label}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {SESSION_OPTIONS.map((s) => (
@@ -188,7 +194,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               onValueChange={(v) => setInlineField("adults", v)}
             >
               <SelectTrigger className={selectClass}>
-                <SelectValue />
+                <SelectValue>{(v: string) => `${v} 位`}</SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {["1", "2", "3", "4", "5", "6", "7"].map((n) => (
@@ -208,7 +214,7 @@ export const InlineForm: React.FC<InlineFormProps> = ({
               onValueChange={(v) => setInlineField("kids", v)}
             >
               <SelectTrigger className={selectClass}>
-                <SelectValue />
+                <SelectValue>{(v: string) => `${v} 位`}</SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
                 {["0", "1", "2", "3", "4", "5"].map((n) => (

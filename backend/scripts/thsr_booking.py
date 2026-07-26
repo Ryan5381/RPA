@@ -1,6 +1,7 @@
 import asyncio
 from playwright.sync_api import sync_playwright
 from tasks_dispatcher import log_execution, supabase
+from scripts import page_registry
 
 
 def _run_thsr_bot_sync(task_id: str):
@@ -36,6 +37,7 @@ def _run_thsr_bot_sync(task_id: str):
             context.add_init_script("delete navigator.__proto__.webdriver;")
 
             page = context.new_page()
+            page_registry.register_page(task_id, page)  # 登錄供即時截圖串流使用
 
             # 3. 前往高鐵訂票首頁
             log_execution(task_id, "navigating", "正在前往高鐵訂票網站...")
@@ -170,7 +172,7 @@ def _run_thsr_bot_sync(task_id: str):
 
             log_execution(task_id, "end", "高鐵訂票腳本執行結束。")
             page.wait_for_timeout(15000)
-
+            page_registry.unregister_page(task_id)  # 移除截圖串流登錄
             browser.close()
 
     except Exception as e:

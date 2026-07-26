@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { Preference } from "@/types/type";
 
 const initialState = {
   from: "台中",
@@ -23,7 +22,7 @@ export const useTHSRWorkflow = () => {
     setThsrForm(initialState);
   };
 
-  const getLaunchConfig = (preferences: Preference[]) => {
+  const getLaunchConfig = () => {
     // 若使用者未填日期，自動用5天後
     const dateValue =
       thsrForm.date ||

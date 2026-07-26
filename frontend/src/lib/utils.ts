@@ -30,9 +30,61 @@ export const formatLogEntry = (row: any): LogEntry => {
 };
 
 export const formatTaskOption = (row: any): TaskOption => {
+  const typeMap: Record<string, string> = {
+    flight_search:      "✈️ 機票搜尋",
+    inline_booking:     "🍽️ 餐廳訂位",
+    hospital_booking:   "🏥 醫院掛號",
+    thsr_booking:       "🚄 高鐵訂票",
+    tixcraft_booking:   "🎟️ 拓元搶票",
+    badminton_booking:  "🏸 羽球訂場",
+    concert_ticket:     "🎟️ 演唱會搶票",
+  };
+
+  const taskType = row.task_type || row.name || "";
+  let baseName = typeMap[taskType] || taskType || `任務-${row.id}`;
+
+  // 從 config 提取有意義的副標題
+  const cfg = row.config || {};
+  const subParts: string[] = [];
+
+  if (taskType === "thsr_booking") {
+    const from = cfg.from || "";
+    const to   = cfg.to   || "";
+    if (from && to) subParts.push(`${from}→${to}`);
+    else if (from || to) subParts.push(from || to);
+  } else if (taskType === "flight_search") {
+    const origin = cfg.origin || cfg.from || "";
+    const dest   = cfg.destination || cfg.to || "";
+    if (origin && dest) subParts.push(`${origin}→${dest}`);
+    if (cfg.depart_date) subParts.push(cfg.depart_date.slice(5)); // MM-DD
+  } else if (taskType === "hospital_booking") {
+    const hosp = cfg.hospital === "NTUH" ? "台大" : cfg.hospital === "CGMH" ? "長庚" : cfg.hospital || "";
+    const dept = cfg.deptName || cfg.department || "";
+    if (hosp) subParts.push(hosp);
+    if (dept) subParts.push(dept);
+  } else if (taskType === "tixcraft_booking" || taskType === "concert_ticket") {
+    if (cfg.target_date) subParts.push(cfg.target_date.slice(5));
+    if (cfg.target_area) subParts.push(cfg.target_area);
+  } else if (taskType === "inline_booking") {
+    if (cfg.restaurant_key) subParts.push(cfg.restaurant_key);
+    if (cfg.target_date)    subParts.push(cfg.target_date.slice(5));
+  }
+
+  // 時間戳記（精確到秒以區分同分鐘內的多筆任務）
+  let timeLabel = "";
+  if (row.created_at) {
+    const d = new Date(row.created_at);
+    timeLabel = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+  } else if (row.id) {
+    timeLabel = String(row.id).substring(0, 6);
+  }
+
+  const subLabel = subParts.length > 0 ? ` ${subParts.join(" ")}` : "";
+  const fullName = timeLabel ? `${baseName}${subLabel} (${timeLabel})` : `${baseName}${subLabel}`;
+
   return {
-    id: String(row.id || row.task_id || "unknown"),
-    name: row.name || row.task_type || `任務-${row.id}`,
+    id:     String(row.id || row.task_id || "unknown"),
+    name:   fullName,
     status: (row.status ? row.status.toUpperCase() : "IDLE") as any,
   };
 };

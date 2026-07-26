@@ -69,7 +69,7 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
   const isTicket =
     selectedKey === "ticket" || selectedKey === "tixcraft";
   const isInline = selectedKey === "utensils";
-  const isAirplane = selectedKey === "airplane";
+  const isFlight = selectedKey === "airplane";
 
   const labels = getFieldLabels(selectedKey);
 
@@ -87,7 +87,7 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
       resetTixCraftForm();
     } else if (isInline && resetInlineForm) {
       resetInlineForm();
-    } else if (isAirplane && resetFlightForm) {
+    } else if (isFlight && resetFlightForm) {
       resetFlightForm();
     } else {
       resetForm();
@@ -144,7 +144,7 @@ export const WorkflowConfigForm: React.FC<WorkflowConfigFormProps> = ({
           setInlineField={setInlineField}
           inputClass={inputClass}
         />
-      ) : isAirplane ? (
+      ) : isFlight ? (
         <FlightForm
           flightForm={flightForm}
           setFlightField={setFlightField}

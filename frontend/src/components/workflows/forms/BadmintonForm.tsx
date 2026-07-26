@@ -206,7 +206,9 @@ export const BadmintonForm: React.FC<BadmintonFormProps> = ({
               onValueChange={(v) => setBadmintonField("session_count", v)}
             >
               <SelectTrigger className="w-full h-9 border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-950/50 text-slate-900 dark:text-slate-200 text-xs">
-                <SelectValue />
+                <SelectValue>
+                  {(v: string) => `${v} 個 Session${v === "1" ? "（單線）" : v === "2" ? "（推薦）" : ""}`}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200">
                 {["1", "2", "3", "4", "5"].map((n) => (

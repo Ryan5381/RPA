@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { Preference } from "@/types/type";
 import { HOSPITAL_DEPARTMENTS } from "@/lib/constants/hospitalColumns";
 
 const initialState = {
@@ -30,7 +29,7 @@ export const useHospitalWorkflow = () => {
     setHospitalForm(initialState);
   };
 
-  const getLaunchConfig = (preferences: Preference[]) => {
+  const getLaunchConfig = () => {
     const depts =
       HOSPITAL_DEPARTMENTS[hospitalForm.hospital] || HOSPITAL_DEPARTMENTS.NTUH;
     const matchedDept = depts.find((d) => d.code === hospitalForm.department);

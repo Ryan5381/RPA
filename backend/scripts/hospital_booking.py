@@ -17,6 +17,7 @@ import base64
 from typing import Dict, Any, Optional
 
 from tasks_dispatcher import log_execution, supabase
+from scripts import page_registry
 
 try:
     from patchright.sync_api import sync_playwright, Page
@@ -369,6 +370,7 @@ def _run_hospital_bot_sync(task_id: str, config: Dict[str, Any]):
         context = browser.new_context(viewport=None)
         page = context.new_page()
         page.set_default_timeout(15000)
+        page_registry.register_page(task_id, page)  # 登錄供即時截圖串流使用
 
         try:
             if hospital == "NTUH":
@@ -380,6 +382,7 @@ def _run_hospital_bot_sync(task_id: str, config: Dict[str, Any]):
         finally:
             # 保留瀏覽器視窗 10 秒讓使用者查看最終結果
             page.wait_for_timeout(10000)
+            page_registry.unregister_page(task_id)  # 移除截圖串流登錄
             browser.close()
 
 

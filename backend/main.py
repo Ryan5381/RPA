@@ -4,16 +4,17 @@ import asyncio
 import random
 import time
 import traceback
+import secrets
 from datetime import datetime
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 from supabase import create_client, Client
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from scripts import dispatch_script
+from scripts import dispatch_script, page_registry
 
 # 1. 載入 .env 檔案中的環境變數
 load_dotenv()
@@ -344,16 +345,20 @@ class LineSettingsPayload(BaseModel):
 @app.get("/api/settings/line")
 async def get_line_settings():
     try:
+        has_token = bool(os.environ.get("LINE_CHANNEL_ACCESS_TOKEN", "").strip())
+        has_user_id = bool(os.environ.get("LINE_USER_ID", "").strip())
+        triggers = ["success", "fail"]
         if LINE_CONFIG_PATH.exists():
             with open(LINE_CONFIG_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                return {
-                    "triggers": data.get("triggers", ["success", "fail"])
-                }
-        else:
-            return {
-                "triggers": ["success", "fail"]
-            }
+                triggers = data.get("triggers", triggers)
+        return {
+            "triggers": triggers,
+            "has_token": has_token,
+            "has_user_id": has_user_id,
+            # 若兩者都已設定，LINE 通知視為 Active
+            "active": has_token and has_user_id,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -368,6 +373,93 @@ async def save_line_settings(payload: LineSettingsPayload):
         return {"message": "LINE 設定已儲存", "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# 14. 瀏覽器即時截圖 WebSocket 串流
+@app.websocket("/ws/preview/{task_id}")
+async def websocket_preview(websocket: WebSocket, task_id: str):
+    """
+    每 1 秒擷取指定任務的 Playwright page 截圖並透過 WebSocket 傳送至前端。
+    腳本結束（unregister_page）後傳送 idle 訊號並關閉連線。
+    """
+    await websocket.accept()
+    idle_count = 0
+    try:
+        while True:
+            # 在執行緒池中呼叫 sync playwright screenshot（避免阻塞事件迴圈）
+            shot: bytes | None = await asyncio.to_thread(page_registry.get_screenshot, task_id)
+            if shot is not None:
+                import base64
+                b64 = base64.b64encode(shot).decode()
+                await websocket.send_json({"type": "screenshot", "data": b64})
+                idle_count = 0
+            else:
+                idle_count += 1
+                await websocket.send_json({"type": "idle"})
+                # 連續 5 秒無 page（任務已結束），主動關閉
+                if idle_count >= 5:
+                    break
+            await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        print(f"[WS Preview] 串流發生異常: {e}")
+    finally:
+        try:
+            await websocket.close()
+        except Exception:
+            pass
+
+
+# ─── 15. API 金鑰管理 ──────────────────────────────────────────────────────────
+ENV_PATH = Path(__file__).parent / ".env"
+WEBHOOK_CONFIG_PATH = Path(__file__).parent / "webhook_config.json"
+
+@app.get("/api/settings/api-key")
+async def get_api_key():
+    """讀取 .env 中的 API_KEY 並遮罩後回傳。"""
+    raw_key = os.environ.get("API_KEY", "")
+    if not raw_key:
+        return {"api_key_masked": None, "has_key": False}
+    masked = raw_key[:8] + "•" * max(0, len(raw_key) - 12) + raw_key[-4:]
+    return {"api_key_masked": masked, "has_key": True}
+
+@app.post("/api/settings/api-key/regenerate")
+async def regenerate_api_key():
+    """產生新的 API Key 並寫入 .env，同步更新環境變數。"""
+    new_key = "sk_live_" + secrets.token_hex(16)
+    try:
+        set_key(str(ENV_PATH), "API_KEY", new_key)
+        os.environ["API_KEY"] = new_key
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"寫入 .env 失敗: {e}")
+    masked = new_key[:8] + "•" * 20 + new_key[-4:]
+    return {"message": "API Key 已重新產生並儲存至 .env", "api_key_masked": masked}
+
+
+# ─── 16. Webhook URL 設定 ──────────────────────────────────────────────────────
+class WebhookPayload(BaseModel):
+    webhook_url: str
+
+@app.get("/api/settings/webhook")
+async def get_webhook():
+    try:
+        if WEBHOOK_CONFIG_PATH.exists():
+            with open(WEBHOOK_CONFIG_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return {"webhook_url": ""}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/settings/webhook")
+async def save_webhook(payload: WebhookPayload):
+    try:
+        data = {"webhook_url": payload.webhook_url}
+        with open(WEBHOOK_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return {"message": "Webhook URL 已儲存", "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

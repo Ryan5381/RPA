@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const POPULAR_AIRPORTS = [
+export const POPULAR_AIRPORTS = [
   { code: "TPE", name: "台灣桃園 (TPE)" },
   { code: "TSA", name: "台灣松山 (TSA)" },
   { code: "NRT", name: "日本成田 (NRT)" },

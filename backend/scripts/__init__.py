@@ -14,6 +14,7 @@ from .hospital_booking import run_hospital_booking
 from .tixcraft_booking import run_tixcraft_booking
 from .inline_booking import run_inline_booking
 from .flight_scraper import run_flight_scraper
+from . import page_registry  # noqa: F401 — 供各腳本與 main.py 的 WebSocket endpoint 共用
 
 # ─── 腳本路由表 ───────────────────────────────────────────────────────────────
 # key: 前端送出時的 task_type 值

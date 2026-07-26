@@ -49,6 +49,16 @@ RESTAURANT_DB = {
             },
         },
     },
+    "wuma": {
+        "name": "屋馬燒肉",
+        "company_id": "-Kbsjto8qbSr0Yza-1gk:inline-live-wuma",
+        "branches": {
+            "main": {
+                "name": "屋馬燒肉",
+                "branch_id": "",
+            },
+        },
+    },
     # 未來可加入更多餐廳
     # "example_restaurant": {
     #     "name": "範例餐廳",
@@ -134,7 +144,11 @@ async def run_inline_booking(task_id: str) -> None:
 
     company_id = restaurant["company_id"]
     branch_id = branch["branch_id"]
-    booking_url = f"https://inline.app/booking/{company_id}/{branch_id}"
+    booking_url = (
+        f"https://inline.app/booking/{company_id}/{branch_id}"
+        if branch_id
+        else f"https://inline.app/booking/{company_id}"
+    )
 
     print(f"[inline_booking] 目標餐廳：{restaurant['name']} - {branch['name']}")
     print(f"[inline_booking] 訂位 URL：{booking_url}")

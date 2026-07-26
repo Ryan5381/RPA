@@ -3,6 +3,7 @@ import time
 import asyncio
 from playwright.sync_api import sync_playwright
 from tasks_dispatcher import log_execution, supabase
+from scripts import page_registry
 
 
 def _recognize_captcha_ocr(image_bytes: bytes) -> str:
@@ -130,6 +131,7 @@ def _run_tixcraft_bot_sync(task_id: str):
             """)
 
             page = context.new_page()
+            page_registry.register_page(task_id, page)  # 登錄供即時截圖串流使用
 
             # 3. 直達活動場次頁面 (/activity/game/...)，省去簡介頁點擊轉址的時間
             if "/activity/detail/" in activity_url:
@@ -342,6 +344,7 @@ def _run_tixcraft_bot_sync(task_id: str):
 
             # 延長等待時間至 60 秒以保留充裕時間確認與付款
             page.wait_for_timeout(60000)
+            page_registry.unregister_page(task_id)  # 移除截圖串流登錄
             browser.close()
 
     except Exception as e:

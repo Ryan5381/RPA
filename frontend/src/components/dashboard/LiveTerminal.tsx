@@ -60,10 +60,7 @@ export const LiveTerminal: React.FC = () => {
       {/* ── 區塊標頭 ── */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold text-slate-900 dark:text-slate-200 tracking-wider flex items-center gap-2">
-          即時日誌{" "}
-          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 font-normal">
-            Live System Terminal
-          </span>
+          即時日誌
         </h2>
 
         <div className="flex items-center gap-3">
