@@ -320,14 +320,28 @@ async def submit_otp(task_id: str, payload: OtpPayload):
 @app.get("/api/tasks/{task_id}/status")
 async def get_task_status(task_id: str):
     try:
-        task_data = supabase.table("tasks").select("id, status, result").eq("id", task_id).execute()
+        task_data = supabase.table("tasks").select("id, status").eq("id", task_id).execute()
         if not task_data.data:
             raise HTTPException(status_code=404, detail=f"找不到 task_id={task_id}")
         task = task_data.data[0]
+
+        # result 是額外的診斷欄位（tasks 資料表目前沒有這欄，需另外執行
+        # ALTER TABLE tasks ADD COLUMN result jsonb; 才會有），獨立查詢、
+        # 失敗就當作 None，不能讓它拖累上面 status 一定要查得到的核心邏輯——
+        # 這支 API 是 OTP 流程判斷「有沒有真的等到驗證碼畫面」的依據，
+        # 之前兩者包在同一個 select 裡，欄位不存在就讓整支 API 對任何任務都回 500。
+        result = None
+        try:
+            result_data = supabase.table("tasks").select("result").eq("id", task_id).execute()
+            if result_data.data:
+                result = result_data.data[0].get("result")
+        except Exception:
+            pass
+
         return {
             "task_id": task["id"],
             "status": task["status"],
-            "result": task.get("result"),
+            "result": result,
         }
     except HTTPException:
         raise

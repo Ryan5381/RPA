@@ -60,7 +60,22 @@ async def dispatch_script(task_type: str, task_id: str):
             if res.data:
                 task_info = res.data[0]
                 status = task_info.get("status")
-                
+
+                # 有些腳本（例如 tixcraft_booking）自己組了帶節目名稱/區域/票價等
+                # 細節的 LINE 通知並直接發送，會在 result 裡標記 line_notified，
+                # 這裡看到就跳過制式訊息，避免同一個任務收到兩則通知。
+                # 注意：這個查詢包在自己的 try/except 裡、且跟上面主要的 status/config
+                # 查詢分開——tasks 資料表目前還沒有 result 這個欄位（需要另外執行
+                # ALTER TABLE tasks ADD COLUMN result jsonb; 才會有），欄位不存在時
+                # 這裡的查詢一定會失敗，但不該連累上面已經正常運作的制式通知邏輯。
+                already_notified = False
+                try:
+                    result_res = supabase.table("tasks").select("result").eq("id", task_id).execute()
+                    if result_res.data:
+                        already_notified = bool((result_res.data[0].get("result") or {}).get("line_notified"))
+                except Exception:
+                    pass
+
                 # 這裡引入 line_notifier
                 from utils.line_notifier import send_line_notification
                 import json
@@ -88,7 +103,9 @@ async def dispatch_script(task_type: str, task_id: str):
                 }
                 task_name = title_map.get(task_type, task_type)
                 
-                if status == "success" and "success" in triggers:
+                if already_notified:
+                    pass
+                elif status == "success" and "success" in triggers:
                     send_line_notification(f"✅ [RPA 機器人] {task_name} 任務執行成功！\n任務ID: {task_id}")
                 elif status == "failed" and "fail" in triggers:
                     send_line_notification(f"❌ [RPA 機器人] {task_name} 任務執行失敗。\n任務ID: {task_id}")
