@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import base64
 import asyncio
@@ -8,6 +9,7 @@ import nodriver as uc
 from nodriver import cdp
 
 from tasks_dispatcher import log_execution, supabase
+from utils.line_notifier import send_line_notification
 
 
 # 針對拓元驗證碼樣式另外訓練過的自訂 ddddocr 模型（非通用模型）。
@@ -148,6 +150,40 @@ _SAME_SITE_MAP = {
     "Lax": cdp.network.CookieSameSite.LAX,
     "None": cdp.network.CookieSameSite.NONE,
 }
+
+
+def _set_status(task_id: str, status: str) -> None:
+    """更新 tasks.status（跟 flight_scraper.py 同一套慣例）。
+
+    這支腳本原本只寫 execution_logs（畫面上的訊息流），從沒更新過 tasks.status，
+    導致任務永遠停在 execute_task 設定的初始值 "running"：主控台看起來像卡住了，
+    而 scripts/__init__.py 的 LINE 通知邏輯是靠檢查這個欄位是不是 success/failed
+    才決定要不要發送，狀態沒被更新，通知自然永遠不會觸發。
+    """
+    try:
+        supabase.table("tasks").update({"status": status}).eq("id", task_id).execute()
+    except Exception as e:
+        print(f"[tixcraft_booking] 無法更新 status：{e}")
+
+
+def _set_result(task_id: str, result: dict) -> None:
+    """把結構化的執行結果（節目名稱/場次/區域/張數/價格）寫回 tasks.result，
+    跟 inline_booking.py 用同一個欄位。這裡額外放一個 line_notified 標記——
+    scripts/__init__.py 的通用 LINE 通知看到這個標記就會跳過它自己的制式訊息，
+    避免這支腳本自己發了一則有節目資訊的通知後，又被發一則沒有內容的重複通知。
+    """
+    try:
+        supabase.table("tasks").update({"result": result}).eq("id", task_id).execute()
+    except Exception as e:
+        print(f"[tixcraft_booking] 無法更新 result：{e}")
+
+
+def _extract_ticket_price(area_label: str) -> str:
+    """從區域列文字（例如 'Sunshine Hill 3樓B區980 剩餘 46'）擷取票價。
+    拓元的區域標籤把價格直接接在區域名稱後面，緊接著才是「剩餘/已售完」等狀態字樣，
+    所以用「剩餘/已售完前面那組數字」當作票價，而不是後面的剩餘張數。"""
+    match = re.search(r"(\d+)\s*(?:剩餘|已售完|no tickets available|sold out)", area_label, re.IGNORECASE)
+    return match.group(1) if match else ""
 
 
 def _load_storage_state_cookies(path: str) -> list:
@@ -295,6 +331,17 @@ async def _run_tixcraft_bot(task_id: str):
         elif is_logged_in:
             log_execution(task_id, "action", "已確認會員登入狀態有效")
 
+        # 取節目名稱，供成功時的 LINE 通知使用（活動頁面的 <h1 id="synopsisEventTitle">
+        # 比 document.title 乾淨，title 常會多帶「| tixcraft拓元售票」這類尾綴）
+        event_title = ""
+        try:
+            event_title = await tab.evaluate(
+                "(document.querySelector('#synopsisEventTitle') || {}).innerText || document.title || ''"
+            )
+            event_title = (event_title or "").strip()
+        except Exception:
+            pass
+
         # 如果還停留在活動簡介首頁 (/activity/detail/...)，才需要找「立即購票」分頁點過去；
         # 若已經在場次表頁面 (/activity/game/...，我們一開始就強制轉址過來了)，這裡就不必再找，
         # 否則會誤點到場次列表裡同樣寫著「立即訂購」文字的購票按鈕，導致提早跳轉到選區頁面。
@@ -391,6 +438,7 @@ async def _run_tixcraft_bot(task_id: str):
         area_click_succeeded = False
         ticket_count_selected = False
         captcha_submitted = False
+        selected_area_label = ""  # 實際選到的區域列文字，供成功通知顯示區域名稱與票價
 
         # 5. 區域選擇步驟 (/ticket/area/...)
         area_list_el = None
@@ -493,6 +541,7 @@ async def _run_tixcraft_bot(task_id: str):
                             continue
                         matched = True
                         ticket_count = t_count
+                        selected_area_label = text
                         log_execution(task_id, "action", f"🎯 成功鎖定並選取指定票價區域: {text}")
                         break
                     if matched:
@@ -515,6 +564,7 @@ async def _run_tixcraft_bot(task_id: str):
                         break
                     if fallback_index is not None and await _click_area(fallback_index):
                         area_click_succeeded = True
+                        selected_area_label = fallback_text
                         log_execution(task_id, "action", f"⚠️ 所有指定區域均售罄或找不到，已自動選擇剩餘開放區域: {fallback_text}")
                     elif fallback_index is not None:
                         log_execution(task_id, "error", f"❌ 找到可購買區域「{fallback_text}」但點擊沒有生效")
@@ -736,22 +786,73 @@ async def _run_tixcraft_bot(task_id: str):
                 log_execution(task_id, "error", f"驗證碼辨識與處理失敗: {e}")
 
         # 依實際完成到哪一步給出誠實的最終狀態，不再只憑「有沒有到過某個頁面」就報成功
+        # 同時把結果寫回 tasks.status——這支腳本以前只寫 execution_logs，從沒更新過
+        # 這個欄位，導致主控台永遠顯示 running、LINE 通知也因為狀態沒變成
+        # success/failed 而永遠不會被 scripts/__init__.py 的通用通知邏輯觸發。
+        # 「success」觸發開關沿用設定頁的 LINE 通知設定（跟 scripts/__init__.py
+        # 讀的是同一份 line_config.json），避免使用者關掉成功通知後這裡還是硬發。
+        success_notify_enabled = True
+        try:
+            line_cfg_path = Path(__file__).parent.parent / "line_config.json"
+            if line_cfg_path.exists():
+                with open(line_cfg_path, "r", encoding="utf-8") as f:
+                    success_notify_enabled = "success" in json.load(f).get("triggers", ["success", "fail"])
+        except Exception:
+            pass
+
+        price = _extract_ticket_price(selected_area_label)
+        price_line = f"💰 票價：NT${price} / 張\n" if price else ""
+        info_lines = (
+            f"🎫 節目：{event_title or '（未知節目）'}\n"
+            f"📅 場次：{target_date or '（未指定）'}\n"
+            f"📍 區域：{selected_area_label or '（未知區域）'}\n"
+            f"🎟️ 張數：{ticket_count} 張\n"
+            f"{price_line}"
+        )
+
         if captcha_submitted:
             log_execution(task_id, "success", "🎉 拓元選票流程執行完畢！已自動完成選區、選張數並送出驗證碼，請確認結帳狀態")
+            _set_status(task_id, "success")
+            _set_result(task_id, {
+                "line_notified": True,
+                "event_title": event_title,
+                "target_date": target_date,
+                "area": selected_area_label,
+                "ticket_count": ticket_count,
+                "price": price,
+            })
+            if success_notify_enabled:
+                send_line_notification(f"🎉 [RPA 拓元搶票] 搶票成功，請盡快至瀏覽器完成付款！\n{info_lines}")
         elif ticket_count_selected:
             log_execution(task_id, "success", "已完成選區與張數選取，驗證碼辨識信心不足，請於瀏覽器視窗手動輸入驗證碼完成結帳")
+            _set_status(task_id, "success")
+            _set_result(task_id, {
+                "line_notified": True,
+                "event_title": event_title,
+                "target_date": target_date,
+                "area": selected_area_label,
+                "ticket_count": ticket_count,
+                "price": price,
+                "needs_manual_captcha": True,
+            })
+            if success_notify_enabled:
+                send_line_notification(f"⚠️ [RPA 拓元搶票] 已選好區域與張數，驗證碼需要你手動輸入！\n{info_lines}請盡快到瀏覽器視窗完成，逾時視窗會自動關閉。")
         elif area_click_succeeded:
             log_execution(task_id, "error", "⚠️ 已選取票價區域，但未能進入張數/驗證碼頁面，請查看瀏覽器視窗確認實際狀況")
+            _set_status(task_id, "failed")
         elif reached_area_or_ticket:
             log_execution(task_id, "error", "⚠️ 已進入選區頁面，但未能成功選取任何票價區域（可能全數售罄或找不到目標區域）")
+            _set_status(task_id, "failed")
         else:
             log_execution(task_id, "error", "❌ 未能成功進入選區或選張數頁面！請確認活動是否開放購票，或是否遇到登入攔截")
+            _set_status(task_id, "failed")
 
         # 延長等待時間至 60 秒以保留充裕時間確認與付款
         await tab.sleep(60)
 
     except Exception as e:
         log_execution(task_id, "error", f"執行發生錯誤: {str(e)}")
+        _set_status(task_id, "failed")
     finally:
         if browser:
             try:

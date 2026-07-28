@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getTaskStatus } from "@/apis/tasks";
 import { useWorkflowForm } from "./useWorkflowForm";
 import { usePreferenceList } from "./usePreferenceList";
 import { useTHSRWorkflow } from "./useTHSRWorkflow";
@@ -13,9 +15,41 @@ import { useLaunchWorkflow } from "./useWorkflowMutations";
 export const useWorkflowManager = () => {
   const [selectedKey, setSelectedKey] = useState("hospital");
 
-  // OTP Modal 狀態：task_id 或 null
+  // OTP Modal 狀態：task_id 或 null。只有後端真的走到「等待 OTP」那一步才會設定，
+  // 不是任務一啟動就打開——不然瀏覽器可能連 inline.app 都還沒開好，
+  // 使用者就先看到要輸入驗證碼的畫面，手機根本還沒收到簡訊。
   const [otpTaskId, setOtpTaskId] = useState<string | null>(null);
   const clearOtpTask = () => setOtpTaskId(null);
+
+  // 任務剛啟動、還在等後端跑到 waiting_otp 的那個過渡期 task_id
+  const [pendingInlineTaskId, setPendingInlineTaskId] = useState<string | null>(null);
+
+  // 每 2 秒輪詢一次剛啟動的 inline 任務狀態，直到後端真的回報 waiting_otp
+  // 才把 OTP Modal 打開；若中途就 success/failed，直接用 toast 通知，不開 Modal。
+  useQuery({
+    queryKey: ["inline-task-pending", pendingInlineTaskId],
+    queryFn: async () => {
+      if (!pendingInlineTaskId) return null;
+      const res = await getTaskStatus({ taskId: pendingInlineTaskId });
+      const data = res.data;
+      if (data.status === "waiting_otp") {
+        setOtpTaskId(pendingInlineTaskId);
+        setPendingInlineTaskId(null);
+      } else if (data.status === "failed") {
+        toast.error("訂位任務失敗", {
+          description: data.result?.error ?? "請查看 Logs 了解詳情",
+        });
+        setPendingInlineTaskId(null);
+      } else if (data.status === "success") {
+        toast.success("訂位任務已完成！");
+        setPendingInlineTaskId(null);
+      }
+      return data;
+    },
+    enabled: !!pendingInlineTaskId,
+    refetchInterval: 2000,
+    refetchIntervalInBackground: true,
+  });
 
   // 表單 Hooks
   const genericForm = useWorkflowForm();
@@ -29,10 +63,14 @@ export const useWorkflowManager = () => {
 
   // API 啟動 Hook
   const launchMutation = useLaunchWorkflow({
-    // inline 任務成功啟動後，開啟 OTP Modal 等待
+    // inline 任務成功啟動後，開始輪詢等待後端真的走到 waiting_otp
     onInlineLaunched: (taskId: string) => {
       if (selectedKey === "utensils") {
-        setOtpTaskId(taskId);
+        setPendingInlineTaskId(taskId);
+        toast.info("訂位機器人啟動中...", {
+          description: "正在自動填寫訂位資訊，等待驗證碼畫面出現後會自動提示您輸入",
+          duration: 5000,
+        });
       }
     },
   });
