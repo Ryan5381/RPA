@@ -54,9 +54,25 @@ RESTAURANT_DB = {
         "name": "屋馬燒肉",
         "company_id": "-Kbsjto8qbSr0Yza-1gk:inline-live-wuma",
         "branches": {
-            "main": {
-                "name": "屋馬燒肉",
-                "branch_id": "",
+            "wenxin": {
+                "name": "屋馬燒肉文心店",
+                "branch_id": "-KbyW5SmQykgA3BRcyCF",
+            },
+            "zhonggang": {
+                "name": "屋馬燒肉中港店",
+                "branch_id": "-KbyW5SxxkVi6Bf3dk8X",
+            },
+            "guoan": {
+                "name": "屋馬燒肉國安店",
+                "branch_id": "-KbyW5SzWAkzCNdWCmt4",
+            },
+            "chongde": {
+                "name": "屋馬燒肉崇德店",
+                "branch_id": "-Lv-4hj0uVLeKXYzkbJh",
+            },
+            "zhongyou": {
+                "name": "屋馬燒肉中友店",
+                "branch_id": "-LzG5ZHpkT3bldgr00Vh",
             },
         },
     },
@@ -75,29 +91,21 @@ SESSION_LABEL_MAP = {
     "evening": "晚餐 (17:30–)",
 }
 
-# 用餐目的映射
-PURPOSE_MAP = {
-    "birthday": "慶生",
-    "date": "約會",
-    "anniversary": "週年慶",
-    "family": "家庭用餐",
-    "friends": "朋友聚餐",
-    "business": "商務聚餐",
-}
-
 # OTP 等待超時（秒）
 OTP_WAIT_TIMEOUT = 300  # 5 分鐘
 
 
 # ── 主腳本 ────────────────────────────────────────────────────────────────────
 
-async def run_inline_booking(task_id: str) -> None:
+async def _run_inline_bot(task_id: str) -> None:
     """
     inline.app 半自動訂位主流程。
-    由 scripts/__init__.py 的 dispatch_script 呼叫。
     """
     from supabase import create_client, Client
-    from playwright.async_api import async_playwright
+    try:
+        from patchright.async_api import async_playwright
+    except ImportError:
+        from playwright.async_api import async_playwright
 
     supabase: Client = create_client(
         os.environ["SUPABASE_URL"],
@@ -119,7 +127,7 @@ async def run_inline_booking(task_id: str) -> None:
         return
 
     # 解析 config
-    restaurant_key = config.get("restaurant_key", "islanduffet")
+    restaurant_key = config.get("restaurant_key", "islandbuffet")
     branch_key = config.get("branch_key", "kaohsiung_hanshin")
     target_date = config.get("target_date", "")           # YYYY-MM-DD
     session = config.get("session", "evening")             # midday/afternoon/evening
@@ -157,35 +165,20 @@ async def run_inline_booking(task_id: str) -> None:
 
     _update_status(supabase, task_id, "running", {"step": "starting_browser"})
 
-    # 2. 啟動 Playwright（headed 模式，避免 PX 偵測 headless）
+    # 2. 啟動瀏覽器（headed 模式，避免 PX 偵測 headless）。
+    # 改用 patchright（找不到就退回原生 playwright）：手動按住不放的挑戰能不能過，
+    # 前提是瀏覽器本身沒有先被判定成自動化工具——這裡跟 tixcraft 踩的是同一種坑。
+    # 原生 playwright 的 CDP 連線帶有 Runtime.enable 等自動化痕跡，PerimeterX 會
+    # 直接偵測到，不管按住不放的手勢模擬得多逼真都沒用；手動用 JS 蓋掉
+    # navigator.webdriver 這類 patch 本身也是可被偵測的訊號，反而弄巧成拙，
+    # 所以這裡拿掉，改交給 patchright 在協定層處理。
     async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=False,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-web-security",
-                "--disable-features=IsolateOrigins,site-per-process",
-            ],
-        )
+        browser = await p.chromium.launch(headless=False, channel="chrome")
         context = await browser.new_context(
             viewport={"width": 1280, "height": 800},
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/126.0.0.0 Safari/537.36"
-            ),
             locale="zh-TW",
             timezone_id="Asia/Taipei",
         )
-
-        # 注入 JS 抹除 webdriver 特徵
-        await context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
-            Object.defineProperty(navigator, 'languages', { get: () => ['zh-TW', 'zh', 'en-US'] });
-            window.chrome = { runtime: {} };
-        """)
 
         page = await context.new_page()
 
@@ -202,36 +195,96 @@ async def run_inline_booking(task_id: str) -> None:
             # 5. 點擊「線上訂位」tab（如果有服務類型選擇）
             await _select_service_tab(page)
 
-            # 6. 選擇日期
-            print(f"[inline_booking] 選擇日期：{target_date}")
-            _update_status(supabase, task_id, "running", {"step": "selecting_date"})
-            await _select_date(page, target_date)
-
-            # 7. 選擇時段
-            print(f"[inline_booking] 選擇時段：{session}")
-            _update_status(supabase, task_id, "running", {"step": "selecting_session"})
-            await _select_session(page, session)
-
-            # 8. 選擇人數
+            # 6. 選擇人數（要排在日期/時段之前：改人數會讓時段清單重新篩選渲染，
+            #    先選時段再改人數會把剛選好的時段清掉。順序跟頁面由上而下一致）
             print(f"[inline_booking] 選擇人數：大人 {adults}，小孩 {kids}")
             _update_status(supabase, task_id, "running", {"step": "selecting_party_size"})
             await _select_party_size(page, adults, kids)
 
-            # 9. 點擊確認時段/繼續（進入聯絡資訊頁）
-            await _click_continue(page)
+            # 7. 選擇日期
+            print(f"[inline_booking] 選擇日期：{target_date}")
+            _update_status(supabase, task_id, "running", {"step": "selecting_date"})
+            date_selected = await _select_date(page, target_date)
+            if not date_selected:
+                # 選不到目標日期就不能繼續——後面的時段/人數/送出全部都會
+                # 套用在錯誤的日期上，不如在這裡就誠實回報並中止。
+                screenshot_path = await _take_screenshot(page, task_id)
+                _update_status(supabase, task_id, "failed", {
+                    "error": f"無法選擇目標日期 {target_date}（可能是訂位系統尚未開放到這個月份，或該日已額滿/公休）",
+                    "screenshot": screenshot_path,
+                })
+                return
+
+            # 7. 選擇時段
+            print(f"[inline_booking] 選擇時段：{session}")
+            _update_status(supabase, task_id, "running", {"step": "selecting_session"})
+            if not await _select_session(page, session):
+                # 時段沒選到就不能繼續——底下的「完成預訂」按鈕可能仍可點擊，
+                # 但送出的會是空的或系統預設時段，不是使用者要的那一場。
+                screenshot_path = await _take_screenshot(page, task_id)
+                _update_status(supabase, task_id, "failed", {
+                    "error": f"無法選擇目標時段 {session}（可能已額滿或頁面結構改變）",
+                    "screenshot": screenshot_path,
+                })
+                return
+
+            # 8. 點擊底部行動列的「完成預訂」（進入聯絡資訊頁）
+            _update_status(supabase, task_id, "running", {"step": "clicking_continue"})
+            if not await _click_continue(page):
+                # 沒進到下一頁就不能繼續——後面填聯絡資訊、送出、等 OTP
+                # 全都會在同一頁上空轉，最後誤報成「OTP 畫面未出現」。
+                screenshot_path = await _take_screenshot(page, task_id)
+                _update_status(supabase, task_id, "failed", {
+                    "error": "找不到「完成預訂」按鈕，無法進入聯絡資訊頁（可能該時段已額滿或頁面結構改變）",
+                    "screenshot": screenshot_path,
+                })
+                return
+
+            # 9. 同意「規則與注意事項」彈窗（要先捲到底按鈕才會啟用）
+            _update_status(supabase, task_id, "running", {"step": "accepting_house_rules"})
+            if not await _accept_house_rules(page):
+                screenshot_path = await _take_screenshot(page, task_id)
+                _update_status(supabase, task_id, "failed", {
+                    "error": "無法通過「規則與注意事項」彈窗，未能進入聯絡資訊頁",
+                    "screenshot": screenshot_path,
+                })
+                return
 
             # 10. 填寫聯絡資訊
             print(f"[inline_booking] 填寫聯絡資訊：{last_name}{first_name}，{phone}")
             _update_status(supabase, task_id, "running", {"step": "filling_contact_info"})
             await _fill_contact_info(page, last_name, first_name, gender, phone, email)
 
-            # 11. 選擇用餐目的（可選）
-            if purpose:
-                await _select_purpose(page, purpose)
+            # 11. 選擇用餐目的（多數餐廳為必填，所以就算使用者選「不指定」
+            #     也要進去挑一個預設選項，否則必填欄位空著會送不出去；
+            #     這家餐廳沒有這個欄位時函式會自行放行）
+            _update_status(supabase, task_id, "running", {"step": "selecting_purpose"})
+            if not await _select_purpose(page, purpose):
+                # 這是必填欄位，沒選到的話送出按鈕很可能維持停用，若不在這裡
+                # 攔下來，只會在後面 _click_submit 冒出一個不相干的「找不到
+                # 送出按鈕」錯誤訊息，讓人搞不清楚真正原因是這裡。
+                screenshot_path = await _take_screenshot(page, task_id)
+                _update_status(supabase, task_id, "failed", {
+                    "error": "無法選擇用餐目的（必填欄位），可能導致送出按鈕維持停用",
+                    "screenshot": screenshot_path,
+                })
+                return
 
             # 12. 點擊送出/確認預訂
             _update_status(supabase, task_id, "running", {"step": "submitting"})
-            await _click_submit(page)
+            submit_clicked = await _click_submit(page)
+            if not submit_clicked:
+                # 表單根本沒送出，不能再往下走 PX 挑戰／等 OTP，
+                # 那只會誤判成功並跳出根本不存在的驗證碼畫面。
+                screenshot_path = await _take_screenshot(page, task_id)
+                page_title = await page.title()
+                print(f"[inline_booking] ❌ 找不到送出按鈕，頁面標題：{page_title}")
+                _update_status(supabase, task_id, "failed", {
+                    "error": "找不到送出/確認預訂按鈕，表單未送出，請確認頁面上按鈕文字",
+                    "screenshot": screenshot_path,
+                    "page_title": page_title,
+                })
+                return
             await _random_sleep(1.0, 2.0)
 
             # 13. 處理 PerimeterX「按住不放」挑戰
@@ -251,40 +304,73 @@ async def run_inline_booking(task_id: str) -> None:
             otp_appeared = await _wait_for_otp_screen(page)
 
             if not otp_appeared:
-                # 可能已直接完成（無 OTP）或發生錯誤
+                # 不是每家餐廳都需要簡訊驗證碼——沒出現 OTP 畫面有兩種可能：
+                # (a) 這家餐廳不需要 OTP，送出後直接完成訂位
+                # (b) 真的出了問題（電話格式錯、頁面卡住等）
+                # 原本這裡不分青紅皂白一律當失敗，會讓「不需要 OTP、其實訂位
+                # 已經成功」的餐廳被誤判。改成先檢查訂位確認頁面是否已經出現。
+                print("[inline_booking] OTP 畫面未出現，檢查是否已直接完成訂位（此餐廳可能不需要簡訊驗證）...")
+                success = await _wait_for_booking_confirmation(page, timeout=10.0)
                 screenshot_path = await _take_screenshot(page, task_id)
-                page_title = await page.title()
-                print(f"[inline_booking] ⚠️ OTP 畫面未出現，頁面標題：{page_title}")
-                _update_status(supabase, task_id, "failed", {
-                    "error": "OTP 畫面未出現，請確認電話號碼格式或頁面狀態",
-                    "screenshot": screenshot_path,
-                    "page_title": page_title,
-                })
+
+                if success:
+                    print("[inline_booking] ✅ 訂位成功！（此餐廳不需要簡訊驗證碼）")
+                    _update_status(supabase, task_id, "success", {
+                        "message": "訂位成功！（此餐廳不需要簡訊驗證碼）",
+                        "screenshot": screenshot_path,
+                        "restaurant": restaurant["name"],
+                        "branch": branch["name"],
+                        "date": target_date,
+                        "session": SESSION_LABEL_MAP.get(session, session),
+                        "adults": adults,
+                        "kids": kids,
+                    })
+                else:
+                    page_title = await page.title()
+                    print(f"[inline_booking] ⚠️ OTP 畫面未出現，也未偵測到訂位完成，頁面標題：{page_title}")
+                    _update_status(supabase, task_id, "failed", {
+                        "error": "OTP 畫面未出現，也未偵測到訂位完成，請確認電話號碼格式或頁面狀態",
+                        "screenshot": screenshot_path,
+                        "page_title": page_title,
+                    })
                 return
 
             # 15. 通知前端等待 OTP 輸入
-            print("[inline_booking] ⏳ OTP 畫面出現，等待使用者輸入驗證碼...")
+            # 這裡先存一張截圖：如果之後又發生「跳出 OTP 但根本沒送出表單」的
+            # 誤判，直接比對這張截圖就能確認是不是真的看到簡訊驗證碼輸入畫面，
+            # 不必再靠使用者口頭描述去猜測。
+            otp_screenshot_path = await _take_screenshot(page, task_id)
+            print(f"[inline_booking] ⏳ OTP 畫面出現，等待使用者輸入驗證碼...（截圖：{otp_screenshot_path}）")
             _update_status(supabase, task_id, "waiting_otp", {
                 "step": "waiting_otp",
                 "message": "請查看手機簡訊，在前端輸入 4 位數驗證碼",
+                "screenshot": otp_screenshot_path,
             })
 
-            # 16. Polling Supabase 等待 otp_code
-            otp_code = await _wait_for_otp_code(supabase, task_id, timeout=OTP_WAIT_TIMEOUT)
+            # 16. 等待驗證碼——前端輸入或直接在瀏覽器手動輸入都支援，看哪個先發生
+            outcome, otp_code = await _wait_for_otp_code(supabase, task_id, page, timeout=OTP_WAIT_TIMEOUT)
 
-            if not otp_code:
+            if outcome == "closed":
+                _update_status(supabase, task_id, "failed", {
+                    "error": "瀏覽器頁面在等待驗證碼時被關閉",
+                })
+                return
+
+            if outcome == "timeout":
                 screenshot_path = await _take_screenshot(page, task_id)
                 _update_status(supabase, task_id, "failed", {
-                    "error": f"等待 OTP 超時（{OTP_WAIT_TIMEOUT} 秒）",
+                    "error": f"等待驗證碼超時（{OTP_WAIT_TIMEOUT} 秒），前端未輸入、瀏覽器也未手動處理",
                     "screenshot": screenshot_path,
                 })
                 return
 
-            # 17. 填入 OTP
-            print(f"[inline_booking] 填入 OTP：{otp_code}")
-            _update_status(supabase, task_id, "running", {"step": "filling_otp"})
-            await _fill_otp(page, otp_code)
-            await _random_sleep(1.0, 2.0)
+            if outcome == "code":
+                # 17. 填入前端送來的 OTP（手動在瀏覽器輸入的情況下 outcome 會是
+                # "manual"，代表使用者自己填完了，不用再填一次）
+                print(f"[inline_booking] 填入 OTP：{otp_code}")
+                _update_status(supabase, task_id, "running", {"step": "filling_otp"})
+                await _fill_otp(page, otp_code)
+                await _random_sleep(1.0, 2.0)
 
             # 18. 等待訂位完成
             print("[inline_booking] 等待訂位完成確認...")
@@ -304,7 +390,6 @@ async def run_inline_booking(task_id: str) -> None:
                     "kids": kids,
                 })
             else:
-                page_content = await page.content()
                 print("[inline_booking] ❌ 訂位可能失敗，請查看截圖")
                 _update_status(supabase, task_id, "failed", {
                     "error": "訂位完成頁面確認失敗，請查看截圖",
@@ -327,6 +412,31 @@ async def run_inline_booking(task_id: str) -> None:
             print(f"[inline_booking] 任務 {task_id} 執行結束，瀏覽器已關閉")
 
 
+def _run_in_dedicated_proactor_loop(task_id: str) -> None:
+    """
+    在獨立執行緒中建立一個全新的 ProactorEventLoop 來執行 Playwright 的 async API。
+
+    背景：這個專案的 uvicorn 在 Windows 上主事件迴圈用的是 SelectorEventLoop，
+    不支援 asyncio 建立子行程（Playwright async API 底層要用這個機制啟動瀏覽器
+    driver 行程），直接在主迴圈 await async_playwright() 會噴出
+    NotImplementedError（subprocess_exec）。跟 tixcraft_booking.py 用 nodriver
+    遇到的是同一個坑，這裡沿用同一套解法——在專屬執行緒開一個全新的
+    ProactorEventLoop（支援子行程），而不是把整支腳本改寫成 sync Playwright API
+    （像 hospital_booking.py / thsr_booking.py 那樣），改動範圍小很多。
+    """
+    loop = asyncio.ProactorEventLoop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(_run_inline_bot(task_id))
+    finally:
+        loop.close()
+
+
+async def run_inline_booking(task_id: str) -> None:
+    """由 scripts/__init__.py 的 dispatch_script 呼叫的進入點。"""
+    await asyncio.to_thread(_run_in_dedicated_proactor_loop, task_id)
+
+
 # ── 輔助函式：頁面操作 ────────────────────────────────────────────────────────
 
 async def _select_branch_if_needed(page, branch_name: str) -> None:
@@ -342,6 +452,26 @@ async def _select_branch_if_needed(page, branch_name: str) -> None:
         pass  # 可能已在正確分店頁面
 
 
+async def _robust_click(locator, timeout: float = 3000) -> bool:
+    """先用原生點擊（比較接近真人操作），被浮動元素擋住時退回 JS 觸發 click。
+
+    inline.app 一旦選了人數，底部就會滑出固定的行動列（book-now-action-bar），
+    它會蓋住月曆下半部與部分時段按鈕，原生點擊會因為
+    「subtree intercepts pointer events」而逾時——這是取決於捲動位置的競態，
+    同樣的操作順序有時成功有時失敗。JS 點擊不受畫面遮擋影響，當後備最可靠。
+    """
+    try:
+        await locator.click(timeout=timeout)
+        return True
+    except Exception:
+        pass
+    try:
+        await locator.evaluate("el => el.click()")
+        return True
+    except Exception:
+        return False
+
+
 async def _select_service_tab(page) -> None:
     """點擊「線上訂位」tab（若有服務類型選擇頁）"""
     try:
@@ -353,85 +483,122 @@ async def _select_service_tab(page) -> None:
         pass
 
 
-async def _select_date(page, target_date: str) -> None:
-    """選擇訂位日期（YYYY-MM-DD 格式）"""
+async def _select_date(page, target_date: str) -> bool:
+    """選擇訂位日期（YYYY-MM-DD 格式）。回傳是否真的選到目標日期。
+
+    inline.app 的日期欄位是一個「收合的觸發器」：<div id="date-picker"
+    data-cy="date-picker" aria-expanded="false">7月28日週二 (今日)</div>，
+    要先點開才會出現月曆彈窗（data-cy="calendar-picker"）。
+
+    關鍵：這個月曆會把「所有可訂月份」一次全部渲染在同一個可捲動的彈窗裡
+    （實測 7/28 當天打開，DOM 內同時存在 2026-07-01～2026-08-31 共 62 格、
+    兩個月份標題），所以「下一月」按鈕才會帶 hidden——是因為根本不需要翻頁，
+    不是因為不開放跨月訂位。因此這裡直接用 data-date 定位目標格子點下去即可，
+    不要去點那顆永遠不可見的翻頁按鈕。
+
+    不可訂的日期（已過期/額滿/公休）格子會帶 disabled 屬性，用這個判斷才準確。
+    """
     if not target_date:
-        return
+        return True
 
     try:
-        # 解析日期
-        parts = target_date.split("-")
-        year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
+        # 先點開收合的日期選擇器
+        picker_trigger = page.locator("#date-picker, [data-cy='date-picker']").first
+        await picker_trigger.click(timeout=5000)
+        await _random_sleep(0.5, 0.8)
 
-        # inline.app 使用月曆選擇器，先導航到正確月份
-        max_nav = 6
-        for _ in range(max_nav):
-            # 取得目前顯示月份
-            month_label = await page.locator(".calendar-month, [class*='month-label'], [class*='CalendarMonth']").first.text_content(timeout=3000)
-            if month_label and str(month) in month_label:
-                break
-            # 點擊下一個月
-            next_btn = page.locator("button[aria-label*='next'], button[aria-label*='下一'], [class*='next-month']").first
-            if await next_btn.is_visible(timeout=2000):
-                await next_btn.click()
-                await _random_sleep(0.5, 0.8)
+        calendar = page.locator("#calendar-picker, [data-cy='calendar-picker']").first
+        await calendar.wait_for(state="visible", timeout=5000)
 
-        # 點擊對應日期
-        # inline.app 的日期按鈕通常是 aria-label 包含日期或 data-date
-        date_selectors = [
-            f"[data-date='{target_date}']",
-            f"[aria-label*='{day}']",
-            f"button:has-text('{day}')",
-        ]
-        for selector in date_selectors:
-            try:
-                btn = page.locator(selector).first
-                if await btn.is_visible(timeout=2000):
-                    await btn.click()
-                    await _random_sleep(0.8, 1.2)
-                    print(f"[inline_booking] 日期 {target_date} 選擇成功")
-                    return
-            except Exception:
-                continue
+        day_locator = calendar.locator(f"[data-cy='bt-cal-day'][data-date='{target_date}']")
 
-        print(f"[inline_booking] ⚠️ 無法自動選擇日期 {target_date}，請手動操作")
+        # 若目標日期不在 DOM 裡，才嘗試翻頁（保留給月曆是分頁式的其他餐廳）
+        if await day_locator.count() == 0:
+            for _ in range(12):
+                next_btn = calendar.locator(".nextMonth, [class*='NextMonth']").first
+                if await next_btn.count() == 0 or not await next_btn.is_visible(timeout=1000):
+                    break
+                await next_btn.click(timeout=3000)
+                await _random_sleep(0.4, 0.7)
+                if await day_locator.count() > 0:
+                    break
+
+        if await day_locator.count() == 0:
+            print(f"[inline_booking] ❌ 月曆中找不到 {target_date}，可能超出訂位開放範圍")
+            return False
+
+        day_cell = day_locator.first
+        if await day_cell.get_attribute("disabled") is not None:
+            print(f"[inline_booking] ❌ {target_date} 不可訂（已額滿、公休或已過期）")
+            return False
+
+        # 月曆是可捲動的長清單，目標日期可能在可視範圍外，先捲進畫面再點
+        try:
+            await day_cell.scroll_into_view_if_needed(timeout=3000)
+        except Exception:
+            pass
+        if not await _robust_click(day_cell):
+            print(f"[inline_booking] ❌ {target_date} 這一格點不下去（可能被浮動元素遮擋）")
+            return False
+        await _random_sleep(0.8, 1.2)
+
+        selected_label = await picker_trigger.text_content()
+        print(f"[inline_booking] 日期 {target_date} 選擇成功（欄位顯示：{(selected_label or '').strip()}）")
+        return True
     except Exception as e:
-        print(f"[inline_booking] 選擇日期時發生錯誤：{e}")
+        print(f"[inline_booking] ⚠️ 選擇日期 {target_date} 失敗：{e}")
+        return False
 
 
-async def _select_session(page, session: str) -> None:
-    """選擇用餐時段。
+async def _select_session(page, session: str) -> bool:
+    """選擇用餐時段。回傳是否真的選到。
 
     大部分餐廳（如島語自助餐廳）只有午餐/下午茶/晚餐三個粗略時段；
     但屋馬燒肉等餐廳的訂位頁會直接列出精確的 15 分鐘時段按鈕
     （例如 data-cy="book-now-time-slot-box-17-00"，顯示文字為 "17:00"），
     此時 session 會是 "HH:MM" 格式的精確時間。
+
+    原本這裡找不到時段只印警告就返回，呼叫端完全不檢查，會帶著沒選時段的
+    狀態繼續往下走（點完成預訂、填聯絡資訊…），等於整張訂單的時段是空的
+    或維持系統預設值。跟其他步驟一樣改成回傳成功與否，讓呼叫端可以中止。
     """
     exact_time_match = re.fullmatch(r"(\d{1,2}):(\d{2})", session)
     if exact_time_match:
         hh, mm = exact_time_match.groups()
-        # 優先用穩定的 data-cy 屬性定位（不受時區/文案影響）
+
+        # 換日期後整份時段清單會重新渲染，太早去點會抓到正在被替換掉的舊元素，
+        # 於是 data-cy 精確定位失敗、掉進底下比較脆弱的文字比對。先等新清單出現。
         try:
-            btn = page.locator(f"[data-cy='book-now-time-slot-box-{int(hh)}-{mm}']").first
-            if await btn.is_visible(timeout=2000):
-                await btn.click()
-                await _random_sleep(0.8, 1.2)
-                print(f"[inline_booking] 時段選擇成功（data-cy 精確定位）：{session}")
-                return
+            await page.locator("[data-cy^='book-now-time-slot']").first.wait_for(
+                state="visible", timeout=8000
+            )
+            await _random_sleep(0.3, 0.5)
         except Exception:
             pass
+
+        # 優先用穩定的 data-cy 屬性定位（不受時區/文案影響）。
+        # 兩種寫法都試：實際屬性是照顯示文字補零的（11:00 -> ...-11-00），
+        # 但早於 10 點的時段究竟是 "09-00" 還是 "9-00" 沒有實例可證，兩個都試最保險。
+        for hour_form in {hh, str(int(hh))}:
+            try:
+                btn = page.locator(f"[data-cy='book-now-time-slot-box-{hour_form}-{mm}']").first
+                if await btn.is_visible(timeout=2000) and await _robust_click(btn):
+                    await _random_sleep(0.8, 1.2)
+                    print(f"[inline_booking] 時段選擇成功（data-cy 精確定位）：{session}")
+                    return True
+            except Exception:
+                continue
         # 找不到就退回用畫面上顯示的時間文字比對
         try:
             btn = page.locator(f"text={session}").first
-            if await btn.is_visible(timeout=2000):
-                await btn.click()
+            if await btn.is_visible(timeout=2000) and await _robust_click(btn):
                 await _random_sleep(0.8, 1.2)
                 print(f"[inline_booking] 時段選擇成功（文字比對）：{session}")
-                return
+                return True
         except Exception:
             pass
         print(f"[inline_booking] ⚠️ 無法自動選擇精確時段 {session}")
-        return
+        return False
 
     session_keywords = {
         "midday": ["午餐", "11:30", "Midday", "Lunch"],
@@ -446,25 +613,37 @@ async def _select_session(page, session: str) -> None:
                 await btn.click()
                 await _random_sleep(0.8, 1.2)
                 print(f"[inline_booking] 時段選擇成功：{kw}")
-                return
+                return True
         except Exception:
             continue
     print(f"[inline_booking] ⚠️ 無法自動選擇時段 {session}")
+    return False
 
 
 async def _select_party_size(page, adults: int, kids: int) -> None:
-    """選擇用餐人數（大人 + 小孩）"""
+    """選擇用餐人數（大人 + 小孩）。
+
+    inline.app 實際上是 <select id="adult-picker">/<select id="kid-picker">
+    的標準下拉選單，value 直接就是人數字串（"1","2"...），比原本用
+    has_text 猜文字內容準確且快得多——select 元素的文字內容不見得會被
+    Playwright 的 has_text 篩選抓到，之前這條路徑常常整個 fallback 到
+    +/- 按鈕那條，而那條路徑本身也只是憑 class 名稱猜測。
+    """
     try:
-        # 找大人人數選擇器（通常是 +/- 按鈕或下拉選單）
-        # 方法一：下拉選單
-        adult_select = page.locator("select").filter(has_text="大人").first
+        adult_select = page.locator("#adult-picker").first
         if await adult_select.is_visible(timeout=2000):
             await adult_select.select_option(str(adults))
         else:
-            # 方法二：+/- 按鈕
-            await _click_counter_to_value(page, "adult", adults)
+            adult_select = page.locator("select").filter(has_text="大人").first
+            if await adult_select.is_visible(timeout=2000):
+                await adult_select.select_option(str(adults))
+            else:
+                await _click_counter_to_value(page, "adult", adults)
 
-        if kids > 0:
+        kid_select = page.locator("#kid-picker").first
+        if await kid_select.is_visible(timeout=2000):
+            await kid_select.select_option(str(kids))
+        elif kids > 0:
             kid_select = page.locator("select").filter(has_text="小孩").first
             if await kid_select.is_visible(timeout=2000):
                 await kid_select.select_option(str(kids))
@@ -501,99 +680,307 @@ async def _click_counter_to_value(page, label_keyword: str, target: int) -> None
         print(f"[inline_booking] 調整計數器失敗：{e}")
 
 
-async def _click_continue(page) -> None:
-    """點擊「繼續」/「下一步」按鈕進入聯絡資訊頁"""
-    continue_keywords = ["繼續", "下一步", "Continue", "Next", "確認時段"]
+async def _click_continue(page) -> bool:
+    """點擊底部行動列的按鈕進入聯絡資訊頁。回傳是否真的點到。
+
+    inline.app 選完人數/日期/時段後，底部會滑出一條行動列
+    （<div data-cy="book-now-action-bar">），裡面那顆按鈕是
+    <button data-cy="book-now-action-button">完成預訂</button>。
+
+    注意按鈕文字是「完成預訂」——原本這裡只找「繼續/下一步/Continue/Next/
+    確認時段」，一個都對不上，於是靜靜地什麼都沒做就返回，後面的填聯絡資訊、
+    送出、等 OTP 全都在同一頁上空轉。優先用 data-cy 定位（不受文案改動影響），
+    文字比對只當後備。
+    """
+    try:
+        btn = page.locator("[data-cy='book-now-action-button']").first
+        if await btn.is_visible(timeout=5000):
+            await btn.click()
+            await _random_sleep(1.0, 1.8)
+            print("[inline_booking] 點擊「完成預訂」進入下一步（data-cy 定位）")
+            return True
+    except Exception:
+        pass
+
+    continue_keywords = ["完成預訂", "繼續", "下一步", "Continue", "Next", "確認時段"]
     for kw in continue_keywords:
         try:
             btn = page.locator(f"button:has-text('{kw}')").first
             if await btn.is_visible(timeout=2000):
                 await btn.click()
                 await _random_sleep(1.0, 1.8)
-                print(f"[inline_booking] 點擊「{kw}」進入下一步")
-                return
+                print(f"[inline_booking] 點擊「{kw}」進入下一步（文字比對）")
+                return True
         except Exception:
             continue
+
+    print(f"[inline_booking] ⚠️ 找不到進入下一步的按鈕！嘗試過的關鍵字：{continue_keywords}")
+    return False
+
+
+async def _accept_house_rules(page) -> bool:
+    """處理「規則與注意事項」彈窗：捲到規則底部使同意按鈕啟用後點擊。
+
+    按下「完成預訂」後，inline.app 會跳出一個 ReactModal（#house-rules），
+    底部是 <button data-cy="confirm-house-rule">我已閱讀並同意規則與注意事項</button>，
+    預設 disabled=True，必須把規則內文的捲動容器（#house-rules 內 overflow-y
+    為 scroll/auto 的那個 div）捲到底並觸發 scroll 事件才會啟用。
+
+    這個步驟原本整個不存在，所以流程會停在彈窗前面空轉，後續填聯絡資訊、
+    送出、等 OTP 全部失效，最後才誤報成「OTP 畫面未出現」。
+    實測：捲動前 disabled=True，捲到底後 disabled=False，點下去網址才會
+    前進到 .../form（真正的聯絡資訊頁）。
+    """
+    btn = page.locator("[data-cy='confirm-house-rule']")
+    try:
+        if await btn.count() == 0:
+            return True  # 這家餐廳沒有規則彈窗，直接放行
+        await btn.first.wait_for(state="visible", timeout=5000)
+    except Exception:
+        return True
+
+    for _ in range(5):
+        if not await btn.first.is_disabled():
+            break
+        await page.evaluate(
+            """() => {
+                const modal = document.querySelector('#house-rules');
+                if (!modal) return;
+                modal.querySelectorAll('*').forEach(e => {
+                    const oy = getComputedStyle(e).overflowY;
+                    if ((oy === 'scroll' || oy === 'auto') && e.scrollHeight > e.clientHeight) {
+                        e.scrollTop = e.scrollHeight;
+                        e.dispatchEvent(new Event('scroll', { bubbles: true }));
+                    }
+                });
+            }"""
+        )
+        await _random_sleep(0.4, 0.7)
+
+    if await btn.first.is_disabled():
+        print("[inline_booking] ⚠️ 規則同意按鈕仍為停用狀態（可能捲動判定未通過）")
+        return False
+
+    if not await _robust_click(btn.first):
+        print("[inline_booking] ⚠️ 規則同意按鈕點擊失敗")
+        return False
+
+    await _random_sleep(1.0, 1.5)
+    print("[inline_booking] 已同意「規則與注意事項」，進入聯絡資訊頁")
+    return True
 
 
 async def _fill_contact_info(
     page, last_name: str, first_name: str, gender: str, phone: str, email: str
 ) -> None:
-    """填寫聯絡資訊（姓、名、性別、電話、Email）"""
+    """填寫聯絡資訊（姓名、性別、電話）。
+
+    實測 inline.app 訂位表單（.../form）的實際結構：
+      - 訂位人姓名是「單一個」欄位 <input id="name" data-cy="name">，
+        標籤寫明「請留全名」——不是分開的「姓」「名」兩格。原本這裡找
+        input[placeholder='姓'] / [placeholder='名']，兩個都不存在，
+        於是姓名被靜靜跳過、整張表單根本填不完整。
+      - 性別是三個 radio：value="1" 小姐、value="0" 先生、value="2" 其他。
+      - 電話是 <input id="phone" type="tel">，旁邊有國碼選單（預設 +886），
+        所以要填去掉開頭 0 的號碼。
+      - 這張表單沒有 Email 欄位（保留參數是為了相容既有呼叫端）。
+    """
     try:
-        # 姓氏輸入框
-        last_name_input = page.locator("input[placeholder='姓']").first
-        if await last_name_input.is_visible(timeout=3000):
-            await last_name_input.click()
-            await last_name_input.fill(last_name)
-            await _random_sleep(0.3, 0.6)
+        full_name = f"{last_name}{first_name}".strip()
+        if full_name:
+            name_input = page.locator("#name, [data-cy='name']").first
+            if await name_input.is_visible(timeout=5000):
+                await name_input.click()
+                await name_input.fill(full_name)
+                await _random_sleep(0.3, 0.6)
 
-        # 名字輸入框
-        first_name_input = page.locator("input[placeholder='名']").first
-        if await first_name_input.is_visible(timeout=2000):
-            await first_name_input.click()
-            await first_name_input.fill(first_name)
-            await _random_sleep(0.3, 0.6)
-
-        # 性別選擇（Radio button）
-        gender_map = {"小姐": "小姐", "先生": "先生", "其他": "其他"}
-        gender_label = gender_map.get(gender, "小姐")
+        # 性別 radio：優先用 value 定位（不受文案改動影響），其次用標籤文字
+        gender_value = {"小姐": "1", "先生": "0", "其他": "2"}.get(gender, "1")
         try:
-            gender_radio = page.locator(f"label:has-text('{gender_label}')").first
-            if await gender_radio.is_visible(timeout=2000):
-                await gender_radio.click()
-                await _random_sleep(0.2, 0.4)
+            radio = page.locator(f"input[type='radio'][value='{gender_value}']").first
+            if await radio.count() > 0:
+                await _robust_click(radio)
+            else:
+                await _robust_click(page.locator(f"label:has-text('{gender}')").first)
+            await _random_sleep(0.2, 0.4)
         except Exception:
             pass
 
-        # 手機號碼（去除 0 前綴，inline 使用 +886）
-        phone_input = page.locator("input[type='tel'], input[placeholder*='手機'], input[placeholder*='電話']").first
-        if await phone_input.is_visible(timeout=3000):
-            await phone_input.click()
-            # inline.app 的電話格式：+886 後接去掉首位 0 的號碼
-            phone_number = phone.lstrip("0") if phone.startswith("0") else phone
-            await phone_input.fill(phone_number)
-            await _random_sleep(0.3, 0.6)
-
-        # Email（可選）
-        if email:
-            email_input = page.locator("input[type='email'], input[placeholder*='Email'], input[placeholder*='email']").first
-            if await email_input.is_visible(timeout=2000):
-                await email_input.click()
-                await email_input.fill(email)
+        if phone:
+            phone_input = page.locator("#phone, [data-cy='phone'], input[type='tel']").first
+            if await phone_input.is_visible(timeout=3000):
+                await phone_input.click()
+                # 國碼選單已是 +886，這裡只填去掉開頭 0 的號碼
+                await phone_input.fill(phone.lstrip("0"))
                 await _random_sleep(0.3, 0.6)
 
-        print(f"[inline_booking] 聯絡資訊填寫完成")
+        # 必填的同意條款（「我同意上述預付訂金及取消訂位退款須知 *」）。
+        # 這個 checkbox 沒有包在 label 裡，得靠父層文字辨識；不勾選無法送出。
+        # 只勾這一個，行銷訊息那個可選的維持不勾。
+        checkboxes = page.locator("input[type='checkbox']")
+        for i in range(await checkboxes.count()):
+            cb = checkboxes.nth(i)
+            try:
+                around = await cb.evaluate("el => (el.parentElement && el.parentElement.innerText) || ''")
+            except Exception:
+                continue
+            if "我同意" in around and ("退款須知" in around or "訂金" in around):
+                if not await cb.is_checked():
+                    await _robust_click(cb)
+                    print("[inline_booking] 已勾選必填同意條款")
+                break
+
+        print("[inline_booking] 聯絡資訊填寫完成")
     except Exception as e:
         print(f"[inline_booking] 填寫聯絡資訊時發生錯誤：{e}")
 
 
-async def _select_purpose(page, purpose: str) -> None:
-    """選擇用餐目的"""
-    purpose_text = PURPOSE_MAP.get(purpose, purpose)
+# 找出「用餐目的」區塊裡實際存在的選項文字。
+# 選項是純文字的 <span>（styled-components 亂數 class，不能拿來當選擇器），
+# 所以改用「先找到『用餐目的』這個標籤，再往上找到同時包含多個選項的容器」。
+_PURPOSE_OPTIONS_JS = """
+() => {
+    let label = null;
+    document.querySelectorAll('*').forEach(e => {
+        if (!label && e.children.length === 0 && (e.innerText || '').trim() === '用餐目的') label = e;
+    });
+    if (!label) return null;
+    let box = label.parentElement;
+    for (let i = 0; i < 4 && box; i++) {
+        const spans = Array.from(box.querySelectorAll('span')).filter(
+            s => s.children.length === 0
+                 && (s.innerText || '').trim()
+                 && (s.innerText || '').trim() !== '用餐目的'
+        );
+        if (spans.length >= 2) return spans.map(s => s.innerText.trim());
+        box = box.parentElement;
+    }
+    return [];
+}
+"""
+
+_PURPOSE_CLICK_JS = """
+(idx) => {
+    let label = null;
+    document.querySelectorAll('*').forEach(e => {
+        if (!label && e.children.length === 0 && (e.innerText || '').trim() === '用餐目的') label = e;
+    });
+    if (!label) return false;
+    let box = label.parentElement;
+    for (let i = 0; i < 4 && box; i++) {
+        const spans = Array.from(box.querySelectorAll('span')).filter(
+            s => s.children.length === 0
+                 && (s.innerText || '').trim()
+                 && (s.innerText || '').trim() !== '用餐目的'
+        );
+        if (spans.length >= 2) {
+            const el = spans[idx];
+            if (!el) return false;
+            el.click();
+            return true;
+        }
+        box = box.parentElement;
+    }
+    return false;
+}
+"""
+
+# 前端固定的 6 種用餐目的代碼，對應到各餐廳自訂選項可能出現的關鍵字。
+# 關鍵字依「specific → general」排序，避免例如 friends 的「聚餐」誤中「商務聚餐」。
+PURPOSE_KEYWORDS = {
+    "birthday": ["壽星", "生日", "慶生", "birthday"],
+    "date": ["約會", "情侶", "date"],
+    "anniversary": ["週年", "周年", "紀念", "anniversary"],
+    "family": ["家庭", "親子", "family"],
+    "friends": ["朋友", "friends"],
+    "business": ["商務", "公司", "business"],
+}
+
+
+async def _select_purpose(page, purpose: str) -> bool:
+    """選擇用餐目的。
+
+    這一欄在多數餐廳是「必填」（標題帶紅色 *），但選項文字完全由各餐廳自訂：
+    屋馬燒肉是「一般用餐 / 有其他慶祝事項… / 當月壽星（需攜帶證件）/
+    當日壽星（需攜帶證件）/ 週年慶祝 / 商務聚餐」，跟前端固定的
+    「慶生 / 約會 / 週年慶 …」對不起來。原本用寫死的 PURPOSE_MAP 做字串比對
+    （birthday -> 「慶生」），在屋馬永遠找不到元素，必填欄位空著就送不出去。
+
+    改成執行時讀取畫面上「實際存在」的選項再比對，順序為：
+      1) 設定值與選項文字完全相同 → 直接用（保留讓使用者填精確文字的彈性）
+      2) 關鍵字比對（birthday -> 含「壽星」的選項）
+      3) 都配不到 → 退回第一個選項（通常是「一般用餐」），確保必填欄位有值
+    """
     try:
-        purpose_btn = page.locator(f"text={purpose_text}").first
-        if await purpose_btn.is_visible(timeout=2000):
-            await purpose_btn.click()
-            await _random_sleep(0.3, 0.6)
-            print(f"[inline_booking] 用餐目的：{purpose_text}")
+        options = await page.evaluate(_PURPOSE_OPTIONS_JS)
     except Exception as e:
-        print(f"[inline_booking] 選擇用餐目的失敗：{e}")
+        print(f"[inline_booking] 讀取用餐目的選項失敗：{e}")
+        return False
+
+    if options is None:
+        return True  # 這家餐廳沒有「用餐目的」欄位
+    if not options:
+        print("[inline_booking] ⚠️ 找到「用餐目的」欄位但讀不到任何選項")
+        return False
+
+    print(f"[inline_booking] 此餐廳的用餐目的選項：{options}")
+
+    chosen_idx, reason = None, ""
+    for i, text in enumerate(options):
+        if purpose and purpose.strip() == text:
+            chosen_idx, reason = i, "設定值與選項文字完全相同"
+            break
+    if chosen_idx is None and purpose:
+        for kw in PURPOSE_KEYWORDS.get(purpose, []):
+            for i, text in enumerate(options):
+                if kw.lower() in text.lower():
+                    chosen_idx, reason = i, f"關鍵字「{kw}」比對"
+                    break
+            if chosen_idx is not None:
+                break
+    if chosen_idx is None:
+        chosen_idx = 0
+        reason = "未指定或無相符選項，採用第一個選項（必填欄位不能留空）"
+
+    if not await page.evaluate(_PURPOSE_CLICK_JS, chosen_idx):
+        print(f"[inline_booking] ⚠️ 點擊用餐目的「{options[chosen_idx]}」失敗")
+        return False
+
+    await _random_sleep(0.3, 0.6)
+    print(f"[inline_booking] 用餐目的已選：「{options[chosen_idx]}」（{reason}）")
+    return True
 
 
-async def _click_submit(page) -> None:
-    """點擊最終送出按鈕"""
-    submit_keywords = ["送出", "確認預訂", "Submit", "Confirm", "預約", "完成"]
+async def _click_submit(page) -> bool:
+    """點擊最終送出按鈕。回傳是否真的點到了按鈕。
+
+    實測按鈕是 <button data-cy="submit">確認訂位</button>——注意是「確認訂位」，
+    原本的關鍵字清單裡只有「確認預訂」，一字之差全部對不上，於是靜靜什麼都
+    沒做就返回，後續流程卻毫無所覺地繼續（檢查 PX 挑戰、等待 OTP 畫面），
+    導致表單根本沒送出卻誤判成「OTP 畫面出現」，叫使用者去收根本不存在的簡訊。
+    因此優先用穩定的 data-cy 定位，文字比對只當後備。
+    """
+    try:
+        btn = page.locator("[data-cy='submit']").first
+        if await btn.is_visible(timeout=5000) and await _robust_click(btn):
+            await _random_sleep(1.0, 1.5)
+            print("[inline_booking] 點擊「確認訂位」送出（data-cy 定位）")
+            return True
+    except Exception:
+        pass
+
+    submit_keywords = ["確認訂位", "送出", "確認預訂", "Submit", "Confirm", "預約", "完成"]
     for kw in submit_keywords:
         try:
             btn = page.locator(f"button:has-text('{kw}')").first
-            if await btn.is_visible(timeout=2000):
-                await btn.click()
+            if await btn.is_visible(timeout=2000) and await _robust_click(btn):
                 await _random_sleep(1.0, 1.5)
-                print(f"[inline_booking] 點擊送出：{kw}")
-                return
+                print(f"[inline_booking] 點擊送出：{kw}（文字比對）")
+                return True
         except Exception:
             continue
+    print(f"[inline_booking] ⚠️ 找不到送出按鈕！嘗試過的關鍵字：{submit_keywords}")
+    return False
 
 
 async def _solve_px_hold_challenge(page) -> bool:
@@ -649,17 +1036,30 @@ async def _solve_px_hold_challenge(page) -> bool:
 
 
 async def _wait_for_otp_screen(page, timeout: float = 20.0) -> bool:
-    """等待 OTP 輸入畫面出現"""
+    """等待 OTP 輸入畫面出現。
+
+    "input[maxlength='1']" 原本只要求「找到一個」就當作 OTP 畫面出現——
+    但表單頁上可能存在其他無關的單字元輸入框，且「text=驗證碼」「text=簡訊」
+    這類籠統的文字也可能只是欄位提示或行銷同意文字，在表單根本還沒送出時
+    就先出現在頁面上。真正的 OTP 輸入畫面一定是「一組 4 個」獨立輸入框，
+    用這個數量門檻大幅降低誤判機率。
+    """
     otp_indicators = [
+        "text=已將驗證碼傳送",
         "text=驗證碼",
         "text=OTP",
         "text=簡訊",
-        "text=已將驗證碼傳送",
-        "input[maxlength='1']",   # inline 通常用 4 個 maxlength=1 的輸入框
-        "input[type='number'][maxlength='1']",
     ]
     deadline = time.time() + timeout
     while time.time() < deadline:
+        try:
+            otp_box_count = await page.locator("input[maxlength='1']").count()
+        except Exception:
+            otp_box_count = 0
+        if otp_box_count >= 4:
+            print(f"[inline_booking] OTP 畫面出現（偵測：{otp_box_count} 個 maxlength=1 輸入框）")
+            return True
+
         for selector in otp_indicators:
             try:
                 el = page.locator(selector).first
@@ -673,30 +1073,70 @@ async def _wait_for_otp_screen(page, timeout: float = 20.0) -> bool:
 
 
 async def _wait_for_otp_code(
-    supabase, task_id: str, timeout: float = 300.0
-) -> Optional[str]:
+    supabase, task_id: str, page, timeout: float = 300.0
+) -> tuple:
     """
-    Polling Supabase，等待前端透過 POST /api/tasks/{task_id}/otp 提交驗證碼。
-    超時回傳 None。
+    同時支援兩種輸入驗證碼的方式，看哪個先發生：
+
+      1. 前端跳出的輸入視窗 → POST /api/tasks/{task_id}/otp → 寫進 Supabase
+         的 otp_code 欄位（需要這個欄位存在）
+      2. 使用者直接在腳本開的瀏覽器視窗裡手動輸入（不需要任何欄位，腳本本來
+         就看得到那個畫面）
+
+    回傳 (outcome, code)，outcome 為：
+      - "code"    -> 從 Supabase 拿到驗證碼，呼叫端要自己填入
+      - "manual"  -> 偵測到 OTP 輸入框已經消失（使用者已經手動處理完，
+                     不管成功或被拒絕），呼叫端不用再填，直接去看結果頁
+      - "closed"  -> 瀏覽器頁面被關閉
+      - "timeout" -> 兩種訊號都等不到
+
+    原本只認 Supabase 欄位，使用者若跳過前端直接在瀏覽器手動輸入，腳本完全
+    看不到，只能傻等滿 timeout 秒才發現；現在改成用「OTP 輸入框是否還在」
+    當作第二種偵測，不強制要求一定要有 otp_code 欄位才能用這支腳本。
     """
     deadline = time.time() + timeout
-    poll_interval = 3.0
-    print(f"[inline_booking] 開始 polling OTP（每 {poll_interval}s，最長 {timeout}s）...")
+    poll_interval = 2.0
+    print(f"[inline_booking] 開始等待驗證碼（前端輸入或瀏覽器手動輸入皆可，每 {poll_interval}s 檢查一次，最長 {timeout}s）...")
+
+    missing_streak = 0  # 連續偵測到輸入框消失的次數
 
     while time.time() < deadline:
+        if page.is_closed():
+            print("[inline_booking] ⚠️ 偵測到瀏覽器頁面已被關閉，提前結束等待")
+            return ("closed", None)
+
+        try:
+            otp_box_count = await page.locator("input[maxlength='1']").count()
+        except Exception:
+            otp_box_count = 0
+        if otp_box_count < 4:
+            missing_streak += 1
+            # 要求連續兩次都偵測不到才判定為手動處理完成，避免頁面短暫重新
+            # 渲染造成的單次誤判（例如剛好在網頁重繪那一瞬間查詢，輸入框
+            # 短暫從 DOM 消失又立刻出現），把使用者根本還沒開始輸入的狀態
+            # 誤判成「已完成」。
+            if missing_streak >= 2:
+                print("[inline_booking] 偵測到 OTP 輸入框已消失，判斷為已在瀏覽器手動處理完成")
+                return ("manual", None)
+            await asyncio.sleep(poll_interval)
+            continue
+        missing_streak = 0
+
         try:
             resp = supabase.table("tasks").select("otp_code").eq("id", task_id).execute()
             if resp.data:
                 otp_code = resp.data[0].get("otp_code")
                 if otp_code and str(otp_code).strip():
-                    print(f"[inline_booking] ✅ 收到 OTP：{otp_code}")
-                    return str(otp_code).strip()
+                    print(f"[inline_booking] ✅ 收到前端輸入的 OTP：{otp_code}")
+                    return ("code", str(otp_code).strip())
         except Exception as e:
-            print(f"[inline_booking] Polling OTP 時發生錯誤：{e}")
+            # tasks.otp_code 欄位不存在時每次都會落在這裡——不影響上面
+            # 「瀏覽器手動輸入」這條路徑，只代表前端輸入視窗那條路徑用不了。
+            print(f"[inline_booking] Polling otp_code 欄位時發生錯誤（不影響手動在瀏覽器輸入）：{e}")
         await asyncio.sleep(poll_interval)
 
-    print("[inline_booking] ⏰ 等待 OTP 超時")
-    return None
+    print("[inline_booking] ⏰ 等待驗證碼超時")
+    return ("timeout", None)
 
 
 async def _fill_otp(page, otp_code: str) -> None:
@@ -779,12 +1219,23 @@ async def _random_sleep(min_s: float, max_s: float) -> None:
 # ── Supabase 狀態更新 ─────────────────────────────────────────────────────────
 
 def _update_status(supabase, task_id: str, status: str, result: dict) -> None:
-    """更新 Supabase tasks 表的 status 和 result 欄位"""
+    """更新 Supabase tasks 表的 status 和 result 欄位。
+
+    這兩個拆成兩次分開的 update：tasks 資料表目前沒有 result 欄位（需要額外執行
+    ALTER TABLE tasks ADD COLUMN result jsonb; 才會有），如果兩個欄位包在同一次
+    update 裡送出，只要 result 失敗，PostgREST 會整包拒絕，連 status 都不會寫入
+    ——這正是之前「任務進度／OTP 等待狀態從沒被寫進資料庫」的原因。拆開後，就算
+    沒加那個欄位，至少 status（前端和 OTP 流程真正依賴的核心欄位）永遠會確實寫入，
+    只有 result 這些附加診斷資訊（截圖路徑、錯誤細節等）會在欄位不存在時被跳過。
+    """
     try:
-        supabase.table("tasks").update({
-            "status": status,
-            "result": result,
-        }).eq("id", task_id).execute()
-        print(f"[inline_booking] 狀態更新：{status} | {result}")
+        supabase.table("tasks").update({"status": status}).eq("id", task_id).execute()
     except Exception as e:
-        print(f"[inline_booking] 更新 Supabase 狀態失敗：{e}")
+        print(f"[inline_booking] 更新 status 失敗：{e}")
+
+    try:
+        supabase.table("tasks").update({"result": result}).eq("id", task_id).execute()
+    except Exception as e:
+        print(f"[inline_booking] 更新 result 失敗（若尚未新增 result 欄位屬正常現象）：{e}")
+
+    print(f"[inline_booking] 狀態更新：{status} | {result}")
