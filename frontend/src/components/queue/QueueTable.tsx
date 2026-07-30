@@ -17,10 +17,10 @@ interface QueueTableProps {
 const COL_HEADERS = [
   { label: "任務名稱", className: "w-[35%]" },
   { label: "類型", className: "w-[8%] text-center" },
-  { label: "預約日期", className: "w-[15%]" },
+  { label: "預約日期", className: "w-[17%]" },
   { label: "優先度", className: "w-[12%]" },
   { label: "狀態/結果", className: "w-[14%]" },
-  { label: "操作", className: "w-[16%] text-right" },
+  { label: "操作", className: "w-[14%] text-right" },
 ];
 
 export const QueueTable = ({
@@ -112,11 +112,16 @@ export const QueueTable = ({
                   </div>
                 </td>
 
-                {/* 預約日期 */}
+                {/* 預約日期：上排是實際訂位/訂票目標日期，下排是排程觸發時間（機器人幾點開始執行） */}
                 <td className="px-4 py-3.5">
-                  <span className="font-mono text-xs text-slate-700 dark:text-slate-400">
-                    {task.scheduledAt}
-                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-mono text-xs text-slate-700 dark:text-slate-400">
+                      {task.targetDate}
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-500 dark:text-slate-600">
+                      排程：{task.scheduleLabel}
+                    </span>
+                  </div>
                 </td>
 
                 {/* 優先度（可點擊切換） */}

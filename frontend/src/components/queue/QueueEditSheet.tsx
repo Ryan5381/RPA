@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -21,12 +20,43 @@ import {
 import type { QueueTask } from "@/types/type";
 import type { Priority } from "@/lib/queueHelpers";
 
+import { ThsrForm } from "@/components/workflows/forms/ThsrForm";
+import { HospitalForm } from "@/components/workflows/forms/HospitalForm";
+import { BadmintonForm } from "@/components/workflows/forms/BadmintonForm";
+import { TixCraftForm } from "@/components/workflows/forms/TixCraftForm";
+import { InlineForm } from "@/components/workflows/forms/InlineForm";
+import { FlightForm } from "@/components/workflows/forms/FlightForm";
+import { useTHSRWorkflow } from "@/hooks/useTHSRWorkflow";
+import { useHospitalWorkflow } from "@/hooks/useHospitalWorkflow";
+import { useBadmintonWorkflow } from "@/hooks/useBadmintonWorkflow";
+import { useTixCraftWorkflow } from "@/hooks/useTixCraftWorkflow";
+import { useInlineWorkflow } from "@/hooks/useInlineWorkflow";
+import { useFlightWorkflow } from "@/hooks/useFlightWorkflow";
+
 interface QueueEditSheetProps {
   isOpen: boolean;
   onClose: () => void;
   task: QueueTask | null;
   onSave: (task: QueueTask) => void;
 }
+
+const inputClass =
+  "flex h-9 w-full rounded-md border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 px-3 py-1 text-xs text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus-visible:border-cyan-500/60 focus-visible:ring-1 focus-visible:ring-cyan-500/20";
+
+// 從已存的 config 挑出指定欄位覆蓋到表單初始值上；numericKeys 內的欄位在
+// DB 裡存的是數字（Number()/parseInt() 寫入的），但表單的輸入框吃字串，這裡轉回字串
+const pickConfigFields = (
+  cfg: Record<string, any> | undefined,
+  numericKeys: string[] = []
+) => {
+  if (!cfg) return {};
+  const out: Record<string, any> = {};
+  for (const [key, value] of Object.entries(cfg)) {
+    if (value === undefined || value === null) continue;
+    out[key] = numericKeys.includes(key) ? String(value) : value;
+  }
+  return out;
+};
 
 export const QueueEditSheet = ({
   isOpen,
@@ -40,10 +70,14 @@ export const QueueEditSheet = ({
   const [scheduledAt, setScheduledAt] = useState(task?.scheduledAt || "");
   const [priority, setPriority] = useState<Priority>(task?.priority || "LOW");
 
-  // 進階設定
-  const [target, setTarget] = useState(task?.config?.target || "");
-  const [account, setAccount] = useState(task?.config?.account || "");
-  const [notify, setNotify] = useState(task?.config?.notify || false);
+  // 依任務類型準備對應的表單狀態——跟建立任務時用的是同一套 hook，
+  // 確保編輯面板改到的欄位跟腳本實際讀取的欄位（from/to/date、hospital/deptName…）一致
+  const { thsrForm, setThsrForm, getLaunchConfig: getThsrConfig } = useTHSRWorkflow();
+  const { hospitalForm, setHospitalForm, getLaunchConfig: getHospitalConfig } = useHospitalWorkflow();
+  const { badmintonForm, setBadmintonForm, setBadmintonField } = useBadmintonWorkflow();
+  const { tixCraftForm, setTixCraftForm, getLaunchConfig: getTixCraftConfig } = useTixCraftWorkflow();
+  const { inlineForm, setInlineForm, setInlineField, getLaunchConfig: getInlineConfig } = useInlineWorkflow();
+  const { flightForm, setFlightForm, setFlightField, getLaunchConfig: getFlightConfig } = useFlightWorkflow();
 
   // 當傳入的 task 改變時（切換編輯對象），在 render 階段直接重置 state
   // 這是 React 官方推薦取代 useEffect 同步 setState 的做法，可避免多餘的 cascading render
@@ -52,25 +86,102 @@ export const QueueEditSheet = ({
     setName(task?.name || "");
     setScheduledAt(task?.scheduledAt || "");
     setPriority(task?.priority || "LOW");
-    setTarget(task?.config?.target || "");
-    setAccount(task?.config?.account || "");
-    setNotify(task?.config?.notify || false);
+
+    const cfg = task?.config;
+    switch (task?.taskType) {
+      case "thsr_booking":
+        setThsrForm((prev) => ({ ...prev, ...pickConfigFields(cfg, ["count"]) }));
+        break;
+      case "hospital_booking":
+        setHospitalForm((prev) => ({ ...prev, ...pickConfigFields(cfg) }));
+        break;
+      case "badminton_booking":
+        setBadmintonForm((prev) => ({ ...prev, ...pickConfigFields(cfg, ["session_count"]) }));
+        break;
+      case "tixcraft_booking":
+      case "concert_ticket":
+        setTixCraftForm((prev) => ({ ...prev, ...pickConfigFields(cfg, ["ticket_count"]) }));
+        break;
+      case "inline_booking":
+        setInlineForm((prev) => ({ ...prev, ...pickConfigFields(cfg, ["adults", "kids"]) }));
+        break;
+      case "flight_search":
+        setFlightForm((prev) => ({ ...prev, ...pickConfigFields(cfg, ["budget", "stay_duration"]) }));
+        break;
+    }
   }
 
   const handleSave = () => {
-    if (task) {
-      onSave({
-        ...task,
-        name,
-        scheduledAt,
-        priority,
-        config: {
-          target,
-          account,
-          notify,
-        },
-      });
-      onClose();
+    if (!task) return;
+
+    // 把當前表單狀態轉換回實際要寫進 config 的欄位，並疊在原本的 config 上——
+    // 這樣沒有在編輯面板顯示出來的欄位（如 fallback_options、preferences）不會被清掉
+    let typeConfig: Record<string, any> = {};
+    switch (task.taskType) {
+      case "thsr_booking":
+        typeConfig = getThsrConfig().config;
+        break;
+      case "hospital_booking":
+        typeConfig = getHospitalConfig().config;
+        break;
+      case "badminton_booking":
+        typeConfig = {
+          user_id: badmintonForm.user_id,
+          password: badmintonForm.password,
+          capsolver_api_key: badmintonForm.capsolver_api_key,
+          target_date: badmintonForm.target_date,
+          target_time_slot: badmintonForm.target_time_slot,
+          target_courts: badmintonForm.target_courts,
+          target_time: badmintonForm.target_time,
+          session_count: parseInt(badmintonForm.session_count) || 2,
+        };
+        break;
+      case "tixcraft_booking":
+      case "concert_ticket":
+        typeConfig = getTixCraftConfig().config;
+        break;
+      case "inline_booking":
+        typeConfig = getInlineConfig().config;
+        break;
+      case "flight_search":
+        typeConfig = getFlightConfig().config;
+        break;
+    }
+
+    onSave({
+      ...task,
+      name,
+      scheduledAt,
+      priority,
+      config: {
+        ...task.config,
+        ...typeConfig,
+      },
+    });
+    onClose();
+  };
+
+  const renderTypeForm = () => {
+    switch (task?.taskType) {
+      case "thsr_booking":
+        return <ThsrForm thsrForm={thsrForm} setThsrForm={setThsrForm} inputClass={inputClass} />;
+      case "hospital_booking":
+        return <HospitalForm hospitalForm={hospitalForm} setHospitalForm={setHospitalForm} inputClass={inputClass} />;
+      case "badminton_booking":
+        return <BadmintonForm badmintonForm={badmintonForm} setBadmintonField={setBadmintonField} inputClass={inputClass} />;
+      case "tixcraft_booking":
+      case "concert_ticket":
+        return <TixCraftForm tixCraftForm={tixCraftForm} setTixCraftForm={setTixCraftForm} inputClass={inputClass} />;
+      case "inline_booking":
+        return <InlineForm inlineForm={inlineForm} setInlineField={setInlineField} inputClass={inputClass} />;
+      case "flight_search":
+        return <FlightForm flightForm={flightForm} setFlightField={setFlightField} inputClass={inputClass} />;
+      default:
+        return (
+          <p className="text-xs text-slate-500 dark:text-slate-500 italic">
+            此任務類型（{task?.taskType || "未知"}）尚無對應的編輯表單。
+          </p>
+        );
     }
   };
 
@@ -100,10 +211,11 @@ export const QueueEditSheet = ({
             />
           </div>
 
-          {/* 預約日期 */}
+          {/* 排程執行時間：機器人幾點要開始執行這個任務，不是訂位/訂票目標日期
+              （目標日期在下面各任務類型專屬表單裡編輯，如高鐵的出發日期、餐廳的訂位日期） */}
           <div className="space-y-2">
             <Label htmlFor="date" className="text-slate-800 dark:text-slate-300 font-medium">
-              預約日期
+              排程執行時間
             </Label>
             <Input
               id="date"
@@ -140,55 +252,12 @@ export const QueueEditSheet = ({
 
           <div className="border-t border-slate-200 dark:border-slate-800/80 my-2"></div>
 
-          {/* 進階設定區塊 */}
+          {/* 依任務類型顯示對應的實際訂票/訂位參數 */}
           <div className="space-y-6">
             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400 tracking-wider">
-              進階執行參數
+              訂票 / 訂位參數
             </h3>
-
-            <div className="space-y-2">
-              <Label htmlFor="target" className="text-slate-800 dark:text-slate-300 text-xs">
-                目標對象 (Target)
-              </Label>
-              <Input
-                id="target"
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                className="bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 focus-visible:ring-cyan-500/50 text-sm font-mono h-9"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="account" className="text-slate-800 dark:text-slate-300 text-xs">
-                執行帳號 (Account)
-              </Label>
-              <Input
-                id="account"
-                value={account}
-                onChange={(e) => setAccount(e.target.value)}
-                className="bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 focus-visible:ring-cyan-500/50 text-sm font-mono h-9"
-              />
-            </div>
-
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-900/30 p-3 rounded-lg border border-slate-200 dark:border-slate-800/50">
-              <div className="space-y-0.5">
-                <Label
-                  htmlFor="notify"
-                  className="text-slate-900 dark:text-slate-300 text-sm cursor-pointer"
-                >
-                  任務通知 (LINE Notify)
-                </Label>
-                <p className="text-xs text-slate-600 dark:text-slate-500">
-                  當任務完成或失敗時傳送通知
-                </p>
-              </div>
-              <Switch
-                id="notify"
-                checked={notify}
-                onCheckedChange={setNotify}
-                className="data-[state=checked]:bg-cyan-500 cursor-pointer"
-              />
-            </div>
+            {renderTypeForm()}
           </div>
         </div>
 

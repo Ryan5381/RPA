@@ -36,6 +36,8 @@ export const POPULAR_AIRPORTS = [
   { code: "KIX", name: "日本關西 (KIX)" },
   { code: "CTS", name: "日本新千歲 (CTS)" },
   { code: "OKA", name: "日本沖繩 (OKA)" },
+  { code: "FUK", name: "日本福岡 (FUK)" },
+  { code: "MMY", name: "日本宮古島 (MMY)" },
   { code: "ICN", name: "韓國仁川 (ICN)" },
   { code: "BKK", name: "泰國曼谷 (BKK)" },
   { code: "SIN", name: "新加坡樟宜 (SIN)" },
