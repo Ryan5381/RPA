@@ -7,14 +7,14 @@ import traceback
 import secrets
 from datetime import datetime
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 from supabase import create_client, Client
 from dotenv import load_dotenv, set_key
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from scripts import dispatch_script, page_registry
+from scripts import dispatch_script
 
 # 1. 載入 .env 檔案中的環境變數
 load_dotenv()
@@ -387,42 +387,6 @@ async def save_line_settings(payload: LineSettingsPayload):
         return {"message": "LINE 設定已儲存", "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# 14. 瀏覽器即時截圖 WebSocket 串流
-@app.websocket("/ws/preview/{task_id}")
-async def websocket_preview(websocket: WebSocket, task_id: str):
-    """
-    每 1 秒擷取指定任務的 Playwright page 截圖並透過 WebSocket 傳送至前端。
-    腳本結束（unregister_page）後傳送 idle 訊號並關閉連線。
-    """
-    await websocket.accept()
-    idle_count = 0
-    try:
-        while True:
-            # 在執行緒池中呼叫 sync playwright screenshot（避免阻塞事件迴圈）
-            shot: bytes | None = await asyncio.to_thread(page_registry.get_screenshot, task_id)
-            if shot is not None:
-                import base64
-                b64 = base64.b64encode(shot).decode()
-                await websocket.send_json({"type": "screenshot", "data": b64})
-                idle_count = 0
-            else:
-                idle_count += 1
-                await websocket.send_json({"type": "idle"})
-                # 連續 5 秒無 page（任務已結束），主動關閉
-                if idle_count >= 5:
-                    break
-            await asyncio.sleep(1)
-    except WebSocketDisconnect:
-        pass
-    except Exception as e:
-        print(f"[WS Preview] 串流發生異常: {e}")
-    finally:
-        try:
-            await websocket.close()
-        except Exception:
-            pass
-
 
 # ─── 15. API 金鑰管理 ──────────────────────────────────────────────────────────
 ENV_PATH = Path(__file__).parent / ".env"

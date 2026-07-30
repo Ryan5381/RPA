@@ -304,11 +304,6 @@ async def _run_tixcraft_bot(task_id: str):
 
         log_execution(task_id, "navigating", f"正在直接前往場次購票頁面: {activity_url}")
         tab = await browser.get(activity_url)
-        # 注意：這裡刻意不註冊 page_registry 即時預覽——nodriver 跟瀏覽器只有一條
-        # WebSocket 連線，如果背景每秒截圖的請求跟這支腳本自己操作瀏覽器的請求
-        # 同時發生，會共用同一條連線的回應等待機制而互相衝突
-        # （AssertionError: cannot call get() concurrently）。
-        # 之後如果要恢復即時預覽，需要另外做同步機制，目前先關閉以確保主流程穩定。
 
         await tab.sleep(2)
 

@@ -114,6 +114,10 @@ export const InlineForm: React.FC<InlineFormProps> = ({
 
   // 屋馬燒肉：精確時段選擇 + 單桌最多 6 位（大人+小孩合計）
   const isWuma = inlineForm.restaurant_key === "wuma";
+  // 島語自助餐廳：目前只有高雄漢神店有「用餐桌型」欄位（一般/吧台板前），
+  // 其他分店訂位開放時後端會自動偵測跳過，但先依餐廳品牌決定要不要顯示這個
+  // 欄位，避免對屋馬/其他餐廳的使用者顯示一個永遠用不到的選項造成困惑。
+  const isIslandBuffet = inlineForm.restaurant_key === "islandbuffet";
   const adultsOptions = isWuma
     ? ["1", "2", "3", "4", "5", "6"]
     : ["1", "2", "3", "4", "5", "6", "7"];
@@ -178,6 +182,10 @@ export const InlineForm: React.FC<InlineFormProps> = ({
                   // 從屋馬切回其他餐廳：時段還原為粗略時段的預設值
                   setInlineField("session", "evening");
                 }
+                // 離開島語時清空用餐桌型，避免殘留值被誤帶到不支援此欄位的餐廳
+                if (v !== "islandbuffet") {
+                  setInlineField("table_type", "");
+                }
               }}
             >
               <SelectTrigger className={selectClass}>
@@ -219,6 +227,40 @@ export const InlineForm: React.FC<InlineFormProps> = ({
             </Select>
           </div>
         </div>
+
+        {/* 用餐桌型：目前只有島語部分分店（如高雄漢神店）才有這個欄位，
+            其餘餐廳訂位開放時沒有這個選單，顯示出來也選不到，故只在
+            島語品牌下顯示。後端仍會執行時偵測頁面上有沒有這個選單，
+            沒有就自動跳過；選「不指定」則沿用網站預設值。 */}
+        {isIslandBuffet && (
+          <div className="space-y-1.5">
+            <Label htmlFor="table_type" className="text-xs text-slate-700 dark:text-slate-400 font-mono font-medium">
+              用餐桌型
+              <span className="ml-1.5 text-[10px] text-slate-500 dark:text-slate-600">(僅部分分店適用)</span>
+            </Label>
+            <Select
+              value={inlineForm.table_type}
+              onValueChange={(v) => setInlineField("table_type", v === "__default__" ? "" : v)}
+            >
+              <SelectTrigger className={selectClass}>
+                <SelectValue placeholder="不指定（使用預設）">
+                  {(v: string) => (v ? v : "不指定（使用預設）")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-card dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300">
+                <SelectItem value="__default__" className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
+                  不指定（使用預設）
+                </SelectItem>
+                <SelectItem value="一般" className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
+                  一般
+                </SelectItem>
+                <SelectItem value="吧台板前" className="text-xs focus:bg-slate-100 dark:focus:bg-slate-800">
+                  吧台板前
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* ── 區塊二：日期、時段、人數 ── */}

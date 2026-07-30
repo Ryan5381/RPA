@@ -15,7 +15,7 @@ from patchright.sync_api import sync_playwright
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-AUTH_STATE_PATH = Path(__file__).parent.parent / "auth" / "tixcraft_state.json"
+AUTH_STATE_PATH = Path(__file__).parent.parent.parent / "auth" / "tixcraft_state.json"
 
 
 def main() -> None:

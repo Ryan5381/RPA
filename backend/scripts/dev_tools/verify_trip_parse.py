@@ -10,7 +10,7 @@ from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 def main():
-    capsolver_path = str(Path(__file__).parent.parent / "capsolver_extension")
+    capsolver_path = str(Path(__file__).parent.parent.parent / "capsolver_extension")
     with sync_playwright() as pw:
         browser = pw.chromium.launch(
             headless=False,

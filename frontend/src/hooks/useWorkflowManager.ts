@@ -13,7 +13,7 @@ import { useFlightWorkflow } from "./useFlightWorkflow";
 import { useLaunchWorkflow } from "./useWorkflowMutations";
 
 export const useWorkflowManager = () => {
-  const [selectedKey, setSelectedKey] = useState("hospital");
+  const [selectedKey, setSelectedKey] = useState("ticket");
 
   // OTP Modal 狀態：task_id 或 null。只有後端真的走到「等待 OTP」那一步才會設定，
   // 不是任務一啟動就打開——不然瀏覽器可能連 inline.app 都還沒開好，
@@ -22,7 +22,9 @@ export const useWorkflowManager = () => {
   const clearOtpTask = () => setOtpTaskId(null);
 
   // 任務剛啟動、還在等後端跑到 waiting_otp 的那個過渡期 task_id
-  const [pendingInlineTaskId, setPendingInlineTaskId] = useState<string | null>(null);
+  const [pendingInlineTaskId, setPendingInlineTaskId] = useState<string | null>(
+    null,
+  );
 
   // 每 2 秒輪詢一次剛啟動的 inline 任務狀態，直到後端真的回報 waiting_otp
   // 才把 OTP Modal 打開；若中途就 success/failed，直接用 toast 通知，不開 Modal。
@@ -68,14 +70,18 @@ export const useWorkflowManager = () => {
       if (selectedKey === "utensils") {
         setPendingInlineTaskId(taskId);
         toast.info("訂位機器人啟動中...", {
-          description: "正在自動填寫訂位資訊，等待驗證碼畫面出現後會自動提示您輸入",
+          description:
+            "正在自動填寫訂位資訊，等待驗證碼畫面出現後會自動提示您輸入",
           duration: 5000,
         });
       }
     },
   });
 
-  const handleLaunchTask = (options?: { priority?: string; scheduledAt?: string }) => {
+  const handleLaunchTask = (options?: {
+    priority?: string;
+    scheduledAt?: string;
+  }) => {
     let launchConfig;
 
     // 高鐵

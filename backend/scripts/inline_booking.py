@@ -23,6 +23,8 @@ from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
 
+from tasks_dispatcher import log_execution
+
 load_dotenv()
 
 # ── 餐廳資料庫（支援的 inline.app 餐廳與分店）────────────────────────────────
@@ -139,6 +141,7 @@ async def _run_inline_bot(task_id: str) -> None:
     phone = config.get("phone", "")                        # 09xxxxxxxx
     email = config.get("email", "")
     purpose = config.get("purpose", "")                    # birthday/date/...
+    table_type = config.get("table_type", "")              # 一般/吧台板前（僅部分分店有此欄位）
 
     # 取得餐廳/分店資訊
     restaurant = RESTAURANT_DB.get(restaurant_key)
@@ -186,8 +189,20 @@ async def _run_inline_bot(task_id: str) -> None:
             # 3. 開啟訂位頁面
             print(f"[inline_booking] 導航至 {booking_url}")
             _update_status(supabase, task_id, "running", {"step": "navigating"})
-            await page.goto(booking_url, wait_until="networkidle", timeout=30000)
-            await _random_sleep(1.5, 2.5)
+
+            # 用 domcontentloaded 而非 networkidle：inline.app 有持續不斷的背景
+            # 請求（分析、PerimeterX 心跳），networkidle 要等網路完全靜止，實測
+            # 光這一步就卡 12 秒；改用 domcontentloaded 只要 2.7 秒。
+            # 後面改成「明確等待訂位選單出現」，比固定的隨機等待又快又可靠——
+            # 該等的時候會等，頁面早就好了就立刻往下走。
+            # 實測整體從 14.97s 縮短到 9.23s。
+            await page.goto(booking_url, wait_until="domcontentloaded", timeout=30000)
+            try:
+                await page.locator("#adult-picker").wait_for(state="visible", timeout=20000)
+            except Exception:
+                # 選單沒出現不一定是失敗（可能是多分店選擇頁，要先點分店卡片），
+                # 交給後續步驟處理，這裡只補一個短暫緩衝。
+                await _random_sleep(1.0, 1.5)
 
             # 4. 確認在正確的分店頁面（點擊對應分店卡片，如果顯示的是多店選擇頁）
             await _select_branch_if_needed(page, branch["name"])
@@ -200,6 +215,12 @@ async def _run_inline_bot(task_id: str) -> None:
             print(f"[inline_booking] 選擇人數：大人 {adults}，小孩 {kids}")
             _update_status(supabase, task_id, "running", {"step": "selecting_party_size"})
             await _select_party_size(page, adults, kids)
+
+            # 6-2. 選擇用餐桌型（只有部分分店有這個欄位，例如島語高雄漢神店）。
+            #      要排在日期/時段之前：不同桌型的可訂日期與時段不一樣，
+            #      先選好桌型，後面抓到的才是正確的可選清單。
+            _update_status(supabase, task_id, "running", {"step": "selecting_table_type"})
+            await _select_table_type(page, table_type)
 
             # 7. 選擇日期
             print(f"[inline_booking] 選擇日期：{target_date}")
@@ -502,12 +523,16 @@ async def _select_date(page, target_date: str) -> bool:
         return True
 
     try:
-        # 先點開收合的日期選擇器
+        # 先點開收合的日期選擇器。
+        # 注意這個觸發器是 toggle：已經打開時再點一次會關掉。因此先確認
+        # 月曆目前是不是已經可見，只有在收合狀態才點，避免把已開啟的月曆關掉。
         picker_trigger = page.locator("#date-picker, [data-cy='date-picker']").first
-        await picker_trigger.click(timeout=5000)
-        await _random_sleep(0.5, 0.8)
-
         calendar = page.locator("#calendar-picker, [data-cy='calendar-picker']").first
+
+        if not await calendar.is_visible():
+            await picker_trigger.click(timeout=5000)
+            await _race_sleep()
+
         await calendar.wait_for(state="visible", timeout=5000)
 
         day_locator = calendar.locator(f"[data-cy='bt-cal-day'][data-date='{target_date}']")
@@ -519,7 +544,7 @@ async def _select_date(page, target_date: str) -> bool:
                 if await next_btn.count() == 0 or not await next_btn.is_visible(timeout=1000):
                     break
                 await next_btn.click(timeout=3000)
-                await _random_sleep(0.4, 0.7)
+                await _race_sleep()
                 if await day_locator.count() > 0:
                     break
 
@@ -540,7 +565,7 @@ async def _select_date(page, target_date: str) -> bool:
         if not await _robust_click(day_cell):
             print(f"[inline_booking] ❌ {target_date} 這一格點不下去（可能被浮動元素遮擋）")
             return False
-        await _random_sleep(0.8, 1.2)
+        await _race_sleep()
 
         selected_label = await picker_trigger.text_content()
         print(f"[inline_booking] 日期 {target_date} 選擇成功（欄位顯示：{(selected_label or '').strip()}）")
@@ -572,7 +597,7 @@ async def _select_session(page, session: str) -> bool:
             await page.locator("[data-cy^='book-now-time-slot']").first.wait_for(
                 state="visible", timeout=8000
             )
-            await _random_sleep(0.3, 0.5)
+            await _race_sleep()
         except Exception:
             pass
 
@@ -583,7 +608,7 @@ async def _select_session(page, session: str) -> bool:
             try:
                 btn = page.locator(f"[data-cy='book-now-time-slot-box-{hour_form}-{mm}']").first
                 if await btn.is_visible(timeout=2000) and await _robust_click(btn):
-                    await _random_sleep(0.8, 1.2)
+                    await _race_sleep()
                     print(f"[inline_booking] 時段選擇成功（data-cy 精確定位）：{session}")
                     return True
             except Exception:
@@ -592,7 +617,7 @@ async def _select_session(page, session: str) -> bool:
         try:
             btn = page.locator(f"text={session}").first
             if await btn.is_visible(timeout=2000) and await _robust_click(btn):
-                await _random_sleep(0.8, 1.2)
+                await _race_sleep()
                 print(f"[inline_booking] 時段選擇成功（文字比對）：{session}")
                 return True
         except Exception:
@@ -611,13 +636,68 @@ async def _select_session(page, session: str) -> bool:
             btn = page.locator(f"text={kw}").first
             if await btn.is_visible(timeout=2000):
                 await btn.click()
-                await _random_sleep(0.8, 1.2)
+                await _race_sleep()
                 print(f"[inline_booking] 時段選擇成功：{kw}")
                 return True
         except Exception:
             continue
     print(f"[inline_booking] ⚠️ 無法自動選擇時段 {session}")
     return False
+
+
+async def _select_table_type(page, table_type: str) -> bool:
+    """選擇用餐桌型（部分餐廳才有的欄位，例如島語高雄漢神店的「一般 / 吧台板前」）。
+
+    這個欄位是 <select id="table-picker">，但 option 的 value 是 Firebase 亂數 ID
+    （例如 '-Ouq8xpdoxxy-HgR9Ldj'），每家分店都不一樣，所以「絕對不能寫死 ID」，
+    必須用畫面上顯示的文字去比對出對應的 value。
+
+    沒有這個欄位的餐廳（屋馬、輕井澤等）直接放行；使用者沒指定桌型時沿用
+    頁面預設值（通常是第一個選項「一般」），不強制改動。
+    """
+    picker = page.locator("#table-picker")
+    try:
+        if await picker.count() == 0:
+            return True  # 這家餐廳沒有桌型欄位
+    except Exception:
+        return True
+
+    try:
+        options = await picker.first.evaluate(
+            "s => Array.from(s.options).map(o => ({v: o.value, t: (o.text || '').trim()}))"
+        )
+    except Exception as e:
+        print(f"[inline_booking] 讀取用餐桌型選項失敗：{e}")
+        return True  # 讀不到就沿用預設值，不阻斷流程
+
+    labels = [o["t"] for o in options]
+    print(f"[inline_booking] 此分店的用餐桌型選項：{labels}")
+
+    if not table_type:
+        print("[inline_booking] 未指定用餐桌型，沿用頁面預設值")
+        return True
+
+    target = table_type.strip()
+    matched = next(
+        (o for o in options if o["t"] == target),
+        None,
+    ) or next(
+        (o for o in options if target in o["t"] or o["t"] in target),
+        None,
+    )
+
+    if not matched:
+        print(f"[inline_booking] ⚠️ 找不到用餐桌型「{target}」，沿用預設值（可選：{labels}）")
+        return True
+
+    try:
+        await picker.first.select_option(matched["v"])
+        await _race_sleep()
+        print(f"[inline_booking] 用餐桌型已選：「{matched['t']}」")
+        return True
+    except Exception as e:
+        print(f"[inline_booking] ⚠️ 選擇用餐桌型失敗：{e}")
+        return False
 
 
 async def _select_party_size(page, adults: int, kids: int) -> None:
@@ -650,7 +730,7 @@ async def _select_party_size(page, adults: int, kids: int) -> None:
             else:
                 await _click_counter_to_value(page, "kid", kids)
 
-        await _random_sleep(0.5, 1.0)
+        await _race_sleep()
     except Exception as e:
         print(f"[inline_booking] 選擇人數時發生錯誤：{e}")
 
@@ -1216,10 +1296,31 @@ async def _random_sleep(min_s: float, max_s: float) -> None:
     await asyncio.sleep(random.uniform(min_s, max_s))
 
 
+async def _race_sleep(min_s: float = 0.25, max_s: float = 0.5) -> None:
+    """搶位關鍵路徑專用的短延遲（人數 → 桌型 → 日期 → 時段）。
+
+    這四步是真正在跟其他人競爭的區間——選到時段的那一刻位子就被鎖住了，
+    之後填聯絡資訊、送出通常有數分鐘的保留時間，不必搶快。因此只把這段
+    壓到最短，其餘步驟仍用 _random_sleep 維持擬人化節奏。
+
+    不把全部延遲都砍掉的原因有實測依據：這個網站的 PerimeterX 會持續蒐集
+    行為遙測，實測「頁面載入完成後立刻重新整理」會被直接硬擋
+    （Access to this page has been denied），代表過快且機械的操作本身就是
+    觸發條件。保留後半段的自然節奏是刻意的取捨。
+
+    預設值 0.25~0.5 秒是刻意留在「真人手速」範圍內（真人在表單元素之間
+    點擊大約 0.3~0.8 秒）。曾試過 0.12~0.3 秒，測試中出現 PerimeterX 的
+    px-captcha-modal 驗證彈窗擋住點擊——雖然無法完全排除是短時間內重複
+    測試累積觸發的，但既然比真人還快的收益有限（每步只差 0.15 秒左右），
+    就沒有必要冒這個風險。
+    """
+    await asyncio.sleep(random.uniform(min_s, max_s))
+
+
 # ── Supabase 狀態更新 ─────────────────────────────────────────────────────────
 
 def _update_status(supabase, task_id: str, status: str, result: dict) -> None:
-    """更新 Supabase tasks 表的 status 和 result 欄位。
+    """更新 Supabase tasks 表的 status 和 result 欄位，並同步寫一筆 execution_logs。
 
     這兩個拆成兩次分開的 update：tasks 資料表目前沒有 result 欄位（需要額外執行
     ALTER TABLE tasks ADD COLUMN result jsonb; 才會有），如果兩個欄位包在同一次
@@ -1227,6 +1328,12 @@ def _update_status(supabase, task_id: str, status: str, result: dict) -> None:
     ——這正是之前「任務進度／OTP 等待狀態從沒被寫進資料庫」的原因。拆開後，就算
     沒加那個欄位，至少 status（前端和 OTP 流程真正依賴的核心欄位）永遠會確實寫入，
     只有 result 這些附加診斷資訊（截圖路徑、錯誤細節等）會在欄位不存在時被跳過。
+
+    這支腳本原本全程只用 print()，只會出現在後端終端機——前端「系統日誌」面板
+    讀的是 execution_logs 這張表，print() 永遠不會出現在那裡，導致任務失敗時
+    使用者在前端完全看不到失敗原因。這裡改成每次更新狀態時，一併呼叫
+    log_execution() 寫一筆對應的日誌，這樣不用逐一去改檔案裡本來就有的
+    29 處 _update_status 呼叫點，全部自動補上前端可見的日誌。
     """
     try:
         supabase.table("tasks").update({"status": status}).eq("id", task_id).execute()
@@ -1239,3 +1346,21 @@ def _update_status(supabase, task_id: str, status: str, result: dict) -> None:
         print(f"[inline_booking] 更新 result 失敗（若尚未新增 result 欄位屬正常現象）：{e}")
 
     print(f"[inline_booking] 狀態更新：{status} | {result}")
+
+    if status == "failed":
+        level = "error"
+        message = f"❌ {result.get('error') or result.get('message') or '任務失敗'}"
+    elif status == "success":
+        level = "success"
+        message = f"✅ {result.get('message', '任務完成')}"
+    elif status == "waiting_otp":
+        level = "action"
+        message = result.get("message", "等待輸入驗證碼")
+    else:
+        level = "action"
+        message = result.get("message") or f"執行中：{result.get('step', status)}"
+
+    try:
+        log_execution(task_id, level, message)
+    except Exception as e:
+        print(f"[inline_booking] 寫入 execution_logs 失敗：{e}")

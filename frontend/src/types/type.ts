@@ -28,6 +28,7 @@ export type InlinePurpose = "birthday" | "date" | "anniversary" | "family" | "fr
 export interface InlineBookingForm {
   restaurant_key: string;  // e.g. "islandbuffet"
   branch_key: string;      // e.g. "kaohsiung_hanshin"
+  table_type: string;      // 用餐桌型，如「一般」「吧台板前」；僅部分分店有此欄位，留空即用預設
   target_date: string;     // YYYY-MM-DD
   session: InlineSession;
   adults: string;          // "1"~"7"
