@@ -54,21 +54,22 @@
 
 本專案採用前後端分離架構：
 
-- **前端控制台**（React + Vite + TailwindCSS）：建立/管理自動化任務、設定預約偏好順位（首選 + 候補）、透過 WebSocket 即時檢視執行日誌與瀏覽器截圖預覽、OTP 驗證碼輸入視窗、LINE 通知設定。
+- **前端控制台**（React + Vite + TailwindCSS）：建立/管理自動化任務、設定預約偏好順位（首選 + 候補）、透過 Supabase Realtime 訂閱即時檢視執行日誌、OTP 驗證碼輸入視窗、LINE 通知設定。
 - **後端自動化引擎**（Python + FastAPI）：接收任務請求、依優先序與排程時間調度執行、驅動瀏覽器自動化（Playwright / patchright / nodriver，依各平台的反爬蟲防護程度選用）、將執行過程即時寫回資料庫供前端輪詢/顯示。
 - **Supabase**：作為前後端之間唯一的溝通媒介與任務持久化儲存（不是單純的資料庫，前端的即時狀態顯示、OTP 中繼、執行結果通知都靠它）。
 
-```
-┌─────────────┐        讀寫 tasks / execution_logs        ┌──────────────┐
-│   前端 (Vite)  │ ───────────────────────────────────────▶ │   Supabase    │
-│  React + TS   │ ◀─────────────────────────────────────── │  (Postgres)   │
-└─────────────┘                                            └──────▲───────┘
-       │  POST /api/tasks/execute                                  │
-       ▼                                                           │
-┌─────────────┐   dispatch_script()   ┌───────────────────┐        │
-│  FastAPI 後端  │ ─────────────────▶ │  各平台自動化腳本    │ ───────┘
-│   (uvicorn)   │                     │ (Playwright/nodriver) │
-└─────────────┘                     └───────────────────┘
+```mermaid
+flowchart LR
+    FE["前端 (Vite)<br/>React + TS"]
+    SB[("Supabase<br/>(Postgres)")]
+    BE["FastAPI 後端<br/>(uvicorn)"]
+    SC["各平台自動化腳本<br/>(Playwright / nodriver)"]
+
+    FE -- "讀寫 tasks / execution_logs" --> SB
+    SB -- "Realtime 訂閱即時日誌" --> FE
+    FE -- "POST /api/tasks/{task_id}/execute" --> BE
+    BE -- "dispatch_script()" --> SC
+    SC -- "寫回 status / result / logs" --> SB
 ```
 
 ## 技術棧
@@ -106,14 +107,16 @@ RPA/
 │       ├── inline_booking.py
 │       ├── flight_scraper.py
 │       ├── badminton_booking.py
+│       ├── booking_api.py       # 羽球訂場用的 HTTP API 逆向工程層（登入/驗證碼送出邏輯）
 │       ├── thsr_booking.py
-│       ├── page_registry.py     # 瀏覽器分頁註冊，供前端即時截圖預覽
-│       └── setup_tixcraft_login.py / convert_cookies_to_storage_state.py
-│           # 手動登入並匯出/轉換各平台會員憑證的輔助腳本
+│       ├── setup_tixcraft_login.py / convert_cookies_to_storage_state.py
+│       │   # 手動登入並匯出/轉換各平台會員憑證的輔助腳本
+│       ├── setup_capsolver.py   # 安裝並設定 CapSolver 瀏覽器擴充功能的輔助腳本
+│       └── dev_tools/           # 各平台除錯用的輔助腳本，見該目錄下的 README.md
 └── frontend/
     └── src/
         ├── components/workflows/  # 任務建立表單、優先序設定、OTP 輸入視窗
-        ├── components/common/     # 共用元件（Sidebar、即時預覽等）
+        ├── components/common/     # 共用元件（Sidebar、Navbar、OTP 輸入視窗等）
         ├── hooks/                 # 各類型任務的表單/啟動邏輯
         └── apis/                  # 後端 API 呼叫封裝
 ```
@@ -178,11 +181,13 @@ npm run dev
 | `task_type` | `varchar` | 對應 `scripts/__init__.py` 的 `SCRIPT_ROUTER` key（如 `hospital_booking`、`tixcraft_booking`） |
 | `status` | `varchar` | `pending` / `queued` / `running` / `waiting_otp` / `success` / `failed` |
 | `created_at` | `timestamptz` | 建立時間 |
-| `config` | `jsonb` | 該任務的參數設定（分店、日期、時段、聯絡資訊等） |
+| `config` | `jsonb` | 該任務的參數設定（分店、日期、時段、聯絡資訊、優先度 `priority`、排程觸發時間 `scheduled_at` 等） |
 | `result` | `jsonb` | 執行結果（截圖路徑、錯誤訊息、成功時的訂位/搶票細節） |
 | `otp_code` | `text` | 使用者透過前端輸入的簡訊驗證碼，供需要 OTP 的腳本（如 `inline_booking.py`）讀取 |
 
-另外還需要一張 `execution_logs` 資料表，供 `tasks_dispatcher.log_execution()` 寫入即時執行日誌（前端的即時 log 面板靠這張表輪詢顯示）：
+> `priority`（優先度）與 `scheduled_at`（排程觸發時間，機器人幾點該開始執行——不是訂位/訂票的目標日期）刻意不建成獨立欄位，而是統一存在 `config` 裡。`main.py` 的 `create_task`/`update_task` 都只往 `config` 寫，讀取時（排程器巡邏、前端顯示）也一律以 `config` 為準；若之後真的要拆成獨立欄位，`update_task` 的讀取-合併-寫回邏輯需要一併調整，否則會重新出現「編輯任務時新舊值對不上」的問題。
+
+另外還需要一張 `execution_logs` 資料表，供 `tasks_dispatcher.log_execution()` 寫入即時執行日誌（前端透過 Supabase Realtime 訂閱這張表，即時顯示在 log 面板）：
 
 | 欄位 | 型別 | 說明 |
 |---|---|---|
@@ -209,9 +214,6 @@ CAPSOLVER_API_KEY=your-capsolver-api-key
 # LINE Messaging API（選用，供任務完成通知使用）
 LINE_CHANNEL_ACCESS_TOKEN=your-line-channel-access-token
 LINE_USER_ID=your-line-user-id
-
-# 後端 API 保護金鑰（依專案實際使用情況設定）
-API_KEY=your-internal-api-key
 ```
 
 ## 選用功能設定
