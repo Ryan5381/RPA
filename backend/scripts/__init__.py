@@ -14,7 +14,6 @@ from .hospital_booking import run_hospital_booking
 from .tixcraft_booking import run_tixcraft_booking
 from .inline_booking import run_inline_booking
 from .flight_scraper import run_flight_scraper
-from . import page_registry  # noqa: F401 — 供各腳本與 main.py 的 WebSocket endpoint 共用
 
 # ─── 腳本路由表 ───────────────────────────────────────────────────────────────
 # key: 前端送出時的 task_type 值
@@ -69,10 +68,12 @@ async def dispatch_script(task_type: str, task_id: str):
                 # ALTER TABLE tasks ADD COLUMN result jsonb; 才會有），欄位不存在時
                 # 這裡的查詢一定會失敗，但不該連累上面已經正常運作的制式通知邏輯。
                 already_notified = False
+                task_result: dict = {}
                 try:
                     result_res = supabase.table("tasks").select("result").eq("id", task_id).execute()
                     if result_res.data:
-                        already_notified = bool((result_res.data[0].get("result") or {}).get("line_notified"))
+                        task_result = result_res.data[0].get("result") or {}
+                        already_notified = bool(task_result.get("line_notified"))
                 except Exception:
                     pass
 
@@ -106,9 +107,15 @@ async def dispatch_script(task_type: str, task_id: str):
                 if already_notified:
                     pass
                 elif status == "success" and "success" in triggers:
-                    send_line_notification(f"✅ [RPA 機器人] {task_name} 任務執行成功！\n任務ID: {task_id}")
+                    success_msg = task_result.get("message", "")
+                    detail_line = f"\n{success_msg}" if success_msg else ""
+                    send_line_notification(f"✅ [RPA 機器人] {task_name} 任務執行成功！{detail_line}\n任務ID: {task_id}")
                 elif status == "failed" and "fail" in triggers:
-                    send_line_notification(f"❌ [RPA 機器人] {task_name} 任務執行失敗。\n任務ID: {task_id}")
+                    # 原本這裡完全沒放失敗原因，使用者只會收到「任務執行失敗」，
+                    # 得自己回頭看前端系統日誌或問我才知道實際卡在哪一步。
+                    fail_reason = task_result.get("error") or task_result.get("message", "")
+                    detail_line = f"\n原因：{fail_reason}" if fail_reason else ""
+                    send_line_notification(f"❌ [RPA 機器人] {task_name} 任務執行失敗。{detail_line}\n任務ID: {task_id}")
                 elif status not in ["success", "failed"]:
                     # 如果因為某些原因還在 running，且 triggers 包含手動或其他
                     # 目前主要處理 success / fail

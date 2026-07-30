@@ -21,7 +21,7 @@ from nodriver import cdp
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-AUTH_STATE_PATH = Path(__file__).parent.parent / "auth" / "tixcraft_state.json"
+AUTH_STATE_PATH = Path(__file__).parent.parent.parent / "auth" / "tixcraft_state.json"
 
 _SAME_SITE_MAP = {
     "Strict": cdp.network.CookieSameSite.STRICT,

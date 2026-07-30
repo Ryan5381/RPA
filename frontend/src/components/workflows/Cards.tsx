@@ -9,19 +9,20 @@ interface CardsProps {
 
 export const Cards: React.FC<CardsProps> = ({ selectedKey, onSelect }) => {
   const items = [
-    { key: "hospital", label: "醫院掛號", icon: ICON_MAP["hospital"] },
     { key: "ticket", label: "演唱會搶票", icon: ICON_MAP["ticket"] },
     { key: "utensils", label: "美食預約", icon: ICON_MAP["utensils"] },
-    { key: "airplane", label: "折扣機票", icon: ICON_MAP["airplane"] },
+
     { key: "gym", label: "羽球場地預約", icon: ICON_MAP["gym"] },
     { key: "train", label: "高鐵訂票", icon: ICON_MAP["train"] },
+    { key: "hospital", label: "醫院掛號", icon: ICON_MAP["hospital"] },
+    { key: "airplane", label: "機票比價", icon: ICON_MAP["airplane"] },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6">
       {items.map((item) => {
         const isSelected = selectedKey === item.key;
-        const Icon = item.icon || ICON_MAP["hospital"];
+        const Icon = item.icon || ICON_MAP["ticket"];
         return (
           <div
             key={item.key}

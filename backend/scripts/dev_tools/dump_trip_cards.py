@@ -13,7 +13,7 @@ DUMP_FILE = Path(__file__).parent / "trip_card_dump.html"
 TEXT_FILE = Path(__file__).parent / "trip_card_text.txt"
 
 def main():
-    capsolver_path = str(Path(__file__).parent.parent / "capsolver_extension")
+    capsolver_path = str(Path(__file__).parent.parent.parent / "capsolver_extension")
     with sync_playwright() as pw:
         browser = pw.chromium.launch(
             headless=False,
