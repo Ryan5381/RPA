@@ -19,6 +19,26 @@ const TASK_TYPE_MAP: Record<string, { name: string; icon: string }> = {
   flight_search:      { name: "✈️ 機票搜尋",       icon: "flight_search" },
 };
 
+// 各任務類型實際存放「訂位/訂票目標日期」的欄位不同，這裡統一對應——
+// 跟 scheduled_at（機器人幾點被觸發執行）是完全不同的兩件事，不能混用
+const getTargetDate = (taskType: string, cfg: Record<string, any>): string => {
+  switch (taskType) {
+    case "thsr_booking":
+      return cfg.date || "";
+    case "hospital_booking":
+      return cfg.targetDate || "";
+    case "badminton_booking":
+    case "tixcraft_booking":
+    case "concert_ticket":
+    case "inline_booking":
+      return cfg.target_date || "";
+    case "flight_search":
+      return cfg.date_from || "";
+    default:
+      return "";
+  }
+};
+
 const formatSupabaseRow = (row: any): QueueTask => {
   const meta = TASK_TYPE_MAP[row.task_type] || {
     name: row.task_type || "未命名任務",
@@ -67,16 +87,28 @@ const formatSupabaseRow = (row: any): QueueTask => {
   const priority: "HIGH" | "MED" | "LOW" =
     rawPrio === "HIGH" || rawPrio === "LOW" ? rawPrio : "MED";
 
+  // scheduled_at：機器人「幾點要開始執行」的排程觸發時間（給編輯面板/後端排程器/排序用）
+  const rawScheduledAt = row.scheduled_at || row.config?.scheduled_at || "";
   const scheduledAt =
-    row.scheduled_at ||
-    row.config?.scheduled_at ||
+    rawScheduledAt ||
     (row.create_at || row.created_at ? strToDateOnly(row.create_at || row.created_at) : "待排程");
+
+  // scheduleLabel：純粹給序列清單表格顯示用。沒有真的設定排程時間（代表立即執行）就明講
+  // 「立即執行」，不要退回顯示建立時間——那個數字對使用者沒有意義，只會製造跟 targetDate 一樣的誤導
+  const scheduleLabel = rawScheduledAt || "立即執行";
+
+  // targetDate：這筆訂位/訂票實際「訂的是哪一天」，給序列清單表格顯示用——
+  // 跟 scheduledAt 不是同一件事，之前表格誤用 scheduledAt 顯示，立即執行的任務會顯示成建立時間，跟任務名稱裡的日期對不上
+  const targetDate = getTargetDate(row.task_type, cfg) || "未設定";
 
   return {
     id: String(row.id),
     name: displayName,
+    taskType: row.task_type,
     iconType: meta.icon,
     scheduledAt,
+    scheduleLabel,
+    targetDate,
     priority,
     status,
     config: {

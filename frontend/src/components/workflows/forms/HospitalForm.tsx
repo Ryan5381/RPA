@@ -22,9 +22,9 @@ interface HospitalFormProps {
   hospitalForm: {
     hospital: string;
     department: string;
-    targetDate?: string;
-    patientType?: string;
-    userName?: string;
+    targetDate: string;
+    patientType: string;
+    userName: string;
     user_id: string;
     birthDate: string;
     user_phone: string;
@@ -35,9 +35,9 @@ interface HospitalFormProps {
     React.SetStateAction<{
       hospital: string;
       department: string;
-      targetDate?: string;
-      patientType?: string;
-      userName?: string;
+      targetDate: string;
+      patientType: string;
+      userName: string;
       user_id: string;
       birthDate: string;
       user_phone: string;

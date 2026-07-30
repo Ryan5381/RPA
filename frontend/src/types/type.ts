@@ -53,15 +53,16 @@ export interface Preference {
 export interface QueueTask {
   id: string; // TSK-0001
   name: string; // 任務名稱
+  taskType: string; // 後端 task_type 原始值，如 "thsr_booking"，決定編輯面板要顯示哪種表單
   iconType: string; // 對應 ICON_MAP key
-  scheduledAt: string; // 預約日期 YYYY-MM-DD
+  scheduledAt: string; // 排程觸發時間：機器人幾點要開始執行這個任務（對應後端 scheduled_at），沒設定時退回顯示建立時間，供編輯面板/排序使用
+  scheduleLabel: string; // 排程觸發時間的顯示用文字：沒有真的設定排程就顯示「立即執行」，不會出現建立時間這種誤導性的值
+  targetDate: string; // 實際訂位/訂票目標日期：這筆任務訂的是哪一天（來自 config，依任務類型而異）
   priority: "HIGH" | "MED" | "LOW";
   status: "RUNNING" | "QUEUED" | "SUCCESS" | "FAILED";
-  config?: {
-    target?: string;
-    account?: string;
-    notify?: boolean;
-  };
+  // 實際內容依 taskType 而異（各腳本讀取的欄位不同，如 from/to/date 或 hospital/deptName），
+  // 這裡故意保持寬鬆型別，交由各自的表單元件與 QueueEditSheet 負責解讀
+  config?: Record<string, any>;
 }
 
 // ─── 執行中任務 (Process) ────────────────────────────────────────────────────

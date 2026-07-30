@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { SettingsHeader } from "./SettingsHeader";
-import { AccountSecurityCard } from "./AccountSecurityCard";
 import { SystemPreferencesCard } from "./SystemPreferencesCard";
 import { LineNotifyCard } from "./LineNotifyCard";
 
@@ -32,11 +31,8 @@ export const Settings = () => {
         saveSuccess={saveSuccess}
       />
 
-      {/* 上半部網格結構：帳戶與安全 (2 span) + 系統偏好 (1 span) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <AccountSecurityCard />
-        <SystemPreferencesCard />
-      </div>
+      {/* 系統偏好 */}
+      <SystemPreferencesCard />
 
       {/* 下半部：LINE Notify 整合 */}
       <LineNotifyCard />
