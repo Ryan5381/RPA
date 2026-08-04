@@ -44,7 +44,7 @@
 | 前端卡片 | 對應腳本 | 說明 |
 |---|---|---|
 | 🏥 醫院掛號 | `hospital_booking.py` | 支援台大醫院、長庚等院所掛號，含圖形驗證碼自動辨識（CapSolver） |
-| 🎫 演唱會搶票 | `tixcraft_booking.py` | 拓元 (tixCraft) 售票自動化，使用 nodriver 繞過 Akamai Bot Manager 偵測，含自訓 OCR 模型 + Yii2 雜湊校驗驗證碼 |
+| 🎫 演唱會搶票 | `tixcraft_booking.py` | 拓元 (tixCraft) 售票自動化，使用 nodriver 繞過 Akamai Bot Manager 偵測，含拓元專用 OCR 模型 + Yii2 雜湊校驗驗證碼 |
 | 🍽️ 美食預約 | `inline_booking.py` | inline.app 訂位系統，處理 PerimeterX 人機驗證與簡訊驗證碼（OTP）流程 |
 | ✈️ 折扣機票 | `flight_scraper.py` | 定期爬取 Google Flights / Trip.com 票價，低於預算時透過 LINE 通知（僅通知，不自動下單） |
 | 🏸 羽球場地預約 | `badminton_booking.py` | 羽球場地線上預約自動化 |
@@ -86,7 +86,7 @@ flowchart LR
 - Supabase Python SDK
 - APScheduler（排程任務輪詢）
 - Playwright / patchright（反偵測 Playwright 分支）/ nodriver（CDP 底層瀏覽器控制，用於繞過 Akamai 等進階風控）
-- ddddocr（驗證碼 OCR，支援自訓 ONNX 模型）
+- ddddocr（驗證碼 OCR，支援載入專用 ONNX 模型）
 - CapSolver（第三方圖形驗證碼辨識 API，選用）
 
 ## 專案結構
@@ -99,7 +99,7 @@ RPA/
 │   ├── requirements.txt
 │   ├── .env                     # 環境變數（不納入版控）
 │   ├── auth/                    # 各平台登入憑證存放處（不納入版控）
-│   ├── models/                  # 自訓 OCR 模型檔（不納入版控）
+│   ├── models/                  # 拓元專用 OCR 模型檔，來自 tickets_hunter（不納入版控）
 │   └── scripts/
 │       ├── __init__.py          # SCRIPT_ROUTER：task_type -> 執行函式
 │       ├── hospital_booking.py
@@ -226,7 +226,7 @@ LINE_USER_ID=your-line-user-id
 
 醫院掛號等平台使用的是傳統圖形驗證碼，可以透過 [CapSolver](https://www.capsolver.com/) 這類第三方付費 API 自動辨識。若不設定 `CAPSOLVER_API_KEY`，腳本會跳過自動辨識、改為提示使用者手動輸入。
 
-拓元搶票 (`tixcraft_booking.py`) 則是使用另一套機制：優先載入 `backend/models/` 底下的自訓 ONNX 模型（`custom.onnx` + `charsets.json`）進行辨識，並用拓元 Yii2 框架本身提供的驗證碼雜湊值在送出前先自我校驗，找不到自訓模型時才會退回通用 ddddocr 模型。這兩個模型檔案不納入版控，需自行放置。
+拓元搶票 (`tixcraft_booking.py`) 則是使用另一套機制：優先載入 `backend/models/` 底下針對拓元驗證碼樣式的專用 ONNX 模型（`custom.onnx` + `charsets.json`）進行辨識，並用拓元 Yii2 框架本身提供的驗證碼雜湊值在送出前先自我校驗，找不到專用模型時才會退回通用 ddddocr 模型。這個模型並非自行訓練——曾嘗試用約 2000 張圖片訓練，成功率僅 16%，改採用開源專案 [tickets_hunter](https://github.com/bouob/tickets_hunter) 提供的現成模型。這兩個模型檔案不納入版控，需自行放置。
 
 ### 各平台登入憑證管理
 
