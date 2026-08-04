@@ -12,7 +12,9 @@ from tasks_dispatcher import log_execution, supabase
 from utils.line_notifier import send_line_notification
 
 
-# 針對拓元驗證碼樣式另外訓練過的自訂 ddddocr 模型（非通用模型）。
+# 針對拓元驗證碼樣式的專用 ddddocr 模型，來自開源專案 tickets_hunter
+# （https://github.com/bouob/tickets_hunter），並非自行訓練——自己嘗試過用約 2000 張
+# 圖片訓練，成功率只有 16%，時間也不夠，改採用這個現成模型。
 # 放在 backend/models/ 底下，找不到就靜靜略過、退回通用模型，不影響原有行為。
 _CUSTOM_MODEL_DIR = Path(__file__).parent.parent / "models"
 _CUSTOM_ONNX_PATH = _CUSTOM_MODEL_DIR / "custom.onnx"
@@ -23,7 +25,7 @@ _custom_ocr_load_failed = False
 
 
 def _get_custom_ocr_engine():
-    """延遲載入、快取自訂模型；載入失敗只記錄一次，之後直接跳過不再重試。"""
+    """延遲載入、快取拓元專用模型；載入失敗只記錄一次，之後直接跳過不再重試。"""
     global _custom_ocr_engine, _custom_ocr_load_failed
     if _custom_ocr_engine is not None or _custom_ocr_load_failed:
         return _custom_ocr_engine
@@ -38,20 +40,20 @@ def _get_custom_ocr_engine():
             import_onnx_path=str(_CUSTOM_ONNX_PATH),
             charsets_path=str(_CUSTOM_CHARSETS_PATH),
         )
-        print(f"[OCR] 已載入拓元專屬自訂模型: {_CUSTOM_ONNX_PATH}")
+        print(f"[OCR] 已載入拓元專屬模型 (tickets_hunter): {_CUSTOM_ONNX_PATH}")
     except Exception as e:
-        print(f"[OCR Error] 自訂模型載入失敗，將退回通用模型: {e}")
+        print(f"[OCR Error] 專用模型載入失敗，將退回通用模型: {e}")
         _custom_ocr_load_failed = True
     return _custom_ocr_engine
 
 
 def _recognize_captcha_ocr(image_bytes: bytes) -> str:
     """
-    優先使用針對拓元驗證碼樣式訓練過的自訂模型辨識；
-    自訂模型不存在、載入失敗、或辨識不出乾淨的 4 碼結果時，
+    優先使用針對拓元驗證碼樣式的專用模型辨識（來自開源專案 tickets_hunter）；
+    模型不存在、載入失敗、或辨識不出乾淨的 4 碼結果時，
     退回通用 ddddocr 搭配多道影像前處理與嚴格校驗（保留原有邏輯當保險）。
     """
-    # 0. 優先嘗試自訂模型（單一次辨識，不需要額外前處理——
+    # 0. 優先嘗試拓元專用模型（單一次辨識，不需要額外前處理——
     #    charsets.json 裡已定義好模型預期的圖片尺寸/色彩通道，ddddocr 會自動依此處理）
     custom_engine = _get_custom_ocr_engine()
     if custom_engine is not None:
@@ -61,7 +63,7 @@ def _recognize_captcha_ocr(image_bytes: bytes) -> str:
             if len(clean_custom) == 4:
                 return clean_custom
         except Exception as e:
-            print(f"[OCR Error] 自訂模型辨識失敗，將退回通用模型: {e}")
+            print(f"[OCR Error] 專用模型辨識失敗，將退回通用模型: {e}")
 
     try:
         import io
@@ -608,7 +610,7 @@ async def _run_tixcraft_bot(task_id: str):
             async def _grab_captcha_bytes():
                 """用 canvas 讀取驗證碼原始像素，而不是截圖。
                 截圖是有損 JPEG、且抓到的是瀏覽器渲染後（可能被 CSS 縮放）的尺寸，
-                跟自訓模型預期的原始圖片不一致，會明顯拉低辨識率。"""
+                跟模型預期的原始圖片不一致，會明顯拉低辨識率。"""
                 try:
                     data_url = await tab.evaluate(
                         """

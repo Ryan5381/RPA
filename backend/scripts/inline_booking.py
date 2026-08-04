@@ -225,13 +225,15 @@ async def _run_inline_bot(task_id: str) -> None:
             # 7. 選擇日期
             print(f"[inline_booking] 選擇日期：{target_date}")
             _update_status(supabase, task_id, "running", {"step": "selecting_date"})
-            date_selected = await _select_date(page, target_date)
+            date_selected, date_fail_reason = await _select_date(page, target_date)
             if not date_selected:
                 # 選不到目標日期就不能繼續——後面的時段/人數/送出全部都會
                 # 套用在錯誤的日期上，不如在這裡就誠實回報並中止。
+                # 回報 _select_date 給的實際原因，不要自己猜「可能額滿或公休」：
+                # 這個猜測曾經把單純的月曆重繪競態講成餐廳沒位子，害人白跑一趟去對帳。
                 screenshot_path = await _take_screenshot(page, task_id)
                 _update_status(supabase, task_id, "failed", {
-                    "error": f"無法選擇目標日期 {target_date}（可能是訂位系統尚未開放到這個月份，或該日已額滿/公休）",
+                    "error": f"無法選擇目標日期 {target_date}：{date_fail_reason}",
                     "screenshot": screenshot_path,
                 })
                 return
@@ -274,7 +276,16 @@ async def _run_inline_bot(task_id: str) -> None:
             # 10. 填寫聯絡資訊
             print(f"[inline_booking] 填寫聯絡資訊：{last_name}{first_name}，{phone}")
             _update_status(supabase, task_id, "running", {"step": "filling_contact_info"})
-            await _fill_contact_info(page, last_name, first_name, gender, phone, email)
+            name_filled = await _fill_contact_info(page, last_name, first_name, gender, phone, email)
+            if f"{last_name}{first_name}".strip() and not name_filled:
+                # 姓名是必填欄位。填不進去就別再往下送——否則會在送出那一步
+                # 以「找不到送出按鈕」之類不相干的理由失敗，看不出真正原因是這裡。
+                screenshot_path = await _take_screenshot(page, task_id)
+                _update_status(supabase, task_id, "failed", {
+                    "error": "找不到訂位人姓名欄位，姓名未填入（表單版型可能已改變）",
+                    "screenshot": screenshot_path,
+                })
+                return
 
             # 11. 選擇用餐目的（多數餐廳為必填，所以就算使用者選「不指定」
             #     也要進去挑一個預設選項，否則必填欄位空著會送不出去；
@@ -307,6 +318,23 @@ async def _run_inline_bot(task_id: str) -> None:
                 })
                 return
             await _random_sleep(1.0, 2.0)
+
+            # 12-2. 送出後先確認表單有沒有跳出欄位驗證錯誤。
+            #       按鈕確實點下去了不代表表單有送出——欄位格式不對時
+            #       inline.app 只會在欄位下方顯示紅字，頁面停在原地。
+            #       但只有在「OTP 畫面還沒出現」時才需要這個檢查：OTP 畫面一旦
+            #       出現就代表表單已經送出成功了，此時頁面上的提示文字（例如
+            #       「請填寫4位數驗證碼」）屬於正常流程，不能當成欄位錯誤。
+            otp_already_up = await _is_otp_screen_present(page)
+            validation_error = "" if otp_already_up else await _find_form_validation_error(page)
+            if validation_error:
+                screenshot_path = await _take_screenshot(page, task_id)
+                print(f"[inline_booking] ❌ 表單驗證未通過：{validation_error}")
+                _update_status(supabase, task_id, "failed", {
+                    "error": f"表單欄位驗證未通過，訂位未送出：{validation_error}（請檢查任務設定的聯絡資訊）",
+                    "screenshot": screenshot_path,
+                })
+                return
 
             # 13. 處理 PerimeterX「按住不放」挑戰
             print("[inline_booking] 檢查是否有 PerimeterX 按住不放挑戰...")
@@ -504,8 +532,42 @@ async def _select_service_tab(page) -> None:
         pass
 
 
-async def _select_date(page, target_date: str) -> bool:
-    """選擇訂位日期（YYYY-MM-DD 格式）。回傳是否真的選到目標日期。
+async def _is_date_already_selected(picker_trigger, day_cell, target_date: str) -> bool:
+    """判斷目標日期是不是「已經是目前選取的日期」。
+
+    inline.app 會把已選取的那一格日期按鈕標成 disabled（避免重複點選），
+    所以不能光看 disabled 就當作不可訂——實測 2026-08-01 明明可訂、頁面也
+    已經選好它並列出 11:30／14:30 兩個時段，那一格卻同時帶著 disabled，
+    導致誤報「已額滿或公休」。
+
+    優先看格子自身的選取標記，讀不到再退回比對「用餐日期」欄位顯示的文字
+    （該欄位就是使用者看到的值，格式如「8月1日週六」）。
+    """
+    try:
+        if (await day_cell.get_attribute("aria-selected") or "").lower() == "true":
+            return True
+        cls = (await day_cell.get_attribute("class") or "").lower()
+        if "selected" in cls or "active" in cls:
+            return True
+    except Exception:
+        pass
+
+    try:
+        parts = target_date.split("-")
+        if len(parts) != 3:
+            return False
+        label = (await picker_trigger.text_content()) or ""
+        return f"{int(parts[1])}月{int(parts[2])}日" in label
+    except Exception:
+        return False
+
+
+async def _select_date(page, target_date: str) -> tuple[bool, str]:
+    """選擇訂位日期（YYYY-MM-DD 格式）。回傳 (是否選到, 失敗原因)。
+
+    回傳原因字串而不是只回 bool，是因為這幾種失敗成因的處理方式完全不同
+    （超出開放範圍 / 真的額滿 / 被遮擋點不到 / 頁面結構改變），過去呼叫端
+    一律報「可能已額滿或公休」，實際上常常不是額滿，反而誤導判讀。
 
     inline.app 的日期欄位是一個「收合的觸發器」：<div id="date-picker"
     data-cy="date-picker" aria-expanded="false">7月28日週二 (今日)</div>，
@@ -520,7 +582,7 @@ async def _select_date(page, target_date: str) -> bool:
     不可訂的日期（已過期/額滿/公休）格子會帶 disabled 屬性，用這個判斷才準確。
     """
     if not target_date:
-        return True
+        return True, ""
 
     try:
         # 先點開收合的日期選擇器。
@@ -535,7 +597,28 @@ async def _select_date(page, target_date: str) -> bool:
 
         await calendar.wait_for(state="visible", timeout=5000)
 
+        # 等月曆格子真的長出來再開始找日期。
+        # 這一步不能省：上一步剛改完用餐桌型（或人數），inline.app 會重新查詢
+        # 該桌型的可訂日期並重繪整份月曆，而關鍵路徑上的 _race_sleep 只等
+        # 0.25~0.5 秒，往往趕不上這次重繪。月曆「容器」在重繪期間仍然可見，
+        # 所以上面的 wait_for(visible) 會立刻通過，接著就在空的月曆裡查到 0 格，
+        # 把「還沒渲染完」誤判成「這天不能訂」——實測 2026-08-01 明明可訂，
+        # 卻回報額滿/公休，就是踩到這個競態。
+        try:
+            await calendar.locator("[data-cy='bt-cal-day']").first.wait_for(
+                state="attached", timeout=8000
+            )
+        except Exception:
+            pass
+
         day_locator = calendar.locator(f"[data-cy='bt-cal-day'][data-date='{target_date}']")
+
+        # 整份月曆已經渲染，不代表目標那一格也到位（跨月的格子可能晚一步才補上），
+        # 所以再針對目標日期本身等一小段時間，等不到才往下走翻頁/判定不存在。
+        try:
+            await day_locator.first.wait_for(state="attached", timeout=5000)
+        except Exception:
+            pass
 
         # 若目標日期不在 DOM 裡，才嘗試翻頁（保留給月曆是分頁式的其他餐廳）
         if await day_locator.count() == 0:
@@ -549,13 +632,20 @@ async def _select_date(page, target_date: str) -> bool:
                     break
 
         if await day_locator.count() == 0:
-            print(f"[inline_booking] ❌ 月曆中找不到 {target_date}，可能超出訂位開放範圍")
-            return False
+            reason = f"月曆中沒有 {target_date} 這一格，可能超出訂位開放範圍（或頁面結構已改變）"
+            print(f"[inline_booking] ❌ {reason}")
+            return False, reason
 
         day_cell = day_locator.first
         if await day_cell.get_attribute("disabled") is not None:
-            print(f"[inline_booking] ❌ {target_date} 不可訂（已額滿、公休或已過期）")
-            return False
+            # disabled 有兩種完全相反的意思：真的不可訂，或是「這格已經被選起來了」。
+            # 先確認是不是後者，否則會把已經選好的目標日期誤報成額滿（實測踩過）。
+            if await _is_date_already_selected(picker_trigger, day_cell, target_date):
+                print(f"[inline_booking] 日期 {target_date} 已是目前選取的日期，略過點擊")
+                return True, ""
+            reason = f"{target_date} 在月曆上是不可選狀態（已額滿、公休或已過期）"
+            print(f"[inline_booking] ❌ {reason}")
+            return False, reason
 
         # 月曆是可捲動的長清單，目標日期可能在可視範圍外，先捲進畫面再點
         try:
@@ -563,16 +653,18 @@ async def _select_date(page, target_date: str) -> bool:
         except Exception:
             pass
         if not await _robust_click(day_cell):
-            print(f"[inline_booking] ❌ {target_date} 這一格點不下去（可能被浮動元素遮擋）")
-            return False
+            reason = f"{target_date} 這一格點不下去（可能被浮動元素遮擋）"
+            print(f"[inline_booking] ❌ {reason}")
+            return False, reason
         await _race_sleep()
 
         selected_label = await picker_trigger.text_content()
         print(f"[inline_booking] 日期 {target_date} 選擇成功（欄位顯示：{(selected_label or '').strip()}）")
-        return True
+        return True, ""
     except Exception as e:
-        print(f"[inline_booking] ⚠️ 選擇日期 {target_date} 失敗：{e}")
-        return False
+        reason = f"選擇日期 {target_date} 時發生例外：{e}"
+        print(f"[inline_booking] ⚠️ {reason}")
+        return False, reason
 
 
 async def _select_session(page, session: str) -> bool:
@@ -587,19 +679,23 @@ async def _select_session(page, session: str) -> bool:
     狀態繼續往下走（點完成預訂、填聯絡資訊…），等於整張訂單的時段是空的
     或維持系統預設值。跟其他步驟一樣改成回傳成功與否，讓呼叫端可以中止。
     """
+    # 換日期後整份時段清單會重新渲染，太早去點會抓到正在被替換掉的舊元素，
+    # 於是 data-cy 精確定位失敗、掉進底下比較脆弱的文字比對。先等新清單出現。
+    #
+    # 這個等待對「粗略時段」那條路徑同樣必要——原本只寫在下面的精確時段分支裡，
+    # 但島語這類只有午餐/下午茶/晚餐的餐廳走的是粗略路徑，一樣得等清單重繪完，
+    # 否則會在空清單上比對文字、把「還沒渲染完」誤判成「這個時段已額滿」。
+    try:
+        await page.locator("[data-cy^='book-now-time-slot']").first.wait_for(
+            state="visible", timeout=8000
+        )
+        await _race_sleep()
+    except Exception:
+        pass
+
     exact_time_match = re.fullmatch(r"(\d{1,2}):(\d{2})", session)
     if exact_time_match:
         hh, mm = exact_time_match.groups()
-
-        # 換日期後整份時段清單會重新渲染，太早去點會抓到正在被替換掉的舊元素，
-        # 於是 data-cy 精確定位失敗、掉進底下比較脆弱的文字比對。先等新清單出現。
-        try:
-            await page.locator("[data-cy^='book-now-time-slot']").first.wait_for(
-                state="visible", timeout=8000
-            )
-            await _race_sleep()
-        except Exception:
-            pass
 
         # 優先用穩定的 data-cy 屬性定位（不受時區/文案影響）。
         # 兩種寫法都試：實際屬性是照顯示文字補零的（11:00 -> ...-11-00），
@@ -625,19 +721,52 @@ async def _select_session(page, session: str) -> bool:
         print(f"[inline_booking] ⚠️ 無法自動選擇精確時段 {session}")
         return False
 
+    # 各家餐廳的時段標題與實際開始時間都不一樣（島語高雄漢神店是
+    # 中午 11:30 / 下午 14:30 / 晚上 18:00，不是預期的午餐/下午茶/晚餐 17:30），
+    # 所以每個時段都準備多組同義詞，避免只認一種寫法就找不到。
     session_keywords = {
-        "midday": ["午餐", "11:30", "Midday", "Lunch"],
-        "afternoon": ["下午", "14:30", "Afternoon", "Tea"],
-        "evening": ["晚餐", "17:30", "Evening", "Dinner"],
+        "midday": ["午餐", "中午", "11:30", "12:00", "Midday", "Lunch"],
+        "afternoon": ["下午茶", "下午", "14:30", "15:00", "Afternoon", "Tea"],
+        "evening": ["晚餐", "晚上", "17:30", "18:00", "Evening", "Dinner"],
     }
     keywords = session_keywords.get(session, ["晚餐"])
+
+    # 先在真正的時段按鈕裡面找。
+    # 不要直接用 page.locator("text=…") 掃全頁：頁面上方那一大段訂位須知
+    # 也可能出現「午餐」「下午」「11:30」等字眼（例如「11:30 開始營業」），
+    # 掃全頁會點到純說明文字——點了完全沒有作用，卻會回報選擇成功，
+    # 最後送出一張沒有選到時段的訂單，比直接失敗更難查。
+    slots = page.locator("[data-cy^='book-now-time-slot']")
+    try:
+        slot_count = await slots.count()
+    except Exception:
+        slot_count = 0
+
+    for idx in range(slot_count):
+        slot = slots.nth(idx)
+        try:
+            text = ((await slot.text_content()) or "").strip()
+            if not any(kw in text for kw in keywords):
+                continue
+            if await slot.get_attribute("disabled") is not None:
+                print(f"[inline_booking] 時段「{text}」已額滿（disabled），略過")
+                continue
+            if await _robust_click(slot):
+                await _race_sleep()
+                print(f"[inline_booking] 時段選擇成功：{text}")
+                return True
+        except Exception:
+            continue
+
+    # 找不到時段按鈕結構時（其他餐廳可能沒有 book-now-time-slot），
+    # 才退回原本的全頁文字比對當保險。
     for kw in keywords:
         try:
             btn = page.locator(f"text={kw}").first
             if await btn.is_visible(timeout=2000):
                 await btn.click()
                 await _race_sleep()
-                print(f"[inline_booking] 時段選擇成功：{kw}")
+                print(f"[inline_booking] 時段選擇成功（全頁文字比對）：{kw}")
                 return True
         except Exception:
             continue
@@ -850,29 +979,141 @@ async def _accept_house_rules(page) -> bool:
     return True
 
 
+# 在瀏覽器裡實際盤點表單上的 input，找出「姓」「名」兩格是第幾個。
+# 回傳索引而不是選擇器字串，讓 Python 端用 page.locator("input").nth(i) 去填——
+# querySelectorAll('input') 與 Playwright 的 input 定位順序一致。
+_NAME_INPUTS_PROBE_JS = """
+() => {
+  const all = Array.from(document.querySelectorAll('input'));
+  const isVis = (el) => !!(el.offsetParent || el.getClientRects().length);
+  const isText = (el) => {
+    const t = (el.type || 'text').toLowerCase();
+    return t === 'text' || t === 'search';
+  };
+  const inv = all.map((el, i) => ({
+    i,
+    id: el.id || '',
+    name: el.name || '',
+    type: el.type || '',
+    ph: el.placeholder || '',
+    cy: el.getAttribute('data-cy') || '',
+    aria: el.getAttribute('aria-label') || '',
+    vis: isVis(el),
+  }));
+
+  // 1) placeholder / aria-label 直接比對（去空白後精確等於「姓」或「名」）
+  const pick = (want) => inv.find(
+    (o) => o.vis && (o.ph.trim() === want || o.aria.trim() === want)
+  );
+  const byPhLast = pick('姓');
+  const byPhFirst = pick('名');
+  if (byPhLast && byPhFirst) {
+    return { inv, last: byPhLast.i, first: byPhFirst.i, how: 'placeholder' };
+  }
+
+  // 2) 找到「訂位人姓名」這個標籤，往上找出同一區塊裡的前兩個文字輸入框。
+  //    不依賴 placeholder 文案，版型改了也還能定位。
+  //    注意不能要求標籤「沒有子元素」——實際結構是
+  //    <div>訂位人姓名 <span>*</span></div>，那顆必填星號就是子元素。
+  //    改成取「包含這段文字的最深層元素」：只有祖先鏈上的元素會包含該文字，
+  //    而文件順序中最後一個即為最深的那一個。
+  const chain = Array.from(document.querySelectorAll('*')).filter(
+    (el) => (el.textContent || '').includes('訂位人姓名')
+  );
+  const label = chain.length ? chain[chain.length - 1] : null;
+  if (label) {
+    let node = label.parentElement;
+    for (let up = 0; up < 4 && node; up++) {
+      const ins = Array.from(node.querySelectorAll('input')).filter(
+        (el) => isText(el) && isVis(el)
+      );
+      if (ins.length >= 2) {
+        return {
+          inv,
+          last: all.indexOf(ins[0]),
+          first: all.indexOf(ins[1]),
+          how: 'label:' + up,
+        };
+      }
+      node = node.parentElement;
+    }
+  }
+
+  return { inv, last: -1, first: -1, how: 'none' };
+}
+"""
+
+
 async def _fill_contact_info(
     page, last_name: str, first_name: str, gender: str, phone: str, email: str
-) -> None:
-    """填寫聯絡資訊（姓名、性別、電話）。
+) -> bool:
+    """填寫聯絡資訊（姓名、性別、電話）。回傳姓名是否確實填入。
 
     實測 inline.app 訂位表單（.../form）的實際結構：
-      - 訂位人姓名是「單一個」欄位 <input id="name" data-cy="name">，
-        標籤寫明「請留全名」——不是分開的「姓」「名」兩格。原本這裡找
-        input[placeholder='姓'] / [placeholder='名']，兩個都不存在，
-        於是姓名被靜靜跳過、整張表單根本填不完整。
+      - 訂位人姓名有「兩種版型」，不同分店不一樣，必須兩種都支援：
+        (A) 分成「姓」「名」兩格（島語高雄漢神店就是這種，
+            placeholder 分別是「姓」和「名」）
+        (B) 單一個 <input id="name" data-cy="name">，標籤寫「請留全名」
+        之前只認 (B)，遇到 (A) 版型時 is_visible() 直接回 False、
+        整段被 if 跳過，姓名靜靜留白也沒有任何錯誤訊息，最後才在送出時
+        以不相干的理由失敗。
       - 性別是三個 radio：value="1" 小姐、value="0" 先生、value="2" 其他。
       - 電話是 <input id="phone" type="tel">，旁邊有國碼選單（預設 +886），
         所以要填去掉開頭 0 的號碼。
       - 這張表單沒有 Email 欄位（保留參數是為了相容既有呼叫端）。
     """
+    name_filled = False
     try:
-        full_name = f"{last_name}{first_name}".strip()
-        if full_name:
+        want_name = bool(f"{last_name}{first_name}".strip())
+
+        # 版型 A：「姓」「名」分成兩格
+        # 這裡不寫死 CSS 選擇器，而是先在瀏覽器裡實際盤點所有 input，
+        # 依序用 placeholder → 「訂位人姓名」標籤往上找容器 兩種方式定位。
+        # 原因：先前寫死 input[placeholder='姓'] 在這張表單上選不到（畫面上
+        # 明明看得到「姓」「名」兩格），猜選擇器只會一直來回試；盤點結果會
+        # 一併印進 log，萬一之後版型再改，可以直接從 log 看出真實屬性。
+        if want_name:
+            try:
+                probe = await page.evaluate(_NAME_INPUTS_PROBE_JS)
+            except Exception as e:
+                probe = None
+                print(f"[inline_booking] 盤點姓名欄位失敗：{e}")
+
+            if probe:
+                print(f"[inline_booking] 表單 input 盤點（定位方式={probe.get('how')}）：{probe.get('inv')}")
+                last_idx = probe.get("last", -1)
+                first_idx = probe.get("first", -1)
+                if last_idx is not None and last_idx >= 0:
+                    try:
+                        inputs = page.locator("input")
+                        # 用 Playwright 的 fill 而不是 JS 直接塞 value：
+                        # 這是 React 表單，直接改 value 不會觸發 onChange，
+                        # 畫面看起來有字、送出時卻是空的。
+                        await inputs.nth(last_idx).click()
+                        await inputs.nth(last_idx).fill(last_name)
+                        await _random_sleep(0.2, 0.4)
+                        if first_idx is not None and first_idx >= 0:
+                            await inputs.nth(first_idx).click()
+                            await inputs.nth(first_idx).fill(first_name)
+                            await _random_sleep(0.2, 0.4)
+                        name_filled = True
+                        print(f"[inline_booking] 姓名已填寫（姓／名兩格）：{last_name} {first_name}")
+                    except Exception as e:
+                        print(f"[inline_booking] 以「姓／名兩格」版型填寫姓名失敗：{e}")
+
+        # 版型 B：單一個「請留全名」欄位
+        if want_name and not name_filled:
+            full_name = f"{last_name}{first_name}".strip()
             name_input = page.locator("#name, [data-cy='name']").first
-            if await name_input.is_visible(timeout=5000):
+            if await name_input.count() > 0 and await name_input.is_visible():
                 await name_input.click()
                 await name_input.fill(full_name)
                 await _random_sleep(0.3, 0.6)
+                name_filled = True
+                print(f"[inline_booking] 姓名已填寫（單一全名欄位）：{full_name}")
+
+        if want_name and not name_filled:
+            print("[inline_booking] ⚠️ 找不到訂位人姓名欄位（姓／名兩格與單一全名欄位皆不存在）")
 
         # 性別 radio：優先用 value 定位（不受文案改動影響），其次用標籤文字
         gender_value = {"小姐": "1", "先生": "0", "其他": "2"}.get(gender, "1")
@@ -913,6 +1154,7 @@ async def _fill_contact_info(
         print("[inline_booking] 聯絡資訊填寫完成")
     except Exception as e:
         print(f"[inline_booking] 填寫聯絡資訊時發生錯誤：{e}")
+    return name_filled
 
 
 # 找出「用餐目的」區塊裡實際存在的選項文字。
@@ -1031,6 +1273,43 @@ async def _select_purpose(page, purpose: str) -> bool:
     return True
 
 
+# 送出後掃描頁面上的欄位驗證錯誤訊息。
+# 只看「葉節點且文字很短」的元素，避免把整個表單容器的文字整段抓回來。
+_VALIDATION_ERROR_JS = """
+({ hints, ignore }) => {
+  const els = Array.from(document.querySelectorAll('body *'));
+  for (const el of els) {
+    if (el.children.length) continue;
+    const t = (el.textContent || '').trim();
+    if (!t || t.length > 60) continue;
+    if (!(el.offsetParent || el.getClientRects().length)) continue;
+    if (ignore.some((g) => t.includes(g))) continue;
+    if (hints.some((h) => t.includes(h))) return t;
+  }
+  return '';
+}
+"""
+
+
+async def _find_form_validation_error(page) -> str:
+    """找出表單上目前顯示的欄位驗證錯誤訊息（沒有就回空字串）。
+
+    inline.app 的欄位驗證訊息不會擋住「確認訂位」按鈕的點擊——按下去按鈕確實
+    被點到了，但表單不會送出，頁面就停在原地（實測手機號碼多打幾碼時，欄位
+    變紅框並顯示「您填寫的手機號碼格式有誤」）。若不在這裡攔下來，後面會一路
+    空轉到等不到 OTP，最後以「訂位完成頁面確認失敗」作收，完全看不出真正原因
+    是某個欄位填錯，只能一張張翻截圖才找得到。
+    """
+    hints = ["格式有誤", "格式錯誤", "不正確", "請填寫", "尚未填寫"]
+    # OTP 畫面上的「請填寫4位數驗證碼」是流程走到最後一步的正常提示，不是欄位錯誤。
+    # 沒排除掉的話，會在簡訊都還沒送達時就把成功的流程判定成失敗。
+    ignore = ["驗證碼"]
+    try:
+        return await page.evaluate(_VALIDATION_ERROR_JS, {"hints": hints, "ignore": ignore})
+    except Exception:
+        return ""
+
+
 async def _click_submit(page) -> bool:
     """點擊最終送出按鈕。回傳是否真的點到了按鈕。
 
@@ -1113,6 +1392,19 @@ async def _solve_px_hold_challenge(page) -> bool:
             continue
 
     return False
+
+
+async def _is_otp_screen_present(page) -> bool:
+    """OTP 輸入畫面是否已經出現（單次檢查、不等待）。
+
+    只認「一組 4 個 maxlength=1 輸入框」這個最明確的特徵，不用文字比對——
+    這個函式是用來判斷「表單是否已成功送出」，寧可漏判也不要因為頁面上剛好
+    有「驗證碼」字樣就誤判成已送出。
+    """
+    try:
+        return await page.locator("input[maxlength='1']").count() >= 4
+    except Exception:
+        return False
 
 
 async def _wait_for_otp_screen(page, timeout: float = 20.0) -> bool:
